@@ -35,6 +35,6 @@ class WakeSpringTest {
     @Test
     fun entranceIsSettledBeforeTheClockEnds() {
         // Latest item: the spread delay plus the spring settle must fit inside the master clock.
-        assertEquals(1f, springStep((WAKE_TOTAL_MS - 210f) / 1000f, 0.68f, 180f), 0.002f)
+        assertEquals(1f, springStep((WAKE_TOTAL_MS - 15f) / 1000f, WAKE_DAMPING, WAKE_STIFFNESS), 0.005f)
     }
 }

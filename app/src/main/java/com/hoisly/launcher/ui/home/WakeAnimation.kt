@@ -73,19 +73,19 @@ class WakeState {
 
 val LocalWake = staticCompositionLocalOf { WakeState() }
 
-internal const val WAKE_TOTAL_MS = 1400f
+internal const val WAKE_TOTAL_MS = 150f
 
 /** Latest delay of an item: the bottom-right corner starts this long after the top-left. */
-private const val WAKE_SPREAD_MS = 170f
-private const val WAKE_DAMPING = 0.68f
-private const val WAKE_STIFFNESS = 180f
-private const val WAKE_WALLPAPER_DAMPING = 0.78f
-private const val WAKE_WALLPAPER_STIFFNESS = 120f
+private const val WAKE_SPREAD_MS = 10f
+internal const val WAKE_DAMPING = 0.68f
+internal const val WAKE_STIFFNESS = 4500f
+private const val WAKE_WALLPAPER_DAMPING = 0.8f
+private const val WAKE_WALLPAPER_STIFFNESS = 4000f
 
 /** How much closer each layer starts; the different depths read as parallax. */
-private const val WAKE_ICON_SCALE = 1.55f
-private const val WAKE_WIDGET_SCALE = 1.35f
-private const val WAKE_DOCK_SCALE = 1.2f
+private const val WAKE_ICON_SCALE = 1.10f
+private const val WAKE_WIDGET_SCALE = 1.07f
+private const val WAKE_DOCK_SCALE = 1.04f
 
 /**
  * Runs the master clock. One effect for the whole home screen: it holds the clock at zero while
@@ -156,7 +156,7 @@ fun Modifier.wakePop(seed: Int, layer: WakeLayer = WakeLayer.Icon): Modifier = c
             val centerY = slot.top + slot.height / 2f
             // Top to bottom, then left to right; the dock is the last layer to settle.
             val order = (centerY / slot.rootHeight) * 0.8f + (centerX / slot.rootWidth) * 0.2f
-            val delay = order.coerceIn(0f, 1f) * WAKE_SPREAD_MS + if (kind == WakeLayer.Dock) 40f else 0f
+            val delay = order.coerceIn(0f, 1f) * WAKE_SPREAD_MS + if (kind == WakeLayer.Dock) 5f else 0f
             val p = springStep((t - delay) / 1000f, WAKE_DAMPING, WAKE_STIFFNESS)
             val inverse = 1f - p
             when (style) {

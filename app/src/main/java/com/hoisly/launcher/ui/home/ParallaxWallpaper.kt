@@ -95,7 +95,7 @@ private class ParallaxSensor(context: Context, private val state: ParallaxState)
 
 /** How far the wallpaper is enlarged so it can move without showing its edges. */
 private const val BASE_SCALE = 1.14f
-private const val WAKE_WALLPAPER_ZOOM = 0.3f
+private const val WAKE_WALLPAPER_ZOOM = 0.06f
 private const val SHIFT_X = 0.05f
 private const val SHIFT_Y = 0.04f
 
