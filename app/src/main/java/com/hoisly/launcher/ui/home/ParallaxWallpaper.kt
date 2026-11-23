@@ -6,7 +6,6 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -26,7 +25,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.awaitCancellation
-import com.hoisly.launcher.ui.theme.Motion
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
@@ -97,6 +95,7 @@ private class ParallaxSensor(context: Context, private val state: ParallaxState)
 
 /** How far the wallpaper is enlarged so it can move without showing its edges. */
 private const val BASE_SCALE = 1.14f
+private const val WAKE_WALLPAPER_ZOOM = 0.3f
 private const val SHIFT_X = 0.05f
 private const val SHIFT_Y = 0.04f
 
@@ -128,22 +127,13 @@ internal fun ParallaxWallpaper(wallpaper: ImageBitmap?, enabled: Boolean, modifi
         }
     }
 
-    // 1 right after the phone was unlocked (zoomed in), settling to 0 with a soft bounce.
-    val zoom = remember { Animatable(0f) }
-    // Zoomed in while the display is off, so there is no jump when the entrance starts.
-    LaunchedEffect(wake.armed) { if (wake.armed) zoom.snapTo(1f) }
-    LaunchedEffect(wake.generation) {
-        if (wake.generation == 0) return@LaunchedEffect
-        zoom.snapTo(1f)
-        zoom.animateTo(0f, Motion.wakeZoom())
-    }
-
     if (!active || wallpaper == null) return
     Spacer(
         modifier
             .fillMaxSize()
             .graphicsLayer {
-                val scale = (BASE_SCALE + 0.35f * zoom.value).coerceAtLeast(1.12f)
+                // Closer right after the unlock, settling on the master clock of the icon entrance.
+                val scale = (BASE_SCALE + WAKE_WALLPAPER_ZOOM * (1f - wake.wallpaperProgress())).coerceAtLeast(1.12f)
                 scaleX = scale
                 scaleY = scale
                 translationX = state.x * size.width * SHIFT_X

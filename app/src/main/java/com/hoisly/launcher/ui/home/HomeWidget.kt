@@ -149,7 +149,7 @@ fun HomeWidget(
             Modifier
                 .graphicsLayer { alpha = if (hidden) 0f else 1f }
                 .jiggle(editMode, jiggleSeed)
-                .wakePop(jiggleSeed),
+                .wakePop(jiggleSeed, WakeLayer.Widget),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Box(Modifier.stackMergeHighlight(mergeTarget)) {

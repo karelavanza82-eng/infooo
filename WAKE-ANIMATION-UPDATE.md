@@ -1,17 +1,17 @@
-# Wake / unlock animation update
+# Wake / unlock animation (iOS-style)
 
-Updated `app/src/main/java/com/hoisly/launcher/ui/home/WakeAnimation.kt`.
+Files: `ui/home/WakeAnimation.kt` (state, master clock, `wakePop`), `ui/home/WakeSpring.kt`
+(spring math), `ui/home/ParallaxWallpaper.kt`, `ui/home/HomeScreen.kt`, `ui/home/HomeWidget.kt`,
+`ui/theme/Motion.kt` (dead wake specs removed), test `WakeSpringTest.kt`.
 
-Changes:
-- Removed the full-screen alpha-to-zero behavior that could expose a blank frame between unlock and Home.
-- Kept the Home surface rendered behind the system lock screen, with a restrained 1.10x camera push.
-- Added a per-item pluffy spring entrance for app icons and widgets, including a small lift and scale settle.
-- Staggered items by their existing grid seed (11 ms per step, capped at 40 steps) so they do not all appear together.
-- Used the existing gel spring for the Bounce style; other wake styles retain their respective movement.
+Root cause of the blank home: while the display was off, `WakeState.armed` forced every icon and
+widget to alpha 0 until `ACTION_USER_PRESENT`; the system unlock animation therefore revealed an
+empty home. Each item then also waited for a `LaunchedEffect` + `delay`, adding more frames.
 
-Build status:
-- Source changes are packaged.
-- `:app:assembleDebug` could not be run in this environment because Gradle 9.8.1 could not be downloaded (network DNS unavailable). Open the project in Android Studio and let Gradle sync before building.
+Now: nothing is hidden. Armed only holds a "closer" pose (icons 1.55x, widgets 1.35x, dock 1.2x,
+scaled about the screen centre, wallpaper zoomed). One master clock replays on unlock and each
+item evaluates its own spring (damping 0.68, stiffness 180) delayed by position (top-left first,
+dock last, 170 ms spread). No per-item coroutine, no per-frame recomposition.
 
-Platform limitation:
-- The launcher cannot replace TECNO/HiOS's system keyguard unlock animation. This patch controls the launcher's Home surface and its contents as the lock screen reveals it.
+Limits: the system keyguard animation cannot be replaced by a launcher. Pop/Top/Side styles still
+start from their own off-screen/small pose by design. Not built or run on a device yet.
