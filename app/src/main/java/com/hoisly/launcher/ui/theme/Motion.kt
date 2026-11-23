@@ -33,6 +33,8 @@ object Motion {
     private const val FADE_STIFFNESS = 400f
     private const val WAKE_DAMPING = 0.52f
     private const val WAKE_STIFFNESS = 330f
+    private const val WAKE_ZOOM_DAMPING = 0.7f
+    private const val WAKE_ZOOM_STIFFNESS = 190f
     private const val GEL_DAMPING = 0.5f
     private const val GEL_STIFFNESS = 300f
 
@@ -86,6 +88,9 @@ object Motion {
 
     /** Icons flying in after unlock: a long, visible bounce before they settle. */
     fun <T> wake(): SpringSpec<T> = spring(WAKE_DAMPING, WAKE_STIFFNESS)
+
+    /** The whole screen shrinking back after unlock, puffing past its size once before it settles. */
+    fun <T> wakeZoom(): SpringSpec<T> = spring(WAKE_ZOOM_DAMPING, WAKE_ZOOM_STIFFNESS)
 
     /** Press-down scale of buttons: no overshoot. */
     fun <T> press(): SpringSpec<T> = spring(stiffness = PRESS_STIFFNESS)

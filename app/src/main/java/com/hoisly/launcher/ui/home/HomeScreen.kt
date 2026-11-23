@@ -54,6 +54,7 @@ import com.hoisly.launcher.data.AppInfo
 import com.hoisly.launcher.data.libraryTitles
 import com.hoisly.launcher.settings.LocalSettingsState
 import com.hoisly.launcher.settings.SettingsState
+import com.hoisly.launcher.ui.glass.WallpaperBlur
 import com.hoisly.launcher.ui.glass.LocalGlassSource
 import com.hoisly.launcher.ui.library.AppLibraryPage
 import com.hoisly.launcher.ui.theme.Motion
@@ -254,6 +255,7 @@ fun HomeScreen(vm: LauncherViewModel, actions: LauncherActions) {
         Box(
             Modifier
                 .fillMaxSize()
+                .wakeZoom()
                 .graphicsLayer {
                     val p = resume.value
                     val scale = (1.15f - 0.15f * p) * (1f - Motion.APP_HOME_SHRINK * appProgress.value)
@@ -318,7 +320,7 @@ fun HomeScreen(vm: LauncherViewModel, actions: LauncherActions) {
                         liftedId = liftedId,
                         callbacks = pageIcons,
                         widgetCallbacks = pageWidgets,
-                        showGlassPrompt = homePage == 0 && !editMode && settings.blurEffect && LocalGlassSource.current == null,
+                        showGlassPrompt = homePage == 0 && !editMode && settings.blurEffect && LocalGlassSource.current == null && !WallpaperBlur.hasAccess(),
                         onGlassPrompt = actions::requestGlassAccess,
                         onEnterEdit = vm::enterEditMode,
                         onExitEdit = vm::exitEditMode,

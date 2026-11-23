@@ -71,32 +71,26 @@ fun Modifier.wakePop(seed: Int): Modifier = composed {
     val started = remember { mutableIntStateOf(0) }
     LaunchedEffect(generation) {
         if (generation == 0) return@LaunchedEffect
+        // Bounce zooms the whole screen instead (see wakeZoom); icons stay as they are.
+        if (wake.style == WakeStyle.Bounce) {
+            started.intValue = generation
+            return@LaunchedEffect
+        }
         progress.snapTo(0f)
         started.intValue = generation
         delay((seed % 100).coerceIn(0, MAX_STEPS) * STEP_MS)
-        if (wake.style == WakeStyle.Bounce) progress.animateTo(1f, Motion.wake()) else progress.animateTo(1f, Motion.pop())
+        progress.animateTo(1f, Motion.pop())
     }
     val distance = with(LocalDensity.current) { 120.dp.toPx() }
     graphicsLayer {
+        if (wake.style == WakeStyle.Bounce || wake.style == WakeStyle.Off) return@graphicsLayer
         val waiting = wake.armed || wake.generation != started.intValue
         val p = if (waiting) 0f else progress.value
         if (p == 1f) return@graphicsLayer
         val inverse = 1f - p
         alpha = (p * 2.5f).coerceIn(0f, 1f)
         when (wake.style) {
-            WakeStyle.Off -> Unit
-            WakeStyle.Bounce -> {
-                // Top, left and right in turn; p overshoots 1, so the icon swings past its
-                // place and back: that is the bounce.
-                when (seed % 3) {
-                    0 -> translationY = -inverse * distance * 2.4f
-                    1 -> translationX = -inverse * distance * 3f
-                    else -> translationX = inverse * distance * 3f
-                }
-                val s = 0.55f + 0.45f * p
-                scaleX = s
-                scaleY = s
-            }
+            WakeStyle.Off, WakeStyle.Bounce -> Unit
             WakeStyle.Pop -> {
                 val s = 0.4f + 0.6f * p
                 scaleX = s
@@ -115,5 +109,35 @@ fun Modifier.wakePop(seed: Int): Modifier = composed {
                 scaleY = s
             }
         }
+    }
+}
+
+/** How much larger than normal the screen starts out in the Bounce entrance. */
+private const val WAKE_ZOOM = 1.7f
+
+/**
+ * The iOS 27 entrance after unlock: the whole home screen starts zoomed in and shrinks to its
+ * normal size with a springy overshoot, so it looks puffed up for a moment. Hidden until then.
+ */
+fun Modifier.wakeZoom(): Modifier = composed {
+    val wake = LocalWake.current
+    val progress = remember { Animatable(1f) }
+    val started = remember { mutableIntStateOf(0) }
+    LaunchedEffect(wake.generation) {
+        if (wake.generation == 0) return@LaunchedEffect
+        started.intValue = wake.generation
+        if (wake.style != WakeStyle.Bounce) return@LaunchedEffect
+        progress.snapTo(0f)
+        progress.animateTo(1f, Motion.wakeZoom())
+    }
+    graphicsLayer {
+        if (wake.style != WakeStyle.Bounce) return@graphicsLayer
+        val waiting = wake.armed || wake.generation != started.intValue
+        val p = if (waiting) 0f else progress.value
+        if (p == 1f) return@graphicsLayer
+        val s = 1f + (1f - p) * WAKE_ZOOM
+        scaleX = s
+        scaleY = s
+        alpha = (p * 3f).coerceIn(0f, 1f)
     }
 }

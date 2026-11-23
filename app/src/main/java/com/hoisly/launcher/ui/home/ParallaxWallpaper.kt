@@ -7,7 +7,6 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -27,6 +26,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.awaitCancellation
+import com.hoisly.launcher.ui.theme.Motion
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
@@ -130,10 +130,12 @@ internal fun ParallaxWallpaper(wallpaper: ImageBitmap?, enabled: Boolean, modifi
 
     // 1 right after the phone was unlocked (zoomed in), settling to 0 with a soft bounce.
     val zoom = remember { Animatable(0f) }
+    // Zoomed in while the display is off, so there is no jump when the entrance starts.
+    LaunchedEffect(wake.armed) { if (wake.armed) zoom.snapTo(1f) }
     LaunchedEffect(wake.generation) {
         if (wake.generation == 0) return@LaunchedEffect
         zoom.snapTo(1f)
-        zoom.animateTo(0f, spring(dampingRatio = 0.65f, stiffness = 80f))
+        zoom.animateTo(0f, Motion.wakeZoom())
     }
 
     if (!active || wallpaper == null) return
@@ -141,7 +143,7 @@ internal fun ParallaxWallpaper(wallpaper: ImageBitmap?, enabled: Boolean, modifi
         modifier
             .fillMaxSize()
             .graphicsLayer {
-                val scale = (BASE_SCALE + 0.12f * zoom.value).coerceAtLeast(1.1f)
+                val scale = (BASE_SCALE + 0.35f * zoom.value).coerceAtLeast(1.12f)
                 scaleX = scale
                 scaleY = scale
                 translationX = state.x * size.width * SHIFT_X
