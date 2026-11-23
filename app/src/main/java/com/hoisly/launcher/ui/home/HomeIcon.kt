@@ -121,7 +121,6 @@ fun HomeIcon(
             .onGloballyPositioned { columnOrigin = it.boundsInWindow().topLeft }
             .graphicsLayer { alpha = if (hidden) 0f else 1f }
             .jiggle(editMode, jiggleSeed)
-            .wakePop(jiggleSeed)
             .then(gestures),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {

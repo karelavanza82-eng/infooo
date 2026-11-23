@@ -95,20 +95,17 @@ private class ParallaxSensor(context: Context, private val state: ParallaxState)
 
 /** How far the wallpaper is enlarged so it can move without showing its edges. */
 private const val BASE_SCALE = 1.14f
-private const val WAKE_WALLPAPER_ZOOM = 0.06f
 private const val SHIFT_X = 0.05f
 private const val SHIFT_Y = 0.04f
 
 /**
  * The wallpaper, drawn by the launcher itself so it can move: it slides against the tilt of
- * the phone while the home screen is started, and settles from a closer zoom each time the
- * icons fly in after unlock. Draws nothing without a readable wallpaper or when [enabled] is
+ * the phone while the home screen is started. Draws nothing without a readable wallpaper or when [enabled] is
  * false; the system wallpaper behind the window then stays as it is.
  */
 @Composable
 internal fun ParallaxWallpaper(wallpaper: ImageBitmap?, enabled: Boolean, modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    val wake = LocalWake.current
     val state = remember { ParallaxState() }
     val owner = context as? LifecycleOwner
     val active = enabled && wallpaper != null
@@ -132,8 +129,7 @@ internal fun ParallaxWallpaper(wallpaper: ImageBitmap?, enabled: Boolean, modifi
         modifier
             .fillMaxSize()
             .graphicsLayer {
-                // Closer right after the unlock, settling on the master clock of the icon entrance.
-                val scale = (BASE_SCALE + WAKE_WALLPAPER_ZOOM * (1f - wake.wallpaperProgress())).coerceAtLeast(1.12f)
+                val scale = BASE_SCALE.coerceAtLeast(1.12f)
                 scaleX = scale
                 scaleY = scale
                 translationX = state.x * size.width * SHIFT_X

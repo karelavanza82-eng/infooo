@@ -26,7 +26,6 @@ import com.hoisly.launcher.settings.HomeAction
 import com.hoisly.launcher.settings.HomeBehavior
 import com.hoisly.launcher.settings.HomeBinding
 import com.hoisly.launcher.settings.HomeReturn
-import com.hoisly.launcher.settings.WakeStyle
 import com.hoisly.launcher.ui.icon.AppIconImage
 import com.hoisly.launcher.ui.search.search
 
@@ -103,25 +102,6 @@ fun HomeBehaviorScreen(vm: SettingsViewModel, onBack: () -> Unit) {
                         stringResource(if (policy == HomeReturn.Stay) R.string.home_return_stay else R.string.home_return_main),
                         behavior.returnPolicy == policy,
                     ) { vm.settings.update { it.copy(homeBehavior = it.homeBehavior.copy(returnPolicy = policy)) } }
-                }
-            }
-        }
-        item { SectionHeader(stringResource(R.string.home_section_wake)) }
-        item {
-            SettingsCard {
-                WakeStyle.entries.forEach { style ->
-                    CheckRow(
-                        stringResource(
-                            when (style) {
-                                WakeStyle.Off -> R.string.wake_style_off
-                                WakeStyle.Bounce -> R.string.wake_style_bounce
-                                WakeStyle.Pop -> R.string.wake_style_pop
-                                WakeStyle.Top -> R.string.wake_style_top
-                                WakeStyle.Side -> R.string.wake_style_side
-                            },
-                        ),
-                        behavior.wakeStyle == style,
-                    ) { vm.settings.update { it.copy(homeBehavior = it.homeBehavior.copy(wakeStyle = style)) } }
                 }
             }
         }

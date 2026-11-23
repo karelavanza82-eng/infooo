@@ -251,7 +251,6 @@ fun HomeScreen(vm: LauncherViewModel, actions: LauncherActions) {
                 }
             },
     ) {
-        WakeClock()
         ParallaxWallpaper(parallaxWallpaper, enabled = settings.homeBehavior.wallpaperParallax)
         Box(
             Modifier

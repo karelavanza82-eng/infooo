@@ -437,12 +437,6 @@
         <item quantity="one">%d more notification</item>
         <item quantity="other">%d more notifications</item>
     </plurals>
-    <string name="home_section_wake">Wake animation</string>
-    <string name="wake_style_off">Off</string>
-    <string name="wake_style_bounce">Bounce (iOS 27)</string>
-    <string name="wake_style_pop">Pop</string>
-    <string name="wake_style_top">From the top</string>
-    <string name="wake_style_side">From the sides</string>
     <string name="home_lock_on_wake">Show Lock Screen after sleep</string>
     <string name="home_lock_on_wake_footer">When the display was off, the launcher shows its own Lock Screen first. Swiping it away makes the icons pop in. It adds no security: the system lock screen is separate.</string>
     <string name="home_wallpaper_parallax">Moving wallpaper</string>
