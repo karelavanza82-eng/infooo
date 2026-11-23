@@ -99,9 +99,10 @@ internal fun LockScreenOverlay(
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
     var battery by remember { mutableIntStateOf(-1) }
     var charging by remember { mutableStateOf(false) }
-    val deviceName = remember(context) {
+    val deviceFallback = stringResource(R.string.lock_device_fallback)
+    val deviceName = remember(context, deviceFallback) {
         runCatching { Settings.Global.getString(context.contentResolver, "device_name") }.getOrNull()?.takeIf { it.isNotBlank() }
-            ?: Build.MODEL ?: context.getString(R.string.lock_device_fallback)
+            ?: Build.MODEL ?: deviceFallback
     }
     // Wakes exactly at each minute change, so the clock never ticks while the display is idle.
     LaunchedEffect(Unit) {

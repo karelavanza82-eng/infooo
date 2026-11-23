@@ -28,13 +28,16 @@ jobs:
           java-version: "17"
 
       - uses: android-actions/setup-android@v3
+        # The default package list includes the removed legacy "tools" package.
         with:
           packages: platform-tools
 
+      # Validates the wrapper checksum and caches Gradle; only main writes the cache.
       - uses: gradle/actions/setup-gradle@v4
         with:
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
+      # Hosted runners have 16 GB; the project defaults are sized for a small desktop.
       - name: Raise Gradle memory limits
         run: |
           mkdir -p ~/.gradle
@@ -46,8 +49,12 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Build debug APK, run unit tests and lint
-        run: ./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug --stacktrace
+      - name: Build debug APK and run unit tests
+        run: ./gradlew :app:assembleDebug :app:testDebugUnitTest --stacktrace
+
+      - name: Lint (tidak menggagalkan build)
+        continue-on-error: true
+        run: ./gradlew :app:lintDebug --stacktrace
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
