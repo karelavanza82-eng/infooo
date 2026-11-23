@@ -56,7 +56,7 @@ val LocalWake = staticCompositionLocalOf { WakeState() }
 
 /** Icons nearer the start of the grid come first; this caps the whole sequence. */
 private const val MAX_STEPS = 40
-private const val STEP_MS = 14L
+private const val STEP_MS = 11L
 
 /**
  * Plays the [WakeStyle] entrance on this item each time [WakeState.trigger] runs. The seed is
@@ -71,26 +71,30 @@ fun Modifier.wakePop(seed: Int): Modifier = composed {
     val started = remember { mutableIntStateOf(0) }
     LaunchedEffect(generation) {
         if (generation == 0) return@LaunchedEffect
-        // Bounce zooms the whole screen instead (see wakeZoom); icons stay as they are.
-        if (wake.style == WakeStyle.Bounce) {
-            started.intValue = generation
-            return@LaunchedEffect
-        }
         progress.snapTo(0f)
         started.intValue = generation
         delay((seed % 100).coerceIn(0, MAX_STEPS) * STEP_MS)
-        progress.animateTo(1f, Motion.pop())
+        // Bounce is a soft, pluffy pop: each item gets its own spring and stagger.
+        val spring = if (wake.style == WakeStyle.Bounce) Motion.gel<Float>() else Motion.pop<Float>()
+        progress.animateTo(1f, spring)
     }
     val distance = with(LocalDensity.current) { 120.dp.toPx() }
+    val pluffyLift = with(LocalDensity.current) { 24.dp.toPx() }
     graphicsLayer {
-        if (wake.style == WakeStyle.Bounce || wake.style == WakeStyle.Off) return@graphicsLayer
+        if (wake.style == WakeStyle.Off) return@graphicsLayer
         val waiting = wake.armed || wake.generation != started.intValue
         val p = if (waiting) 0f else progress.value
         if (p == 1f) return@graphicsLayer
         val inverse = 1f - p
-        alpha = (p * 2.5f).coerceIn(0f, 1f)
+        alpha = (p * 2.2f).coerceIn(0f, 1f)
         when (wake.style) {
-            WakeStyle.Off, WakeStyle.Bounce -> Unit
+            WakeStyle.Off -> Unit
+            WakeStyle.Bounce -> {
+                val s = 0.76f + 0.24f * p
+                scaleX = s
+                scaleY = s
+                translationY = inverse * pluffyLift
+            }
             WakeStyle.Pop -> {
                 val s = 0.4f + 0.6f * p
                 scaleX = s
@@ -112,12 +116,12 @@ fun Modifier.wakePop(seed: Int): Modifier = composed {
     }
 }
 
-/** How much larger than normal the screen starts out in the Bounce entrance. */
-private const val WAKE_ZOOM = 1.7f
+/** A restrained camera push; the individual icons/widgets provide the staggered motion. */
+private const val WAKE_ZOOM = 0.10f
 
 /**
- * The iOS 27 entrance after unlock: the whole home screen starts zoomed in and shrinks to its
- * normal size with a springy overshoot, so it looks puffed up for a moment. Hidden until then.
+ * Keeps the Home surface alive under the lock screen, then gently settles it on unlock.
+ * Deliberately never fades the entire launcher to zero: that caused the blank-frame gap.
  */
 fun Modifier.wakeZoom(): Modifier = composed {
     val wake = LocalWake.current
@@ -125,9 +129,9 @@ fun Modifier.wakeZoom(): Modifier = composed {
     val started = remember { mutableIntStateOf(0) }
     LaunchedEffect(wake.generation) {
         if (wake.generation == 0) return@LaunchedEffect
-        started.intValue = wake.generation
         if (wake.style != WakeStyle.Bounce) return@LaunchedEffect
         progress.snapTo(0f)
+        started.intValue = wake.generation
         progress.animateTo(1f, Motion.wakeZoom())
     }
     graphicsLayer {
@@ -138,6 +142,6 @@ fun Modifier.wakeZoom(): Modifier = composed {
         val s = 1f + (1f - p) * WAKE_ZOOM
         scaleX = s
         scaleY = s
-        alpha = (p * 3f).coerceIn(0f, 1f)
+        alpha = 1f
     }
 }
