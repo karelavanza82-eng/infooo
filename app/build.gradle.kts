@@ -23,7 +23,7 @@ android {
         if (releaseKeystore != null) {
             create("release") {
                 storeFile = file(releaseKeystore)
-                storeType = "JKS"
+                storeType = "PKCS12"
                 storePassword = providers.environmentVariable("HOISLY_KEYSTORE_PASSWORD").get()
                 keyAlias = providers.environmentVariable("HOISLY_KEY_ALIAS").get()
                 keyPassword = providers.environmentVariable("HOISLY_KEY_PASSWORD").get()
