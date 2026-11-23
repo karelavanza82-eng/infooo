@@ -1,3 +1,4 @@
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose")
@@ -15,13 +16,14 @@ android {
         versionName = "0.3.0"
     }
 
-    // CI signs releases with the project keystore passed through the environment; local
-    // release builds without it fall back to the debug key.
+    // CI signs releases with the project keystore passed through the environment.
     val releaseKeystore = providers.environmentVariable("HOISLY_KEYSTORE_FILE").orNull
+
     signingConfigs {
         if (releaseKeystore != null) {
             create("release") {
                 storeFile = file(releaseKeystore)
+                storeType = "JKS"
                 storePassword = providers.environmentVariable("HOISLY_KEYSTORE_PASSWORD").get()
                 keyAlias = providers.environmentVariable("HOISLY_KEY_ALIAS").get()
                 keyPassword = providers.environmentVariable("HOISLY_KEY_PASSWORD").get()
@@ -34,27 +36,33 @@ android {
             isDebuggable = true
             isMinifyEnabled = false
             isShrinkResources = false
-            // Skip PNG recompression during the edit/build/install cycle.
             isCrunchPngs = false
         }
+
         release {
             isDebuggable = false
             isMinifyEnabled = true
             isShrinkResources = true
             isCrunchPngs = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.getByName(if (releaseKeystore != null) "release" else "debug")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            signingConfig = signingConfigs.getByName(
+                if (releaseKeystore != null) "release" else "debug"
+            )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
     buildFeatures {
         compose = true
     }
-    // The in-app language picker switches languages at runtime, so an app bundle must keep
-    // every translation in the base APK instead of per-language splits.
+
     bundle {
         language {
             enableSplit = false
@@ -75,7 +83,6 @@ dependencies {
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-core")
-    // Only a few dozen glyphs are used; R8 strips the rest in release builds.
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.ui:ui-tooling-preview")
     debugImplementation("androidx.compose.ui:ui-tooling")
@@ -87,6 +94,5 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
 
     testImplementation("junit:junit:4.13.2")
-    // Android's org.json is a stub in JVM tests; the real one tests layout/weather JSON parsing.
     testImplementation("org.json:json:20260814")
 }
