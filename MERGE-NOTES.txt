@@ -1,0 +1,6 @@
+HOISLY + DYNAMIC ISLAND SOURCE MERGE
+
+Primary Android project: this folder (infooo-main).
+Hoisly remains the applicationId com.hoisly.launcher. Dynamic Island source files were copied under their original com.akira.island packages into the same app module; Dynamic Island resources, AIDL, assets, manifest components and dependencies were merged. The old Hoisly IslandWindowService and IslandListenerService registrations were removed from the manifest. The Hoisly Settings page now opens the imported Dynamic Island settings screen. The imported app's separate launcher alias was intentionally omitted to avoid a second launcher icon.
+
+IMPORTANT: This is a source-level merge, not a verified APK build. The source projects use different Android Gradle Plugin/Kotlin/Compose generations. Run a Gradle build and resolve any compatibility/compiler issues before installing. Some legacy Hoisly Island UI/source files remain in the project for existing badge/notification consumers, but their two old overlay/listener services are no longer registered. Dynamic Island permissions and accessibility/notification access must be enabled by the user in Android settings.
