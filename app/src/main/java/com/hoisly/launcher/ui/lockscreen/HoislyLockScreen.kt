@@ -1,5 +1,6 @@
 package com.hoisly.launcher.ui.lockscreen
 
+import android.app.KeyguardManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -94,6 +95,8 @@ fun HoislyLockScreen(onDismiss: () -> Unit, onCamera: () -> Unit = {}) {
     val prefs = LocalSettingsState.current.panels
     val wallpaper = LocalGlassSource.current?.sharp?.takeIf { prefs.lockWallpaper }
     val torch = rememberTorch()
+    // On a device with a PIN, pattern or password the cards never show message text.
+    val secureDevice = remember { context.getSystemService(KeyguardManager::class.java)?.isDeviceSecure == true }
     val scope = rememberCoroutineScope()
     val offset = remember { Animatable(0f) }
     var heightPx by remember { mutableFloatStateOf(1f) }
@@ -166,7 +169,7 @@ fun HoislyLockScreen(onDismiss: () -> Unit, onCamera: () -> Unit = {}) {
                     .padding(start = 16.dp, end = 16.dp, bottom = 168.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                cards.forEach { LockNotificationCard(it, hideContent = prefs.hideNotificationContent) }
+                cards.forEach { LockNotificationCard(it, hideContent = prefs.hideNotificationContent || secureDevice) }
             }
         }
         Row(

@@ -29,6 +29,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -91,16 +92,27 @@ class MainActivity : ComponentActivity(), LauncherActions {
     private var screenReceiverRegistered = false
     private val screenStateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == Intent.ACTION_SCREEN_OFF) {
-                screenWasTurnedOff = true
-                // Mark the launcher as allowed above the swipe keyguard before the display wakes.
-                // The system keyguard remains responsible for secure PIN/pattern/biometric auth.
-                if (vm.settings.state.value.showLockScreenAfterSleep) {
-                    setShowWhenLocked(true)
-                }
-            }
+            if (intent?.action == Intent.ACTION_SCREEN_OFF && homeWasVisible) armLockScreen()
         }
     }
+
+    /** True while the home screen is the visible app; the lock screen is only armed from here. */
+    private var homeWasVisible = false
+
+    /**
+     * Called when the display turns off while the home screen was showing. Marks the activity as
+     * allowed above the keyguard and puts the Hoisly surface up right away, so it is already
+     * there when the display wakes. The system keyguard stays responsible for PIN, pattern and
+     * biometrics: swiping up asks Android to dismiss it.
+     */
+    private fun armLockScreen() {
+        screenWasTurnedOff = true
+        if (vm.settings.state.value.showLockScreenAfterSleep) {
+            setShowWhenLocked(true)
+            showWakeLockScreen = true
+        }
+    }
+
     private val launcherApps: LauncherApps by lazy { getSystemService(LauncherApps::class.java) }
 
     /** Photo widget waiting for the picker result; kept across process death. */
@@ -143,6 +155,10 @@ class MainActivity : ComponentActivity(), LauncherActions {
         )
         super.onCreate(savedInstanceState)
         pendingPhotoWidget = savedInstanceState?.getString(KEY_PENDING_PHOTO)
+        // Registered for the whole life of the activity: the display-off broadcast and onStop
+        // arrive almost together, so a receiver tied to start/stop misses it.
+        ContextCompat.registerReceiver(this, screenStateReceiver, IntentFilter(Intent.ACTION_SCREEN_OFF), ContextCompat.RECEIVER_NOT_EXPORTED)
+        screenReceiverRegistered = true
         pendingWidget = savedInstanceState?.let(PendingAppWidget::restore)
 
         val iconSizePx = (Tokens.IconSize.value * resources.displayMetrics.density).roundToInt()
@@ -281,21 +297,16 @@ class MainActivity : ComponentActivity(), LauncherActions {
 
     override fun onStart() {
         super.onStart()
-        if (!screenReceiverRegistered) {
-            val filter = IntentFilter(Intent.ACTION_SCREEN_OFF)
-            ContextCompat.registerReceiver(this, screenStateReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
-            screenReceiverRegistered = true
-        }
+        homeWasVisible = true
         // Widgets of other apps only update while their host listens.
         vm.appWidgets.startListening()
     }
 
     override fun onStop() {
         super.onStop()
-        if (screenReceiverRegistered) {
-            runCatching { unregisterReceiver(screenStateReceiver) }
-            screenReceiverRegistered = false
-        }
+        // The display went off first and stopped us: the broadcast may not have arrived yet.
+        if (homeWasVisible && getSystemService(PowerManager::class.java)?.isInteractive == false) armLockScreen()
+        homeWasVisible = false
         vm.appWidgets.stopListening()
         leftHome = true
         homeIntents.stop()
@@ -337,6 +348,10 @@ class MainActivity : ComponentActivity(), LauncherActions {
 
     override fun onDestroy() {
         WallpaperManager.getInstance(this).removeOnColorsChangedListener(wallpaperListener)
+        if (screenReceiverRegistered) {
+            runCatching { unregisterReceiver(screenStateReceiver) }
+            screenReceiverRegistered = false
+        }
         super.onDestroy()
     }
 
