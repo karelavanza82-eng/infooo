@@ -64,6 +64,7 @@ android {
     }
     buildFeatures {
         compose = true
+        aidl = true
     }
     // The in-app language picker switches languages at runtime, so an app bundle must keep
     // every translation in the base APK instead of per-language splits.
