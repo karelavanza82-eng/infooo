@@ -38,13 +38,14 @@ class HomeBehaviorPrefsTest {
         assertEquals(HomeBehavior(), prefs.readHomeBehavior())
     }
 
-    @Test fun wallpaperParallaxPersists() {
+    @Test fun wakeSettingsPersistAndUnknownStyleFallsBackToBounce() {
         val prefs = preferences(mutableMapOf())
-        val expected = HomeBehavior(wallpaperParallax = false)
+        val expected = HomeBehavior(wakeStyle = WakeStyle.Side, wallpaperParallax = false)
         val editor = prefs.edit()
         editor.putHomeBehavior(expected)
         editor.apply()
         assertEquals(expected, prefs.readHomeBehavior())
+        assertEquals(WakeStyle.Bounce, preferences(mutableMapOf("home_wake_style" to "future")).readHomeBehavior().wakeStyle)
         assertTrue(HomeBehavior().wallpaperParallax)
     }
 

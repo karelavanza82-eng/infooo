@@ -53,8 +53,6 @@ data class SettingsState(
     val openCloseAnimation: Boolean = true,
     /** Icons zoom into place when returning to the home screen from an app. */
     val resumeAnimation: Boolean = true,
-    /** Show Hoisly's decorative launcher lock screen when returning after the display was off. */
-    val showLockScreenAfterSleep: Boolean = true,
 
     /** Opacity of the white tint laid over glass surfaces, see [MAX_GLASS_TINT]. */
     val glassTint: Float = DEFAULT_GLASS_TINT,

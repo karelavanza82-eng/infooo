@@ -36,6 +36,7 @@ internal fun SharedPreferences.readHomeBehavior(): HomeBehavior {
         returnPolicy = HomeReturn.entries.firstOrNull { it.name == getString("home_return", null) } ?: HomeReturn.Stay,
         showToday = getBoolean("home_today", true),
         haptics = getBoolean("home_haptics", true),
+        wakeStyle = WakeStyle.entries.firstOrNull { it.name == getString("home_wake_style", null) } ?: WakeStyle.Bounce,
         wallpaperParallax = getBoolean("home_wallpaper_parallax", true),
     ).sanitized()
 }
@@ -46,5 +47,6 @@ internal fun SharedPreferences.Editor.putHomeBehavior(value: HomeBehavior) {
     putString("home_return", value.returnPolicy.name)
     putBoolean("home_today", value.showToday)
     putBoolean("home_haptics", value.haptics)
+    putString("home_wake_style", value.wakeStyle.name)
     putBoolean("home_wallpaper_parallax", value.wallpaperParallax)
 }

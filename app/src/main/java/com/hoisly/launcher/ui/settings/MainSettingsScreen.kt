@@ -1,7 +1,5 @@
 package com.hoisly.launcher.ui.settings
 
-import android.content.Intent
-
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ViewList
 import androidx.compose.material.icons.rounded.Animation
@@ -15,8 +13,6 @@ import androidx.compose.material.icons.rounded.Gavel
 import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Info
-import androidx.compose.material.icons.rounded.Backup
-import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.SystemUpdateAlt
@@ -41,7 +37,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -61,7 +56,6 @@ fun MainSettingsScreen(vm: SettingsViewModel, actions: SettingsActions, navigate
     val settings by vm.settings.state.collectAsStateWithLifecycle()
     val layout by vm.layout.collectAsStateWithLifecycle()
     val locale = LocalConfiguration.current.locales[0]
-    val context = LocalContext.current
 
     val unfinished = finishSetupItems(actions.setupState(hasImportSources = null)).size
 
@@ -75,10 +69,8 @@ fun MainSettingsScreen(vm: SettingsViewModel, actions: SettingsActions, navigate
         item {
             SettingsCard {
                 NavRow(Icons.Rounded.Settings, stringResource(R.string.row_general), onClick = { navigate(SettingsRoute.General) })
-                NavRow(Icons.Rounded.ViewCarousel, "Dynamic Island", onClick = { context.startActivity(Intent().setClassName(context, "com.akira.island.ui.MainActivity")) }, tileColor = SettingsStyle.Tile.Purple)
+                NavRow(Icons.Rounded.ViewCarousel, stringResource(R.string.island_title), onClick = { navigate(SettingsRoute.Island) }, tileColor = SettingsStyle.Tile.Purple)
                 NavRow(Icons.Rounded.Notifications, stringResource(R.string.panels_title), onClick = { navigate(SettingsRoute.Panels) }, tileColor = SettingsStyle.Tile.Red)
-                NavRow(Icons.Rounded.Lock, stringResource(R.string.lock_title), onClick = { navigate(SettingsRoute.LockScreen) }, tileColor = SettingsStyle.Tile.Indigo)
-                NavRow(Icons.Rounded.Backup, stringResource(R.string.backup_title), onClick = { navigate(SettingsRoute.Backup) }, tileColor = SettingsStyle.Tile.Green)
                 NavRow(
                     Icons.Rounded.Translate,
                     stringResource(R.string.row_language),

@@ -6,6 +6,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -25,6 +26,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.awaitCancellation
+import com.hoisly.launcher.ui.theme.Motion
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
@@ -100,12 +102,14 @@ private const val SHIFT_Y = 0.04f
 
 /**
  * The wallpaper, drawn by the launcher itself so it can move: it slides against the tilt of
- * the phone while the home screen is started. Draws nothing without a readable wallpaper or when [enabled] is
+ * the phone while the home screen is started, and settles from a closer zoom each time the
+ * icons fly in after unlock. Draws nothing without a readable wallpaper or when [enabled] is
  * false; the system wallpaper behind the window then stays as it is.
  */
 @Composable
 internal fun ParallaxWallpaper(wallpaper: ImageBitmap?, enabled: Boolean, modifier: Modifier = Modifier) {
     val context = LocalContext.current
+    val wake = LocalWake.current
     val state = remember { ParallaxState() }
     val owner = context as? LifecycleOwner
     val active = enabled && wallpaper != null
@@ -124,12 +128,22 @@ internal fun ParallaxWallpaper(wallpaper: ImageBitmap?, enabled: Boolean, modifi
         }
     }
 
+    // 1 right after the phone was unlocked (zoomed in), settling to 0 with a soft bounce.
+    val zoom = remember { Animatable(0f) }
+    // Zoomed in while the display is off, so there is no jump when the entrance starts.
+    LaunchedEffect(wake.armed) { if (wake.armed) zoom.snapTo(1f) }
+    LaunchedEffect(wake.generation) {
+        if (wake.generation == 0) return@LaunchedEffect
+        zoom.snapTo(1f)
+        zoom.animateTo(0f, Motion.wakeZoom())
+    }
+
     if (!active || wallpaper == null) return
     Spacer(
         modifier
             .fillMaxSize()
             .graphicsLayer {
-                val scale = BASE_SCALE.coerceAtLeast(1.12f)
+                val scale = (BASE_SCALE + 0.35f * zoom.value).coerceAtLeast(1.12f)
                 scaleX = scale
                 scaleY = scale
                 translationX = state.x * size.width * SHIFT_X

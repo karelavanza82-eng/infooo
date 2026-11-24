@@ -26,6 +26,7 @@ import com.hoisly.launcher.settings.HomeAction
 import com.hoisly.launcher.settings.HomeBehavior
 import com.hoisly.launcher.settings.HomeBinding
 import com.hoisly.launcher.settings.HomeReturn
+import com.hoisly.launcher.settings.WakeStyle
 import com.hoisly.launcher.ui.icon.AppIconImage
 import com.hoisly.launcher.ui.search.search
 
@@ -105,6 +106,25 @@ fun HomeBehaviorScreen(vm: SettingsViewModel, onBack: () -> Unit) {
                 }
             }
         }
+        item { SectionHeader(stringResource(R.string.home_section_wake)) }
+        item {
+            SettingsCard {
+                WakeStyle.entries.forEach { style ->
+                    CheckRow(
+                        stringResource(
+                            when (style) {
+                                WakeStyle.Off -> R.string.wake_style_off
+                                WakeStyle.Bounce -> R.string.wake_style_bounce
+                                WakeStyle.Pop -> R.string.wake_style_pop
+                                WakeStyle.Top -> R.string.wake_style_top
+                                WakeStyle.Side -> R.string.wake_style_side
+                            },
+                        ),
+                        behavior.wakeStyle == style,
+                    ) { vm.settings.update { it.copy(homeBehavior = it.homeBehavior.copy(wakeStyle = style)) } }
+                }
+            }
+        }
         item {
             SettingsCard {
                 SwitchRow(stringResource(R.string.home_wallpaper_parallax), behavior.wallpaperParallax, onCheckedChange = { value ->
@@ -122,19 +142,6 @@ fun HomeBehaviorScreen(vm: SettingsViewModel, onBack: () -> Unit) {
                         vm.settings.update { it.copy(homeBehavior = it.homeBehavior.copy(mainPage = page)) }
                     }
                 }
-            }
-        }
-        item { SectionHeader(stringResource(R.string.lock_screen_title)) }
-        item {
-            SettingsCard {
-                SwitchRow(
-                    stringResource(R.string.home_lock_on_wake),
-                    settings.showLockScreenAfterSleep,
-                    onCheckedChange = { enabled ->
-                        vm.settings.update { it.copy(showLockScreenAfterSleep = enabled) }
-                    },
-                    description = stringResource(R.string.home_lock_on_wake_footer),
-                )
             }
         }
         item { SectionHeader(stringResource(R.string.home_section_pages)) }

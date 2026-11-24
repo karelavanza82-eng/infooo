@@ -12,7 +12,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 /** Top-level sheets that slide in from the top edge. */
-enum class Panel { Notifications, Control }
+enum class Panel { Notifications }
 
 /**
  * A 0..1 value that follows the finger while dragged and settles with the shared sheet spring,
@@ -46,7 +46,7 @@ internal class SpringValue(private val scope: CoroutineScope, initial: Float) {
 }
 
 /**
- * State of the top-edge panels (Notification Center, Control Center). One panel is
+ * State of the Notification Center. One panel is
  * open at a time; [fraction] is how far it is pulled out (1 = fully open). [heightPx] is set by
  * the host so a drag of N pixels moves the panel by N pixels.
  */

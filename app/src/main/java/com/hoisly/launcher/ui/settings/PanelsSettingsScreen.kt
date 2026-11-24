@@ -23,13 +23,6 @@ fun PanelsSettingsScreen(vm: SettingsViewModel, actions: SettingsActions, onBack
     SettingsPage(stringResource(R.string.panels_title), onBack) {
         item {
             SettingsCard {
-                SwitchRow(stringResource(R.string.control_center_title), panels.controlCenter, { value -> save { it.copy(controlCenter = value) } })
-            }
-            SectionFooter(stringResource(R.string.panels_control_footer))
-        }
-        item { SectionGap() }
-        item {
-            SettingsCard {
                 SwitchRow(stringResource(R.string.notification_center_title), panels.notificationCenter, { value ->
                     save { it.copy(notificationCenter = value) }
                     if (value) actions.reconnectIsland()

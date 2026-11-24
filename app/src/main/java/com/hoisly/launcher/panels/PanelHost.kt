@@ -34,7 +34,6 @@ import com.hoisly.launcher.panels.notifications.CenterNotification
 import com.hoisly.launcher.panels.notifications.NotificationCenterFeed
 import com.hoisly.launcher.panels.notifications.NotificationCenterPanel
 import com.hoisly.launcher.settings.LocalSettingsState
-import com.hoisly.launcher.panels.control.ControlCenterPanel
 import com.hoisly.launcher.panels.control.startQuietly
 
 /** Height of the touch strip under the status bar that starts a panel drag. */
@@ -65,7 +64,7 @@ internal fun PanelHost(controller: PanelController, vm: LauncherViewModel) {
         controller.heightPx = it.height.toFloat()
         controller.widthPx = it.width.toFloat()
     }) {
-        if (stripEnabled && (prefs.notificationCenter || prefs.controlCenter)) {
+        if (stripEnabled && prefs.notificationCenter) {
             val pending = remember { PendingPanel() }
             Box(
                 Modifier
@@ -74,9 +73,9 @@ internal fun PanelHost(controller: PanelController, vm: LauncherViewModel) {
                     .fillMaxWidth()
                     .height(EdgeStripHeight)
                     .verticalPanelDrag(
-                        accepts = { touch ->
-                            pending.panel = panelForEdgeTouch(touch.x, controller.widthPx, prefs.controlCenter, prefs.notificationCenter)
-                            pending.panel != null
+                        accepts = {
+                            pending.panel = Panel.Notifications
+                            true
                         },
                         onStart = { pending.panel?.let(controller::beginDrag) },
                         onDrag = controller::drag,
@@ -110,7 +109,6 @@ internal fun PanelHost(controller: PanelController, vm: LauncherViewModel) {
                     .windowInsetsPadding(WindowInsets.systemBarsIgnoringVisibility),
             ) {
                 when (panel) {
-                    Panel.Control -> ControlCenterPanel(onClose = controller::close)
                     Panel.Notifications -> NotificationCenterPanel(
                         notifications = notifications,
                         hideContent = prefs.hideNotificationContent,
