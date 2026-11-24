@@ -16,20 +16,3 @@ Use the included GitHub Actions workflows or run ./gradlew :app:assembleDebug in
 
 Validation note:
 The source changes were inspected and the ZIP archive integrity was checked. A Gradle build was not run in this environment, so run GitHub Actions and verify compilation before installing the APK.
-
-
----- PATTERN LOCK SCREEN (LockDroid-style) ----
-
-The previous swipe-only lock screen (ui/lockscreen/HoislyLockScreen.kt) was removed and replaced by:
-- ui/lockscreen/PatternLockScreen.kt  - new lock screen: clock, battery, notification cards, flashlight/camera and a 3x3 pattern pad.
-- ui/lockscreen/PatternPad.kt         - Compose port of LockDroid's swipe lock view (dots, line following the finger, normal/warning/valid colours).
-- ui/lockscreen/PatternLogic.kt       - hit testing, pattern validation, salted SHA-256 hashing, wrong-attempt lockout (5 tries -> 30 s).
-- ui/settings/PatternSetupDialog.kt   - draw the pattern twice to set it; Lock Screen settings has Set / Change / Remove Pattern.
-
-Behaviour:
-- With a pattern set, the pad must be drawn correctly before Android's keyguard dismiss is requested. Only a salted hash is stored (PanelPreferences.lockPattern).
-- Without a pattern, swipe up unlocks exactly as before.
-- This is still an app-level screen above Android's keyguard: it does not replace Android's PIN/pattern/biometrics, and the system keyguard is still dismissed through KeyguardManager.
-
-LockDroid (iOS/Theos tweak, Objective-C) cannot run on Android, so its swipe-lock view was ported, not copied.
-Not built here: no Android SDK in the environment. Run ./gradlew :app:testDebugUnitTest :app:assembleDebug (or GitHub Actions) to verify.

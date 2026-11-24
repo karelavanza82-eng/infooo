@@ -509,15 +509,4 @@
     <string name="backup_confirm_title">Restore backup?</string>
     <string name="backup_confirm_body">Your current settings and home screen layout will be replaced, and Hoisly will restart.</string>
     <string name="backup_restore_action">Restore</string>
-    <string name="lock_pattern_title">ロック解除パターン</string>
-    <string name="lock_pattern_set">パターンを設定</string>
-    <string name="lock_pattern_change">パターンを変更</string>
-    <string name="lock_pattern_remove">パターンを削除</string>
-    <string name="lock_pattern_draw">ロック解除パターンを描いてください</string>
-    <string name="lock_pattern_confirm">確認のためもう一度描いてください</string>
-    <string name="lock_pattern_short">4つ以上の点をつないでください</string>
-    <string name="lock_pattern_mismatch">パターンが一致しません。もう一度お試しください</string>
-    <string name="lock_pattern_unlock">パターンを描いてロック解除</string>
-    <string name="lock_pattern_wrong">パターンが違います</string>
-    <string name="lock_pattern_locked">試行回数が多すぎます。%1$d秒後にお試しください</string>
 </resources>

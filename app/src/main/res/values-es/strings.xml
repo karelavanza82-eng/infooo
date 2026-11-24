@@ -219,8 +219,6 @@
     <string name="onboarding_appearance_body">Cambia todos los iconos de tu pantalla de inicio.</string>
     <string name="onboarding_get_started">Empezar</string>
     <string name="finish_setup_title">Finalizar configuración</string>
-
-    <!-- Settings: screen grid, icon sizes by area, layout lock -->
     <string name="grid_columns">Columnas</string>
     <string name="grid_rows">Filas</string>
     <string name="grid_section_margins">Márgenes</string>
@@ -247,8 +245,6 @@
     <string name="home_section_layout">Disposición</string>
     <string name="layout_lock">Bloquear la disposición de inicio</string>
     <string name="import_locked">La disposición de la pantalla de inicio está bloqueada. Desbloquéala para importar.</string>
-
-    <!-- App Library customization -->
     <string name="library_pinned">Fijadas</string>
     <string name="library_all_apps">Todas las apps</string>
     <string name="library_view_switch">Vista: %1$s</string>
@@ -287,7 +283,6 @@
         <item quantity="many">%d apps</item>
         <item quantity="other">%d apps</item>
     </plurals>
-
     <string name="gestures_home">Gestures and Home</string>
     <string name="gesture_assignments">Gestures</string>
     <string name="gesture_home_behavior">Returning to Home</string>
@@ -355,7 +350,6 @@
     <string name="island_top_offset">Desplazamiento vertical</string>
     <string name="island_blur_footer">El desenfoque funciona donde Android lo permite: no en ahorro de batería ni con el desenfoque de ventanas desactivado.</string>
     <string name="island_access_unavailable">Esta pantalla de acceso no está disponible</string>
-    <!-- Settings: folders -->
     <string name="folders_panel">Panel de carpeta</string>
     <string name="folders_width">Ancho</string>
     <string name="folders_height">Alto</string>
@@ -377,89 +371,48 @@
         <item quantity="many">%1$s, %2$d notificaciones</item>
         <item quantity="other">%1$s, %2$d notificaciones</item>
     </plurals>
-
-    <!-- English fallback entries; localize these strings when translations are available. -->
     <string name="control_center_title">Control Center</string>
-        
     <string name="notification_center_title">Notification Center</string>
-        
     <string name="lock_screen_title">Lock Screen</string>
-        
     <string name="lock_screen_unlock">Unlock</string>
-        
     <string name="control_wifi">Wi-Fi</string>
-        
     <string name="control_bluetooth">Bluetooth</string>
-        
     <string name="control_airplane">Airplane Mode</string>
-        
     <string name="control_flashlight">Flashlight</string>
-        
     <string name="control_rotation_lock">Rotation Lock</string>
-        
     <string name="control_focus">Focus</string>
-        
     <string name="control_brightness">Brightness</string>
-        
     <string name="control_volume">Volume</string>
-        
     <string name="control_calculator">Calculator</string>
-        
     <string name="control_timer">Timer</string>
-        
     <string name="control_camera">Camera</string>
-        
     <string name="control_settings">Settings</string>
-        
     <string name="control_on">On</string>
-        
     <string name="control_off">Off</string>
-        
     <string name="control_need_write_settings">Allow Hoisly to modify system settings, then try again</string>
-        
     <string name="control_need_focus_access">Allow Do Not Disturb access for Hoisly, then try again</string>
-        
     <string name="control_unavailable">Not available on this device</string>
-        
     <string name="control_flashlight_unavailable">This device has no flashlight</string>
-        
     <string name="control_media_idle">Not Playing</string>
-        
     <string name="control_media_allow">Allow notification access to control music</string>
-        
     <string name="control_play">Play</string>
-        
     <string name="control_pause">Pause</string>
-        
     <string name="control_next">Next</string>
-        
     <string name="control_previous">Previous</string>
-        
     <string name="notification_clear_all">Clear All</string>
-        
     <string name="notification_allow_access">Allow Notification Access</string>
-        
     <string name="notification_empty">No Notifications</string>
-        
     <string name="notification_show_less">Show Less</string>
-        
     <string name="notification_hidden_content">Notification</string>
-        
     <string name="panels_title">Control &amp; Notifications</string>
-        
     <string name="panels_hide_content">Hide Content</string>
-        
     <string name="panels_notification_access">Notification Access</string>
-        
     <string name="panels_control_footer">Drag down from the top-right corner, just under the status bar.</string>
-        
     <string name="panels_notifications_footer">Drag down from the top-left. Titles and text are read into memory only to draw the cards; nothing is stored or sent.</string>
-        
     <plurals name="notification_more">
-            <item quantity="one">%d more notification</item>
-            <item quantity="other">%d more notifications</item>
-        </plurals>
-    
+        <item quantity="one">%d more notification</item>
+        <item quantity="other">%d more notifications</item>
+    </plurals>
     <string name="home_lock_on_wake">Show Lock Screen after sleep</string>
     <string name="home_lock_on_wake_footer">When the display was off, the launcher shows its own Lock Screen first. Swiping it away makes the icons pop in. It adds no security: the system lock screen is separate.</string>
     <string name="home_wallpaper_parallax">Moving wallpaper</string>
@@ -516,15 +469,8 @@
     <string name="backup_confirm_title">Restore backup?</string>
     <string name="backup_confirm_body">Your current settings and home screen layout will be replaced, and Hoisly will restart.</string>
     <string name="backup_restore_action">Restore</string>
-    <string name="lock_pattern_title">Patrón de desbloqueo</string>
-    <string name="lock_pattern_set">Establecer patrón</string>
-    <string name="lock_pattern_change">Cambiar patrón</string>
-    <string name="lock_pattern_remove">Eliminar patrón</string>
-    <string name="lock_pattern_draw">Dibuja un patrón de desbloqueo</string>
-    <string name="lock_pattern_confirm">Dibuja el patrón otra vez para confirmar</string>
-    <string name="lock_pattern_short">Une al menos 4 puntos</string>
-    <string name="lock_pattern_mismatch">Los patrones no coinciden. Inténtalo de nuevo</string>
-    <string name="lock_pattern_unlock">Dibuja tu patrón para desbloquear</string>
-    <string name="lock_pattern_wrong">Patrón incorrecto</string>
-    <string name="lock_pattern_locked">Demasiados intentos. Inténtalo de nuevo en %1$d s</string>
+    <string name="app_name">Dynamic Island</string>
+    <string name="a11y_label">Dynamic Island</string>
+    <string name="tile_label">Isla</string>
+    <string name="a11y_desc">Muestra una cápsula al estilo Dynamic Island sobre la cámara: música, temporizadores, descargas, linterna y eventos del sistema. El servicio identifica la aplicación abierta para ocultar el reproductor y mostrar pagos. Solo lee las pantallas de las aplicaciones de navegación, Reloj y pagos mientras están abiertas: distancia al siguiente giro, calle, llegada y dirección en navegación; temporizador y cronómetro en Reloj; pantalla de pago e importe para mostrar «Acerca al terminal» y después «Pagado». Los datos leídos permanecen en el teléfono. Para buscar la letra se envían el título, el artista, el álbum y la duración de la canción. Si se activa el tiempo, la ciudad elegida y sus coordenadas se envían a Open-Meteo, sin pedir permiso de ubicación. Para el gesto opcional de volver arriba, el servicio comprueba los elementos desplazables de la aplicación abierta sin leer su texto.</string>
 </resources>

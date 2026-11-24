@@ -1,21 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="search">Поиск</string>
     <string name="glass_prompt_title">Включить эффект стекла</string>
     <string name="glass_prompt_body">Чтобы размывать обои под доком, лаунчеру нужен доступ ко всем файлам. Только так Android отдаёт картинку обоев.</string>
-
     <string name="menu_remove_app">Удалить приложение</string>
     <string name="menu_app_info">О приложении</string>
     <string name="menu_add_to_dock">Добавить в Dock</string>
     <string name="menu_remove_from_dock">Убрать из Dock</string>
     <string name="menu_dock_full">Dock заполнен</string>
     <string name="menu_hide_app">Скрыть приложение</string>
-
     <string name="action_back">Назад</string>
     <string name="action_done">Готово</string>
     <string name="action_reset">Сбросить</string>
     <string name="action_cancel">Отмена</string>
     <string name="action_save">Сохранить</string>
-
     <string name="settings_title">Настройки</string>
     <string name="default_home_select">Сделать рабочим столом по умолчанию</string>
     <string name="default_home_active">Hoisly — ваш рабочий стол</string>
@@ -30,25 +28,21 @@
     <string name="row_dynamic_color">Динамический цвет</string>
     <string name="row_version">Версия</string>
     <string name="row_license">Лицензия</string>
-
     <string name="general_hide_navigation">Скрыть навигацию</string>
     <string name="general_blur">Эффект размытия</string>
     <string name="general_custom_text_size">Свой размер текста</string>
     <string name="general_wallpaper_access">Разрешить доступ к обоям</string>
     <string name="general_wallpaper_access_body">Для размытия нужно прочитать обои. Android разрешает это только с доступом ко всем файлам; Hoisly больше ничего не читает.</string>
-
     <string name="transition_section">Страницы рабочего стола</string>
     <string name="effect_default">Обычный</string>
     <string name="effect_rotation">Вращение</string>
     <string name="effect_flip">Переворот</string>
     <string name="effect_zoom_in">Приближение</string>
     <string name="effect_alpha">Прозрачность</string>
-
     <string name="animations_resume">Анимация возврата</string>
     <string name="animations_resume_description">Иконки плавно встают на место, когда вы возвращаетесь на рабочий стол.</string>
     <string name="animations_open_close">Анимация открытия приложений</string>
     <string name="animations_open_close_description">Приложение «вырастает» из своей иконки при запуске.</string>
-
     <string name="hidden_apps_description">Скрытые приложения пропадают с рабочего стола, но остаются установленными.</string>
     <string name="change_icon_description">Нажмите на приложение, чтобы выбрать картинку из галереи как его иконку.</string>
     <string name="change_name_description">Нажмите на приложение, чтобы изменить подпись под его иконкой.</string>
@@ -100,8 +94,6 @@
     <string name="search_show_less">Скрыть</string>
     <string name="search_hint">Поиск</string>
     <string name="search_web">Искать в интернете «%1$s»</string>
-
-    <!-- Interface settings -->
     <string name="row_glass">Стекло и размытие</string>
     <string name="row_icons">Иконки</string>
     <string name="row_home_screen">Рабочий стол и Dock</string>
@@ -209,8 +201,6 @@
     <string name="weather_current_location">Текущее местоположение</string>
     <string name="weather_search_city">Поиск города</string>
     <string name="weather_search_hint">Название города</string>
-
-    <!-- First-run setup (onboarding) -->
     <string name="onboarding_hello_description">Привет</string>
     <string name="onboarding_logo_description">Логотип Hoisly Launcher</string>
     <string name="onboarding_welcome_title">Добро пожаловать в %1$s</string>
@@ -230,8 +220,6 @@
     <string name="onboarding_appearance_body">Меняет все иконки на рабочем столе.</string>
     <string name="onboarding_get_started">Начать</string>
     <string name="finish_setup_title">Завершите настройку</string>
-
-    <!-- Settings: screen grid, icon sizes by area, layout lock -->
     <string name="grid_columns">Столбцы</string>
     <string name="grid_rows">Строки</string>
     <string name="grid_section_margins">Поля</string>
@@ -258,8 +246,6 @@
     <string name="home_section_layout">Раскладка</string>
     <string name="layout_lock">Заблокировать раскладку</string>
     <string name="import_locked">Раскладка рабочего стола заблокирована. Разблокируйте её, чтобы импортировать.</string>
-
-    <!-- App Library customization -->
     <string name="library_pinned">Закреплённые</string>
     <string name="library_all_apps">Все приложения</string>
     <string name="library_view_switch">Вид: %1$s</string>
@@ -299,7 +285,6 @@
         <item quantity="many">%d приложений</item>
         <item quantity="other">%d приложения</item>
     </plurals>
-
     <string name="gestures_home">Жесты и Home</string>
     <string name="gesture_assignments">Жесты</string>
     <string name="gesture_home_behavior">Возврат на домашний экран</string>
@@ -367,7 +352,6 @@
     <string name="island_top_offset">Сдвиг по вертикали</string>
     <string name="island_blur_footer">Размытие работает, где Android его разрешает: не в режиме энергосбережения и не при отключённом размытии окон.</string>
     <string name="island_access_unavailable">Экран доступа недоступен</string>
-    <!-- Settings: folders -->
     <string name="folders_panel">Панель папки</string>
     <string name="folders_width">Ширина</string>
     <string name="folders_height">Высота</string>
@@ -390,7 +374,6 @@
         <item quantity="many">%1$s, %2$d уведомлений</item>
         <item quantity="other">%1$s, %2$d уведомления</item>
     </plurals>
-    <!-- Control Center, Notification Center, Lock Screen -->
     <string name="control_center_title">Пункт управления</string>
     <string name="notification_center_title">Центр уведомлений</string>
     <string name="lock_screen_title">Экран блокировки</string>
@@ -491,15 +474,8 @@
     <string name="backup_confirm_title">Восстановить копию?</string>
     <string name="backup_confirm_body">Текущие настройки и раскладка будут заменены, Hoisly перезапустится.</string>
     <string name="backup_restore_action">Восстановить</string>
-    <string name="lock_pattern_title">Графический ключ</string>
-    <string name="lock_pattern_set">Задать ключ</string>
-    <string name="lock_pattern_change">Изменить ключ</string>
-    <string name="lock_pattern_remove">Удалить ключ</string>
-    <string name="lock_pattern_draw">Нарисуйте графический ключ</string>
-    <string name="lock_pattern_confirm">Повторите ключ для подтверждения</string>
-    <string name="lock_pattern_short">Соедините не менее 4 точек</string>
-    <string name="lock_pattern_mismatch">Ключи не совпадают. Попробуйте снова</string>
-    <string name="lock_pattern_unlock">Нарисуйте ключ, чтобы разблокировать</string>
-    <string name="lock_pattern_wrong">Неверный ключ</string>
-    <string name="lock_pattern_locked">Слишком много попыток. Повторите через %1$d с</string>
+    <string name="app_name">Динамический остров</string>
+    <string name="a11y_label">Динамический остров</string>
+    <string name="tile_label">Остров</string>
+    <string name="a11y_desc">Показывает капсулу в стиле Dynamic Island над камерой: музыку, таймеры, прогресс загрузок, фонарик и системные события. Служба узнаёт, какое приложение открыто, чтобы прятать плеер и показывать оплату. Экран читается только у навигаторов (2ГИС, Яндекс Навигатор, Карты и др.), приложения «Часы» и приложений оплаты, пока они открыты: у навигаторов — расстояние до манёвра, улица, время прибытия и направление стрелки, у «Часов» — время таймера и секундомера, у приложений оплаты (Mir Pay, T-Pay, Google Кошелёк и др.) — экран оплаты телефоном и сумма, чтобы показать «К терминалу», а потом «Оплачено». Прочитанное остаётся на телефоне. Для поиска текста отправляются название песни, исполнитель, альбом и длительность. При включённой погоде выбранный город и координаты передаются Open-Meteo. Определение шторки читает только системную панель уведомлений; контакты и шаги остаются на телефоне. Для выбранного жеста прокрутки наверх служба проверяет прокручиваемые элементы открытого приложения, не читая их текст.</string>
 </resources>

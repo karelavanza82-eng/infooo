@@ -512,15 +512,4 @@
     <string name="backup_confirm_title">Restore backup?</string>
     <string name="backup_confirm_body">Your current settings and home screen layout will be replaced, and Hoisly will restart.</string>
     <string name="backup_restore_action">Restore</string>
-    <string name="lock_pattern_title">Entsperrmuster</string>
-    <string name="lock_pattern_set">Muster festlegen</string>
-    <string name="lock_pattern_change">Muster ändern</string>
-    <string name="lock_pattern_remove">Muster entfernen</string>
-    <string name="lock_pattern_draw">Entsperrmuster zeichnen</string>
-    <string name="lock_pattern_confirm">Muster zur Bestätigung erneut zeichnen</string>
-    <string name="lock_pattern_short">Verbinde mindestens 4 Punkte</string>
-    <string name="lock_pattern_mismatch">Muster stimmen nicht überein. Versuche es erneut</string>
-    <string name="lock_pattern_unlock">Zeichne dein Muster zum Entsperren</string>
-    <string name="lock_pattern_wrong">Falsches Muster</string>
-    <string name="lock_pattern_locked">Zu viele Versuche. Versuche es in %1$d s erneut</string>
 </resources>

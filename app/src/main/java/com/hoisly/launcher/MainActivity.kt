@@ -68,7 +68,7 @@ import com.hoisly.launcher.ui.glass.isLiquidGlassReady
 import com.hoisly.launcher.ui.glass.resolveGlassMode
 import com.hoisly.launcher.ui.glass.LocalGlassStyle
 import com.hoisly.launcher.ui.home.HomeScreen
-import com.hoisly.launcher.ui.lockscreen.PatternLockScreen
+import com.hoisly.launcher.ui.lockscreen.HoislyLockScreen
 import com.hoisly.launcher.ui.home.LauncherActions
 import com.hoisly.launcher.ui.icon.BadgeSource
 import com.hoisly.launcher.ui.icon.IconLoader
@@ -174,7 +174,7 @@ class MainActivity : ComponentActivity(), LauncherActions {
                 androidx.compose.foundation.layout.Box {
                     HomeScreen(vm, actions = this@MainActivity)
                     if (showWakeLockScreen && settings.showLockScreenAfterSleep) {
-                        PatternLockScreen(onDismiss = { dismissHoislyLockScreen() }, onCamera = { openCameraFromLockScreen() })
+                        HoislyLockScreen(onDismiss = { dismissHoislyLockScreen() }, onCamera = { openCameraFromLockScreen() })
                     }
                 }
             }

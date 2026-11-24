@@ -513,15 +513,4 @@
     <string name="backup_confirm_title">Restore backup?</string>
     <string name="backup_confirm_body">Your current settings and home screen layout will be replaced, and Hoisly will restart.</string>
     <string name="backup_restore_action">Restore</string>
-    <string name="lock_pattern_title">Kilit açma deseni</string>
-    <string name="lock_pattern_set">Desen belirle</string>
-    <string name="lock_pattern_change">Deseni değiştir</string>
-    <string name="lock_pattern_remove">Deseni kaldır</string>
-    <string name="lock_pattern_draw">Bir kilit açma deseni çizin</string>
-    <string name="lock_pattern_confirm">Onaylamak için deseni tekrar çizin</string>
-    <string name="lock_pattern_short">En az 4 noktayı birleştirin</string>
-    <string name="lock_pattern_mismatch">Desenler eşleşmiyor. Tekrar deneyin</string>
-    <string name="lock_pattern_unlock">Kilidi açmak için deseninizi çizin</string>
-    <string name="lock_pattern_wrong">Yanlış desen</string>
-    <string name="lock_pattern_locked">Çok fazla deneme. %1$d sn sonra tekrar deneyin</string>
 </resources>

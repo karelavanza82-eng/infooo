@@ -218,8 +218,6 @@
     <string name="onboarding_appearance_body">Басты экрандағы барлық белгішелер өзгереді.</string>
     <string name="onboarding_get_started">Бастау</string>
     <string name="finish_setup_title">Баптауды аяқтау</string>
-
-    <!-- Settings: screen grid, icon sizes by area, layout lock -->
     <string name="grid_columns">Бағандар</string>
     <string name="grid_rows">Жолдар</string>
     <string name="grid_section_margins">Шеттер</string>
@@ -246,8 +244,6 @@
     <string name="home_section_layout">Орналасу</string>
     <string name="layout_lock">Басты экран орналасуын құлыптау</string>
     <string name="import_locked">Басты экран орналасуы құлыпталған. Импорттау үшін құлпын ашыңыз.</string>
-
-    <!-- App Library customization -->
     <string name="library_pinned">Бекітілгендер</string>
     <string name="library_all_apps">Барлық қолданбалар</string>
     <string name="library_view_switch">Көрініс: %1$s</string>
@@ -285,7 +281,6 @@
         <item quantity="one">%d қолданба</item>
         <item quantity="other">%d қолданба</item>
     </plurals>
-
     <string name="gestures_home">Gestures and Home</string>
     <string name="gesture_assignments">Gestures</string>
     <string name="gesture_home_behavior">Returning to Home</string>
@@ -353,7 +348,6 @@
     <string name="island_top_offset">Тік ығысу</string>
     <string name="island_blur_footer">Бұлдырату Android рұқсат еткенде жұмыс істейді: батареяны үнемдеу режимінде және терезе бұлдыратуы өшірілгенде емес.</string>
     <string name="island_access_unavailable">Рұқсаттар экраны қолжетімсіз</string>
-    <!-- Settings: folders -->
     <string name="folders_panel">Бума панелі</string>
     <string name="folders_width">Ені</string>
     <string name="folders_height">Биіктігі</string>
@@ -374,89 +368,48 @@
         <item quantity="one">%1$s, %2$d хабарландыру</item>
         <item quantity="other">%1$s, %2$d хабарландыру</item>
     </plurals>
-
-    <!-- English fallback entries; localize these strings when translations are available. -->
     <string name="control_center_title">Control Center</string>
-        
     <string name="notification_center_title">Notification Center</string>
-        
     <string name="lock_screen_title">Lock Screen</string>
-        
     <string name="lock_screen_unlock">Unlock</string>
-        
     <string name="control_wifi">Wi-Fi</string>
-        
     <string name="control_bluetooth">Bluetooth</string>
-        
     <string name="control_airplane">Airplane Mode</string>
-        
     <string name="control_flashlight">Flashlight</string>
-        
     <string name="control_rotation_lock">Rotation Lock</string>
-        
     <string name="control_focus">Focus</string>
-        
     <string name="control_brightness">Brightness</string>
-        
     <string name="control_volume">Volume</string>
-        
     <string name="control_calculator">Calculator</string>
-        
     <string name="control_timer">Timer</string>
-        
     <string name="control_camera">Camera</string>
-        
     <string name="control_settings">Settings</string>
-        
     <string name="control_on">On</string>
-        
     <string name="control_off">Off</string>
-        
     <string name="control_need_write_settings">Allow Hoisly to modify system settings, then try again</string>
-        
     <string name="control_need_focus_access">Allow Do Not Disturb access for Hoisly, then try again</string>
-        
     <string name="control_unavailable">Not available on this device</string>
-        
     <string name="control_flashlight_unavailable">This device has no flashlight</string>
-        
     <string name="control_media_idle">Not Playing</string>
-        
     <string name="control_media_allow">Allow notification access to control music</string>
-        
     <string name="control_play">Play</string>
-        
     <string name="control_pause">Pause</string>
-        
     <string name="control_next">Next</string>
-        
     <string name="control_previous">Previous</string>
-        
     <string name="notification_clear_all">Clear All</string>
-        
     <string name="notification_allow_access">Allow Notification Access</string>
-        
     <string name="notification_empty">No Notifications</string>
-        
     <string name="notification_show_less">Show Less</string>
-        
     <string name="notification_hidden_content">Notification</string>
-        
     <string name="panels_title">Control &amp; Notifications</string>
-        
     <string name="panels_hide_content">Hide Content</string>
-        
     <string name="panels_notification_access">Notification Access</string>
-        
     <string name="panels_control_footer">Drag down from the top-right corner, just under the status bar.</string>
-        
     <string name="panels_notifications_footer">Drag down from the top-left. Titles and text are read into memory only to draw the cards; nothing is stored or sent.</string>
-        
     <plurals name="notification_more">
-            <item quantity="one">%d more notification</item>
-            <item quantity="other">%d more notifications</item>
-        </plurals>
-    
+        <item quantity="one">%d more notification</item>
+        <item quantity="other">%d more notifications</item>
+    </plurals>
     <string name="home_lock_on_wake">Show Lock Screen after sleep</string>
     <string name="home_lock_on_wake_footer">When the display was off, the launcher shows its own Lock Screen first. Swiping it away makes the icons pop in. It adds no security: the system lock screen is separate.</string>
     <string name="home_wallpaper_parallax">Moving wallpaper</string>
@@ -513,15 +466,8 @@
     <string name="backup_confirm_title">Restore backup?</string>
     <string name="backup_confirm_body">Your current settings and home screen layout will be replaced, and Hoisly will restart.</string>
     <string name="backup_restore_action">Restore</string>
-    <string name="lock_pattern_title">Бекіту өрнегі</string>
-    <string name="lock_pattern_set">Өрнекті орнату</string>
-    <string name="lock_pattern_change">Өрнекті өзгерту</string>
-    <string name="lock_pattern_remove">Өрнекті жою</string>
-    <string name="lock_pattern_draw">Бекіту өрнегін салыңыз</string>
-    <string name="lock_pattern_confirm">Растау үшін өрнекті қайта салыңыз</string>
-    <string name="lock_pattern_short">Кемінде 4 нүктені қосыңыз</string>
-    <string name="lock_pattern_mismatch">Өрнектер сәйкес келмейді. Қайталап көріңіз</string>
-    <string name="lock_pattern_unlock">Бекітпені ашу үшін өрнекті салыңыз</string>
-    <string name="lock_pattern_wrong">Өрнек қате</string>
-    <string name="lock_pattern_locked">Әрекет тым көп. %1$d с кейін қайталаңыз</string>
+    <string name="app_name">Dynamic Island</string>
+    <string name="a11y_label">Dynamic Island</string>
+    <string name="tile_label">Арал</string>
+    <string name="a11y_desc">Камераның үстінде Dynamic Island стиліндегі капсуланы көрсетеді: музыка, таймерлер, жүктеу барысы, шам және жүйелік оқиғалар. Қызмет ойнатқышты жасыру және төлемді көрсету үшін қай қолданба ашық екенін біледі. Экран тек навигаторларда (2ГИС, Яндекс Навигатор, Карталар және т.б.), Сағат қолданбасында және төлем қолданбаларында, олар ашық тұрғанда оқылады: навигаторда — келесі бұрылысқа дейінгі қашықтық, көше, жету уақыты және жебе бағыты; Сағатта — таймер мен секундомер уақыты; төлем қолданбаларында (Mir Pay, T-Pay, Google Wallet және т.б.) — телефонмен төлеу экраны мен сомасы, «Терминалға жақындатыңыз», кейін «Төленді» деп көрсету үшін. Оқылған деректер телефонда қалады. Ән мәтінін іздеу үшін ән атауы, орындаушы, альбом және ұзақтығы жіберіледі. Ауа райы қосылса, таңдалған қала мен координаттар Open-Meteo қызметіне жіберіледі. Панельді анықтау тек жүйелік хабарландыру панелін оқиды; контактілер мен қадамдар телефонда қалады. Жоғары айналдыру қимылы үшін қызмет ашық қолданбаның айналдырылатын элементтерін мәтінін оқымай тексереді.</string>
 </resources>

@@ -26,8 +26,6 @@ data class PanelPreferences(
     val lockWallpaper: Boolean = true,
     /** 0 = sharp wallpaper, 1 = strongest dimming and softening. */
     val lockWallpaperBlur: Float = 0.25f,
-    /** Salted hash of the unlock pattern (`salt:hash`); empty when no pattern is set. Never the pattern itself. */
-    val lockPattern: String = "",
 ) {
     /** Values outside their ranges are pulled back in. */
     fun sanitized(): PanelPreferences = copy(
@@ -51,7 +49,6 @@ data class PanelPreferences(
         private const val LOCK_NOTIFICATIONS = "lock_show_notifications"
         private const val LOCK_WALLPAPER = "lock_wallpaper"
         private const val LOCK_BLUR = "lock_wallpaper_blur"
-        private const val LOCK_PATTERN = "lock_pattern"
 
         /** Missing or wrongly typed values fall back to the defaults. */
         fun fromStored(values: Map<String, *>): PanelPreferences {
@@ -59,7 +56,6 @@ data class PanelPreferences(
             fun flag(key: String, default: Boolean): Boolean = values[key] as? Boolean ?: default
             fun number(key: String, default: Int): Int = values[key] as? Int ?: default
             fun fraction(key: String, default: Float): Float = values[key] as? Float ?: default
-            fun text(key: String, default: String): String = values[key] as? String ?: default
             return PanelPreferences(
                 notificationCenter = flag(NOTIFICATION_CENTER, defaults.notificationCenter),
                 hideNotificationContent = flag(HIDE_CONTENT, defaults.hideNotificationContent),
@@ -71,7 +67,6 @@ data class PanelPreferences(
                 lockShowNotifications = flag(LOCK_NOTIFICATIONS, defaults.lockShowNotifications),
                 lockWallpaper = flag(LOCK_WALLPAPER, defaults.lockWallpaper),
                 lockWallpaperBlur = fraction(LOCK_BLUR, defaults.lockWallpaperBlur),
-                lockPattern = text(LOCK_PATTERN, defaults.lockPattern),
             ).sanitized()
         }
     }
@@ -87,7 +82,6 @@ data class PanelPreferences(
         LOCK_NOTIFICATIONS to lockShowNotifications,
         LOCK_WALLPAPER to lockWallpaper,
         LOCK_BLUR to lockWallpaperBlur,
-        LOCK_PATTERN to lockPattern,
     )
 }
 
@@ -97,7 +91,6 @@ internal fun SharedPreferences.Editor.putPanels(value: PanelPreferences) {
             is Boolean -> putBoolean(key, stored)
             is Int -> putInt(key, stored)
             is Float -> putFloat(key, stored)
-            is String -> putString(key, stored)
         }
     }
 }
