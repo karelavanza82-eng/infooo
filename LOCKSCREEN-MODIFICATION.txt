@@ -1,0 +1,18 @@
+HOISLY - LOCK SCREEN WAKE FIX
+
+What changed:
+- Keeps the Hoisly decorative lock-screen overlay and its large live clock/date.
+- The existing Enable Hoisly Lock Screen switch remains under Settings > Gestures and Home > Home Behavior (the exact navigation label may vary by app language/version).
+- When ACTION_SCREEN_OFF is received while the launcher is started and the feature is enabled, MainActivity calls setShowWhenLocked(true) before the display wakes.
+- When the launcher resumes after the display was off, the Compose lock-screen overlay is shown immediately without an artificial timer delay.
+- Swiping up asks Android KeyguardManager to dismiss the system keyguard. On a swipe-only device this should dismiss without credentials; PIN, pattern, password, or biometric security remains controlled by Android.
+- Disabling the switch prevents the Hoisly overlay from being shown on the next wake.
+
+Important Android limitation:
+This remains a decorative launcher lock screen, not a replacement for Android/HiOS Keyguard. Android/OEM lifecycle and background-launch policies can still affect whether and exactly when the activity is shown. No artificial delay is added, but literal 0 ms presentation cannot be guaranteed. On devices with secure credentials, Hoisly cannot bypass them.
+
+Build:
+Use the included GitHub Actions workflows or run ./gradlew :app:assembleDebug in an environment with the configured Android SDK and Gradle distribution available.
+
+Validation note:
+The source changes were inspected and the ZIP archive integrity was checked. A Gradle build was not run in this environment, so run GitHub Actions and verify compilation before installing the APK.
