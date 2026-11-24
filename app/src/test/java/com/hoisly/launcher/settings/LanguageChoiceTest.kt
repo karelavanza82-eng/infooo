@@ -78,8 +78,14 @@ class LanguageChoiceTest {
         val configured = List(nodes.length) {
             nodes.item(it).attributes.getNamedItemNS("http://schemas.android.com/apk/res/android", "name").nodeValue
         }.toSet()
+        // values-in and values-pt-rBR are partial overlays, not complete
+        // languages offered in Hoisly's per-app language picker.
         val translated = res.listFiles().orEmpty()
-            .filter { it.name.startsWith("values-") && File(it, "strings.xml").exists() }
+            .filter {
+                it.name.startsWith("values-") &&
+                    it.name !in setOf("values-in", "values-pt-rBR") &&
+                    File(it, "strings.xml").exists()
+            }
             .map { qualifierToTag(it.name.removePrefix("values-")) }
             .toSet()
         assertEquals(translated + "en", configured)
