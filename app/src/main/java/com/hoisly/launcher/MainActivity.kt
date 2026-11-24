@@ -9,6 +9,7 @@ import android.provider.CalendarContract
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import android.app.ActivityOptions
+import android.app.KeyguardManager
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProviderInfo
 import androidx.core.net.toUri
@@ -16,13 +17,10 @@ import com.hoisly.launcher.data.WidgetTarget
 import android.app.SearchManager
 import android.app.WallpaperColors
 import android.app.WallpaperManager
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.BroadcastReceiver
 import android.content.IntentFilter
-import androidx.core.content.ContextCompat
-import com.hoisly.launcher.ui.home.LocalWake
-import com.hoisly.launcher.ui.home.WakeState
 import android.os.Build
 import android.content.pm.LauncherApps
 import android.content.pm.ShortcutInfo
@@ -37,14 +35,17 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Rect
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -67,6 +68,7 @@ import com.hoisly.launcher.ui.glass.isLiquidGlassReady
 import com.hoisly.launcher.ui.glass.resolveGlassMode
 import com.hoisly.launcher.ui.glass.LocalGlassStyle
 import com.hoisly.launcher.ui.home.HomeScreen
+import com.hoisly.launcher.ui.lockscreen.HoislyLockScreen
 import com.hoisly.launcher.ui.home.LauncherActions
 import com.hoisly.launcher.ui.icon.BadgeSource
 import com.hoisly.launcher.ui.icon.IconLoader
@@ -84,6 +86,28 @@ import kotlin.math.roundToInt
 class MainActivity : ComponentActivity(), LauncherActions {
 
     private val vm: LauncherViewModel by viewModels()
+    private var showWakeLockScreen by mutableStateOf(false)
+    private var screenWasTurnedOff = false
+    private var screenReceiverRegistered = false
+    private val screenStateReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == Intent.ACTION_SCREEN_OFF) {
+                screenWasTurnedOff = true
+                // Mark the launcher as allowed above the swipe keyguard before the display wakes.
+                // The system keyguard remains responsible for secure PIN/pattern/biometric auth.
+                if (vm.settings.state.value.showLockScreenAfterSleep) {
+                    // Keep the custom surface ready before Android brings the display back.
+                    // Register this receiver for the Activity lifetime, not only STARTED:
+                    // the launcher can move to STOPPED as the display turns off.
+                    setShowWhenLocked(true)
+                    showWakeLockScreen = true
+                } else {
+                    showWakeLockScreen = false
+                    setShowWhenLocked(false)
+                }
+            }
+        }
+    }
     private val launcherApps: LauncherApps by lazy { getSystemService(LauncherApps::class.java) }
 
     /** Photo widget waiting for the picker result; kept across process death. */
@@ -111,43 +135,6 @@ class MainActivity : ComponentActivity(), LauncherActions {
     private val glassLight = GlassLight()
     private val tiltSensor by lazy { GlassTiltSensor(this, glassLight) }
 
-    /** Entrance animation of the icons after the display was off; see [onResume]. */
-    private val wake = WakeState()
-    private var screenWasOff = false
-
-    /** The home screen is back but the system lock screen still covers it: wait for the unlock. */
-    private var wakeAfterUnlock = false
-    private val screenReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            when (intent.action) {
-                Intent.ACTION_SCREEN_OFF -> {
-                    screenWasOff = true
-                    // Icons stay hidden until the phone is unlocked, then they fly in.
-                    wake.arm()
-                }
-                // Some phones never pause the home screen while the display is off, so there
-                // is no onResume afterwards: the unlock itself must start the entrance.
-                Intent.ACTION_USER_PRESENT -> if (wakeAfterUnlock || wake.armed) {
-                    wakeAfterUnlock = false
-                    wake.trigger()
-                }
-                // Safety net: never leave the icons hidden if the unlock broadcast is missed.
-                Intent.ACTION_SCREEN_ON -> handler.postDelayed(::releaseWakeIfUnlocked, WAKE_FAILSAFE_MS)
-            }
-        }
-    }
-    private val handler = Handler(Looper.getMainLooper())
-
-    private fun releaseWakeIfUnlocked() {
-        val keyguard = getSystemService(android.app.KeyguardManager::class.java)
-        if (wake.armed && keyguard?.isKeyguardLocked != true) {
-            wakeAfterUnlock = false
-            wake.trigger()
-        } else if (wake.armed) {
-            handler.postDelayed(::releaseWakeIfUnlocked, WAKE_FAILSAFE_MS)
-        }
-    }
-
     private val wallpaperListener = WallpaperManager.OnColorsChangedListener { _: WallpaperColors?, _: Int ->
         vm.refreshWallpaper(force = true)
     }
@@ -163,17 +150,16 @@ class MainActivity : ComponentActivity(), LauncherActions {
         )
         super.onCreate(savedInstanceState)
         pendingPhotoWidget = savedInstanceState?.getString(KEY_PENDING_PHOTO)
-        ContextCompat.registerReceiver(
-            this,
-            screenReceiver,
-            IntentFilter().apply {
-                addAction(Intent.ACTION_SCREEN_OFF)
-                addAction(Intent.ACTION_USER_PRESENT)
-                addAction(Intent.ACTION_SCREEN_ON)
-            },
-            ContextCompat.RECEIVER_NOT_EXPORTED,
-        )
         pendingWidget = savedInstanceState?.let(PendingAppWidget::restore)
+
+        // Listen for display-off for the whole Activity lifetime. Registering only in onStart()
+        // is racy: Android may stop the HOME Activity during the screen-off transition before
+        // ACTION_SCREEN_OFF is delivered, leaving screenWasTurnedOff permanently false.
+        if (!screenReceiverRegistered) {
+            val filter = IntentFilter(Intent.ACTION_SCREEN_OFF)
+            ContextCompat.registerReceiver(this, screenStateReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
+            screenReceiverRegistered = true
+        }
 
         val iconSizePx = (Tokens.IconSize.value * resources.displayMetrics.density).roundToInt()
         val iconLoader = IconLoader(this, iconSizePx, vm.settings)
@@ -190,7 +176,6 @@ class MainActivity : ComponentActivity(), LauncherActions {
                 settings.badges.takeIf { it != BadgeStyle.Off }?.let { BadgeSource(badgeCounts, it) }
             }
             LaunchedEffect(settings.hideNavigation) { applyNavigationBarVisibility(settings.hideNavigation) }
-            LaunchedEffect(settings.homeBehavior.wakeStyle) { wake.style = settings.homeBehavior.wakeStyle }
             // Like iOS27L, the status bar makes room for the Edit/Done bar in edit mode.
             LaunchedEffect(editMode) { applyStatusBarVisibility(hidden = editMode) }
             CompositionLocalProvider(
@@ -201,9 +186,13 @@ class MainActivity : ComponentActivity(), LauncherActions {
                 LocalGlassStyle provides settings.glassStyle(),
                 LocalGlassLight provides glassLight,
                 LocalAccent provides AccentColors.resolve(settings.dynamicColor, iconLoader.wallpaperColor),
-                LocalWake provides wake,
             ) {
-                HomeScreen(vm, actions = this)
+                androidx.compose.foundation.layout.Box {
+                    HomeScreen(vm, actions = this@MainActivity)
+                    if (showWakeLockScreen && settings.showLockScreenAfterSleep) {
+                        HoislyLockScreen(onDismiss = { dismissHoislyLockScreen() }, onCamera = { openCameraFromLockScreen() })
+                    }
+                }
             }
         }
         WallpaperManager.getInstance(this)
@@ -248,11 +237,18 @@ class MainActivity : ComponentActivity(), LauncherActions {
         // Cheap when nothing changed; also picks up a freshly granted file access permission.
         vm.refreshWallpaper()
         vm.refreshWidgets()
+        if (screenWasTurnedOff) {
+            screenWasTurnedOff = false
+            if (vm.settings.state.value.showLockScreenAfterSleep) {
+                // Show Hoisly above the swipe-only keyguard as soon as the launcher resumes.
+                setShowWhenLocked(true)
+                showWakeLockScreen = true
+            } else {
+                showWakeLockScreen = false
+                setShowWhenLocked(false)
+            }
+        }
         if (homeIntents.resume()) vm.returnToHome.tryEmit(Unit)
-        val woke = screenWasOff
-        screenWasOff = false
-        // Armed but no entrance pending (display never reported off to us): show the icons.
-        if (!woke && wake.armed && !wakeAfterUnlock) wake.trigger()
         var closing = false
         var returning = false
         if (leftHome) {
@@ -260,22 +256,43 @@ class MainActivity : ComponentActivity(), LauncherActions {
             returning = true
             closing = vm.beginAppClosing()
         }
-        // The surface shrinks into the icon; after the display was off the icons fly in once
-        // the phone is unlocked; otherwise the icons zoom into place.
-        when {
-            closing -> wake.disarm()
-            woke -> wakeHome()
-            returning -> vm.returnedHome.tryEmit(Unit)
+        // The surface shrinks into the icon; otherwise the icons zoom into place.
+        if (returning && !closing) vm.returnedHome.tryEmit(Unit)
+    }
+
+    /** The secure camera opens above the keyguard; devices without one get the normal camera. */
+    private fun openCameraFromLockScreen() {
+        val secure = Intent(android.provider.MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA_SECURE).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        runCatching { startActivity(secure) }.onFailure {
+            runCatching {
+                startActivity(Intent(android.provider.MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            }
         }
     }
 
     /**
-     * The display was off. With the system lock screen still showing, the entrance waits for
-     * the unlock (see [screenReceiver]); otherwise the phone is already unlocked, so it starts now.
+     * Dismiss the decorative Hoisly surface, then ask Android to dismiss its own keyguard.
+     * On swipe-only devices this completes without credentials; secure keyguards still require
+     * the system's normal PIN, pattern, password, or biometric flow.
      */
-    private fun wakeHome() {
-        val keyguard = getSystemService(android.app.KeyguardManager::class.java)
-        if (keyguard?.isKeyguardLocked == true) wakeAfterUnlock = true else wake.trigger()
+    private fun dismissHoislyLockScreen() {
+        val keyguardManager = getSystemService(KeyguardManager::class.java)
+        keyguardManager.requestDismissKeyguard(this, object : KeyguardManager.KeyguardDismissCallback() {
+            override fun onDismissSucceeded() {
+                showWakeLockScreen = false
+                setShowWhenLocked(false)
+            }
+
+            override fun onDismissCancelled() {
+                showWakeLockScreen = false
+                setShowWhenLocked(false)
+            }
+
+            override fun onDismissError() {
+                showWakeLockScreen = false
+                setShowWhenLocked(false)
+            }
+        })
     }
 
     override fun onStart() {
@@ -286,9 +303,19 @@ class MainActivity : ComponentActivity(), LauncherActions {
 
     override fun onStop() {
         super.onStop()
+        // Keep the screen-off receiver registered while stopped so the next wake can
+        // reveal the Hoisly surface when this HOME Activity resumes.
         vm.appWidgets.stopListening()
         leftHome = true
         homeIntents.stop()
+    }
+
+    override fun onDestroy() {
+        if (screenReceiverRegistered) {
+            runCatching { unregisterReceiver(screenStateReceiver) }
+            screenReceiverRegistered = false
+        }
+        super.onDestroy()
     }
 
     private fun applyStatusBarVisibility(hidden: Boolean) {
@@ -326,8 +353,6 @@ class MainActivity : ComponentActivity(), LauncherActions {
     }
 
     override fun onDestroy() {
-        handler.removeCallbacksAndMessages(null)
-        runCatching { unregisterReceiver(screenReceiver) }
         WallpaperManager.getInstance(this).removeOnColorsChangedListener(wallpaperListener)
         super.onDestroy()
     }
@@ -527,7 +552,6 @@ class MainActivity : ComponentActivity(), LauncherActions {
     private companion object {
         const val REQUEST_CONFIGURE_WIDGET = 41
         const val KEY_PENDING_PHOTO = "pending_photo_widget"
-        const val WAKE_FAILSAFE_MS = 2500L
     }
 
     private fun Rect.toAndroidRect(): android.graphics.Rect =

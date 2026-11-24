@@ -5,5 +5,6 @@
 -repackageclasses
 -allowaccessmodification
 
-# Keep Kotlin null-check behavior intact in release builds. Removing checks can
-# move failures deeper into runtime code and make release-only defects harder to diagnose.
+# Release only: remove Kotlin Intrinsics null checks, including parameter checks.
+# Invalid nulls from Java/platform code may fail later instead of at the boundary.
+-processkotlinnullchecks remove

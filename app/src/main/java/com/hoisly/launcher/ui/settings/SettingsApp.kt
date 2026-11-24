@@ -32,6 +32,7 @@ enum class SettingsRoute {
     HiddenApps, AppIcons, AppNames, License, Import, Weather, FinishSetup, Language,
     HomeIcons, DockIcons, FolderIcons, Folders,
     AppLibrary, LibraryPinned, LibraryCategories, LibraryCategory, Island, Panels,
+    LockScreen, Backup,
 }
 
 /** Size settings page of each icon area. */
@@ -95,6 +96,8 @@ fun SettingsApp(vm: SettingsViewModel, actions: SettingsActions, initialRoute: S
             SettingsRoute.Weather -> WeatherSettingsScreen(back)
             SettingsRoute.Island -> IslandSettingsScreen(vm, actions, back)
             SettingsRoute.Panels -> PanelsSettingsScreen(vm, actions, back)
+            SettingsRoute.LockScreen -> LockScreenSettingsScreen(vm, back)
+            SettingsRoute.Backup -> BackupSettingsScreen(vm, back)
             SettingsRoute.FinishSetup -> OnboardingFlow(vm, actions, OnboardingMode.FinishSetup, onFinish = back)
             SettingsRoute.AppLibrary -> LibrarySettingsScreen(vm, navigate, back)
             SettingsRoute.LibraryPinned -> LibraryPinnedScreen(vm, back)

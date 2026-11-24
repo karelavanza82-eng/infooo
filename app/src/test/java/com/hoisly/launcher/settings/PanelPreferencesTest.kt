@@ -31,3 +31,27 @@ class PanelPreferencesTest {
         }
     }
 }
+
+class PanelPreferencesLockScreenTest {
+    @Test
+    fun lockScreenValuesRoundTrip() {
+        val original = PanelPreferences(
+            controlCenter = false, lockClockWeight = 3, lockClockScale = 1.2f, lockClockCentered = true,
+            lockShowBattery = false, lockShowNotifications = false, lockWallpaper = false, lockWallpaperBlur = 0.8f,
+        )
+        assertEquals(original, PanelPreferences.fromStored(original.storedValues()))
+    }
+
+    @Test
+    fun outOfRangeValuesAreClamped() {
+        val prefs = PanelPreferences.fromStored(mapOf("lock_clock_weight" to 99, "lock_clock_scale" to 5f, "lock_wallpaper_blur" to -1f))
+        assertEquals(PanelPreferences.MAX_WEIGHT, prefs.lockClockWeight)
+        assertEquals(PanelPreferences.MAX_SCALE, prefs.lockClockScale)
+        assertEquals(0f, prefs.lockWallpaperBlur)
+    }
+
+    @Test
+    fun controlCenterIsOnByDefault() {
+        assertEquals(true, PanelPreferences.fromStored(emptyMap<String, Any>()).controlCenter)
+    }
+}

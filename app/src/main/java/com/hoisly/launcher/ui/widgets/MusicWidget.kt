@@ -22,6 +22,8 @@ import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -92,15 +94,16 @@ internal object MediaWidgetBridge {
 @Composable
 internal fun rememberMusicState(): MusicState {
     val context = LocalContext.current.applicationContext
-    val state by produceState(MediaWidgetBridge.state.value, context) {
+    // Only the polling lives here; the shared bridge is observed, so every reader sees each update.
+    LaunchedEffect(context) {
         while (true) {
             val access = IslandAccess.read(context).notifications
             val playing = if (access) withContext(Dispatchers.Default) { readNowPlaying(context) } else null
             MediaWidgetBridge.publish(context, MusicState(playing, access))
-            value = MediaWidgetBridge.state.value
             delay(POLL_MS)
         }
     }
+    val state by MediaWidgetBridge.state.collectAsState()
     return state
 }
 

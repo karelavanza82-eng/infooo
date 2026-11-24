@@ -65,6 +65,7 @@ class LauncherSettings private constructor(context: Context) {
             putString(KEY_TRANSITION, next.pageTransition.name)
             putBoolean(KEY_OPEN_ANIM, next.openCloseAnimation)
             putBoolean(KEY_RESUME_ANIM, next.resumeAnimation)
+            putBoolean(KEY_LOCK_AFTER_SLEEP, next.showLockScreenAfterSleep)
             putFloat(KEY_GLASS_TINT, next.glassTint)
             putBoolean(KEY_GLASS_EDGE, next.glassEdge)
             putString(KEY_GLASS_MODE, next.glassMode.name)
@@ -193,6 +194,7 @@ class LauncherSettings private constructor(context: Context) {
             ?: PageTransition.Default,
         openCloseAnimation = prefs.getBoolean(KEY_OPEN_ANIM, true),
         resumeAnimation = prefs.getBoolean(KEY_RESUME_ANIM, true),
+        showLockScreenAfterSleep = prefs.getBoolean(KEY_LOCK_AFTER_SLEEP, true),
         glassTint = prefs.getFloat(KEY_GLASS_TINT, Defaults.glassTint),
         glassEdge = prefs.getBoolean(KEY_GLASS_EDGE, Defaults.glassEdge),
         glassMode = GlassMode.fromStored(prefs.getString(KEY_GLASS_MODE, null), Defaults.glassMode),
@@ -261,6 +263,31 @@ class LauncherSettings private constructor(context: Context) {
         }.getOrDefault(emptyMap())
     }
 
+    /** Every stored setting, for a backup. */
+    fun exportValues(): Map<String, Any?> = prefs.all.mapValues { it.value }
+
+    /**
+     * Replaces all stored settings with [values] (restore). Written synchronously, because the
+     * process is restarted right after; false when the write failed.
+     */
+    fun importValues(values: Map<String, Any>): Boolean {
+        val written = prefs.edit().apply {
+            clear()
+            values.forEach { (key, value) ->
+                when (value) {
+                    is Boolean -> putBoolean(key, value)
+                    is Int -> putInt(key, value)
+                    is Long -> putLong(key, value)
+                    is Float -> putFloat(key, value)
+                    is String -> putString(key, value)
+                    is Set<*> -> putStringSet(key, value.filterIsInstance<String>().toSet())
+                }
+            }
+        }.commit()
+        if (written) _state.value = read()
+        return written
+    }
+
     companion object {
         private const val KEY_HIDE_NAV = "hide_navigation"
         private const val KEY_BLUR = "blur_effect"
@@ -277,6 +304,7 @@ class LauncherSettings private constructor(context: Context) {
         private const val KEY_TRANSITION = "page_transition"
         private const val KEY_OPEN_ANIM = "open_close_animation"
         private const val KEY_RESUME_ANIM = "resume_animation"
+        private const val KEY_LOCK_AFTER_SLEEP = "show_lock_screen_after_sleep"
         private const val KEY_HIDDEN = "hidden_apps"
         private const val KEY_LABELS = "custom_labels"
         private const val KEY_ICONS = "custom_icons"

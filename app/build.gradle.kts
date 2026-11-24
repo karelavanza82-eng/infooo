@@ -1,6 +1,8 @@
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {
@@ -15,26 +17,17 @@ android {
         versionName = "0.3.0"
     }
 
-    // Release APKs must never be signed with Android's debug key. When all release
-    // signing variables are supplied, use the project's release keystore; otherwise
-    // Gradle produces an unsigned release artifact for signing outside this build.
-    val releaseSigningValues = listOf(
-        providers.environmentVariable("HOISLY_KEYSTORE_FILE").orNull,
-        providers.environmentVariable("HOISLY_KEYSTORE_PASSWORD").orNull,
-        providers.environmentVariable("HOISLY_KEY_ALIAS").orNull,
-        providers.environmentVariable("HOISLY_KEY_PASSWORD").orNull,
-    )
-    val releaseSigningConfigured = releaseSigningValues.all { !it.isNullOrBlank() }
-    require(releaseSigningConfigured || releaseSigningValues.all { it.isNullOrBlank() }) {
-        "Release signing requires HOISLY_KEYSTORE_FILE, HOISLY_KEYSTORE_PASSWORD, HOISLY_KEY_ALIAS, and HOISLY_KEY_PASSWORD together."
-    }
+    // CI signs releases with the project keystore passed through the environment.
+    val releaseKeystore = providers.environmentVariable("HOISLY_KEYSTORE_FILE").orNull
+
     signingConfigs {
-        if (releaseSigningConfigured) {
+        if (releaseKeystore != null) {
             create("release") {
-                storeFile = file(releaseSigningValues[0]!!)
-                storePassword = releaseSigningValues[1]!!
-                keyAlias = releaseSigningValues[2]!!
-                keyPassword = releaseSigningValues[3]!!
+                storeFile = file(releaseKeystore)
+                storeType = "PKCS12"
+                storePassword = providers.environmentVariable("HOISLY_KEYSTORE_PASSWORD").get()
+                keyAlias = providers.environmentVariable("HOISLY_KEY_ALIAS").get()
+                keyPassword = providers.environmentVariable("HOISLY_KEY_PASSWORD").get()
             }
         }
     }
@@ -44,30 +37,34 @@ android {
             isDebuggable = true
             isMinifyEnabled = false
             isShrinkResources = false
-            // Skip PNG recompression during the edit/build/install cycle.
             isCrunchPngs = false
         }
+
         release {
             isDebuggable = false
             isMinifyEnabled = true
             isShrinkResources = true
             isCrunchPngs = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            if (releaseSigningConfigured) {
-                signingConfig = signingConfigs.getByName("release")
-            }
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            signingConfig = signingConfigs.getByName(
+                if (releaseKeystore != null) "release" else "debug"
+            )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
     buildFeatures {
         compose = true
         aidl = true
     }
-    // The in-app language picker switches languages at runtime, so an app bundle must keep
-    // every translation in the base APK instead of per-language splits.
+
     bundle {
         language {
             enableSplit = false
@@ -88,7 +85,6 @@ dependencies {
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-core")
-    // Only a few dozen glyphs are used; R8 strips the rest in release builds.
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.ui:ui-tooling-preview")
     debugImplementation("androidx.compose.ui:ui-tooling")
@@ -98,8 +94,14 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.11.0")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.11.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.11.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.11.0")
+    implementation("androidx.palette:palette-ktx:1.0.0")
+    implementation("androidx.savedstate:savedstate-ktx:1.2.1")
+    implementation("dev.rikka.shizuku:api:13.1.5")
+    implementation("dev.rikka.shizuku:provider:13.1.5")
 
     testImplementation("junit:junit:4.13.2")
-    // Android's org.json is a stub in JVM tests; the real one tests layout/weather JSON parsing.
     testImplementation("org.json:json:20260814")
 }

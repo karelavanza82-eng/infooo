@@ -32,7 +32,6 @@ data class HomeBehavior(
     val showToday: Boolean = true,
     val haptics: Boolean = true,
     /** Entrance of the icons after the phone was unlocked (display was off). */
-    val wakeStyle: WakeStyle = WakeStyle.Bounce,
     /** The wallpaper moves with the tilt of the phone and with the entrance after unlock. */
     val wallpaperParallax: Boolean = true,
 ) {

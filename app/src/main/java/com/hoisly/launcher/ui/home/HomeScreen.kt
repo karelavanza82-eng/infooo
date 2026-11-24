@@ -255,7 +255,6 @@ fun HomeScreen(vm: LauncherViewModel, actions: LauncherActions) {
         Box(
             Modifier
                 .fillMaxSize()
-                .wakeZoom()
                 .graphicsLayer {
                     val p = resume.value
                     val scale = (1.15f - 0.15f * p) * (1f - Motion.APP_HOME_SHRINK * appProgress.value)

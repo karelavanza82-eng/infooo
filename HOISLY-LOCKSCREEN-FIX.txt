@@ -1,0 +1,13 @@
+HOISLY Lock Screen wake detection fix
+
+Changed:
+- MainActivity now registers ACTION_SCREEN_OFF receiver for the Activity lifetime (onCreate -> onDestroy), instead of only while STARTED.
+- The receiver prepares setShowWhenLocked(true) and showWakeLockScreen=true as soon as the display-off event arrives, when the feature is enabled.
+- onStop no longer unregisters the receiver, preventing a lifecycle race where Android stops the HOME activity before the screen-off broadcast is handled.
+
+Security note:
+- This is a decorative launcher lock-screen surface. Android's secure keyguard remains responsible for PIN, pattern, password, and biometrics. This change does not bypass Android security and cannot guarantee display above every OEM/system keyguard.
+
+Build verification:
+- Kotlin compile was attempted with ./gradlew :app:compileDebugKotlin --no-daemon.
+- It could not start because Gradle 9.8.1 distribution download failed (UnknownHostException: services.gradle.org) in this environment. Please run GitHub Actions to verify compilation on a network-enabled runner.

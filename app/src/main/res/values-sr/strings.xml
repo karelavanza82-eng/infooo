@@ -461,12 +461,6 @@
             <item quantity="other">%d more notifications</item>
         </plurals>
     
-    <string name="home_section_wake">Wake animation</string>
-    <string name="wake_style_off">Off</string>
-    <string name="wake_style_bounce">Bounce (iOS 27)</string>
-    <string name="wake_style_pop">Pop</string>
-    <string name="wake_style_top">From the top</string>
-    <string name="wake_style_side">From the sides</string>
     <string name="home_lock_on_wake">Show Lock Screen after sleep</string>
     <string name="home_lock_on_wake_footer">When the display was off, the launcher shows its own Lock Screen first. Swiping it away makes the icons pop in. It adds no security: the system lock screen is separate.</string>
     <string name="home_wallpaper_parallax">Moving wallpaper</string>
@@ -495,4 +489,35 @@
     <string name="control_focus_label">Focus</string>
     <string name="control_wifi_not_connected">Not Connected</string>
     <string name="lock_device_fallback">Phone</string>
+    <string name="lock_title">Lock Screen</string>
+    <string name="lock_enable">Show Hoisly Lock Screen</string>
+    <string name="lock_clock_weight">Clock Weight</string>
+    <string name="lock_weight_thin">Thin</string>
+    <string name="lock_weight_light">Light</string>
+    <string name="lock_weight_regular">Regular</string>
+    <string name="lock_weight_bold">Bold</string>
+    <string name="lock_clock_size">Clock Size</string>
+    <string name="lock_clock_centered">Center Clock</string>
+    <string name="lock_show_battery">Battery</string>
+    <string name="lock_show_notifications">Notifications</string>
+    <string name="lock_use_wallpaper">Wallpaper</string>
+    <string name="lock_wallpaper_blur">Wallpaper Blur</string>
+    <string name="lock_footer">A decorative screen above Android\'s own lock screen. PIN, pattern and fingerprint stay with Android. Wallpaper needs wallpaper access; notification cards need the Notification Center.</string>
+    <string name="lock_swipe_hint">Swipe up to continue</string>
+    <string name="lock_flashlight">Flashlight</string>
+    <string name="lock_camera">Camera</string>
+    <string name="backup_title">Backup and Restore</string>
+    <string name="backup_export">Back Up Settings and Layout</string>
+    <string name="backup_restore">Restore from Backup</string>
+    <string name="backup_footer">Saves your settings and home screen layout into one file you choose. Custom icons and widget photos are not included.</string>
+    <string name="backup_done">Backup saved</string>
+    <string name="backup_failed">Backup failed</string>
+    <string name="backup_restored">Restored. Restarting Hoisly</string>
+    <string name="backup_invalid">This is not a valid Hoisly backup</string>
+    <string name="backup_confirm_title">Restore backup?</string>
+    <string name="backup_confirm_body">Your current settings and home screen layout will be replaced, and Hoisly will restart.</string>
+    <string name="backup_restore_action">Restore</string>
+    <string name="tile_label">Island</string>
+    <string name="a11y_label">Dynamic Island</string>
+    <string name="a11y_desc">Shows a Dynamic Island–style capsule over the camera: music, timers, download progress, the flashlight and system events. The service sees which app is open to hide the player and show payments. The screen is read only in navigation apps (2GIS, Yandex Navigator, Maps and others), the Clock app and payment apps while they are open: in navigation apps — the distance to the next turn, the street, the arrival time and the arrow direction; in Clock — the timer and stopwatch time; in payment apps (Mir Pay, T-Pay, Google Wallet and others) — the phone payment screen and the amount, to show “Hold near reader” and then “Paid”. What is read stays on the phone. Song title, artist, album and duration are sent to lyrics providers. Optional weather sends your selected city and coordinates to Open-Meteo. Optional shade detection examines only the system notification panel; contacts and step counts stay on the phone. For the optional scroll-to-top gesture, the service checks scrollable elements in the foreground app without reading their text.</string>
 </resources>
