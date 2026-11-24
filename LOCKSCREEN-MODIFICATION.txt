@@ -1,17 +1,18 @@
-HOISLY - LOCK SCREEN ADDITION
+HOISLY - LOCK SCREEN WAKE FIX
 
 What changed:
-- Added a Hoisly decorative lock-screen overlay with a large live clock and date.
-- Added swipe-up dismissal.
-- Added a persistent Enable Hoisly Lock Screen switch under Settings > Home Behavior.
-- The feature is enabled by default on a fresh install.
-- Added a dynamic ACTION_SCREEN_OFF receiver while the launcher is started. When Android returns the launcher to the foreground after the display was off, Hoisly displays its lock-screen overlay if enabled.
+- Keeps the Hoisly decorative lock-screen overlay and its large live clock/date.
+- The existing Enable Hoisly Lock Screen switch remains under Settings > Gestures and Home > Home Behavior (the exact navigation label may vary by app language/version).
+- When ACTION_SCREEN_OFF is received while the launcher is started and the feature is enabled, MainActivity calls setShowWhenLocked(true) before the display wakes.
+- When the launcher resumes after the display was off, the Compose lock-screen overlay is shown immediately without an artificial timer delay.
+- Swiping up asks Android KeyguardManager to dismiss the system keyguard. On a swipe-only device this should dismiss without credentials; PIN, pattern, password, or biometric security remains controlled by Android.
+- Disabling the switch prevents the Hoisly overlay from being shown on the next wake.
 
 Important Android limitation:
-This is a launcher overlay, NOT a replacement for Android/HiOS Keyguard. Android's own lock screen and PIN/pattern/fingerprint security remain in control. On a secured device, Hoisly's screen can only appear after Android allows the launcher to resume (normally after the user has authenticated). Android/OEM background-launch and lifecycle policies may affect timing. No artificial timer delay is added, but zero-millisecond presentation cannot be guaranteed.
+This remains a decorative launcher lock screen, not a replacement for Android/HiOS Keyguard. Android/OEM lifecycle and background-launch policies can still affect whether and exactly when the activity is shown. No artificial delay is added, but literal 0 ms presentation cannot be guaranteed. On devices with secure credentials, Hoisly cannot bypass them.
 
 Build:
 Use the included GitHub Actions workflows or run ./gradlew :app:assembleDebug in an environment with the configured Android SDK and Gradle distribution available.
 
 Validation note:
-The source changes were inspected, but a local Gradle build could not be completed in this environment because services.gradle.org was unreachable. Please run the repository's GitHub Actions build to verify compilation before installing.
+The source changes were inspected and the ZIP archive integrity was checked. A Gradle build was not run in this environment, so run GitHub Actions and verify compilation before installing the APK.

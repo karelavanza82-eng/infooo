@@ -9,6 +9,7 @@ import android.provider.CalendarContract
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import android.app.ActivityOptions
+import android.app.KeyguardManager
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProviderInfo
 import androidx.core.net.toUri
@@ -90,7 +91,14 @@ class MainActivity : ComponentActivity(), LauncherActions {
     private var screenReceiverRegistered = false
     private val screenStateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == Intent.ACTION_SCREEN_OFF) screenWasTurnedOff = true
+            if (intent?.action == Intent.ACTION_SCREEN_OFF) {
+                screenWasTurnedOff = true
+                // Mark the launcher as allowed above the swipe keyguard before the display wakes.
+                // The system keyguard remains responsible for secure PIN/pattern/biometric auth.
+                if (vm.settings.state.value.showLockScreenAfterSleep) {
+                    setShowWhenLocked(true)
+                }
+            }
         }
     }
     private val launcherApps: LauncherApps by lazy { getSystemService(LauncherApps::class.java) }
@@ -166,7 +174,7 @@ class MainActivity : ComponentActivity(), LauncherActions {
                 androidx.compose.foundation.layout.Box {
                     HomeScreen(vm, actions = this@MainActivity)
                     if (showWakeLockScreen && settings.showLockScreenAfterSleep) {
-                        HoislyLockScreen(onDismiss = { showWakeLockScreen = false })
+                        HoislyLockScreen(onDismiss = { dismissHoislyLockScreen() })
                     }
                 }
             }
@@ -215,7 +223,14 @@ class MainActivity : ComponentActivity(), LauncherActions {
         vm.refreshWidgets()
         if (screenWasTurnedOff) {
             screenWasTurnedOff = false
-            if (vm.settings.state.value.showLockScreenAfterSleep) showWakeLockScreen = true
+            if (vm.settings.state.value.showLockScreenAfterSleep) {
+                // Show Hoisly above the swipe-only keyguard as soon as the launcher resumes.
+                setShowWhenLocked(true)
+                showWakeLockScreen = true
+            } else {
+                showWakeLockScreen = false
+                setShowWhenLocked(false)
+            }
         }
         if (homeIntents.resume()) vm.returnToHome.tryEmit(Unit)
         var closing = false
@@ -227,6 +242,31 @@ class MainActivity : ComponentActivity(), LauncherActions {
         }
         // The surface shrinks into the icon; otherwise the icons zoom into place.
         if (returning && !closing) vm.returnedHome.tryEmit(Unit)
+    }
+
+    /**
+     * Dismiss the decorative Hoisly surface, then ask Android to dismiss its own keyguard.
+     * On swipe-only devices this completes without credentials; secure keyguards still require
+     * the system's normal PIN, pattern, password, or biometric flow.
+     */
+    private fun dismissHoislyLockScreen() {
+        val keyguardManager = getSystemService(KeyguardManager::class.java)
+        keyguardManager.requestDismissKeyguard(this, object : KeyguardManager.KeyguardDismissCallback() {
+            override fun onDismissSucceeded() {
+                showWakeLockScreen = false
+                setShowWhenLocked(false)
+            }
+
+            override fun onDismissCancelled() {
+                showWakeLockScreen = false
+                setShowWhenLocked(false)
+            }
+
+            override fun onDismissError() {
+                showWakeLockScreen = false
+                setShowWhenLocked(false)
+            }
+        })
     }
 
     override fun onStart() {
