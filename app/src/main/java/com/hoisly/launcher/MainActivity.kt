@@ -18,6 +18,8 @@ import android.app.WallpaperColors
 import android.app.WallpaperManager
 import android.content.Context
 import android.content.Intent
+import android.content.BroadcastReceiver
+import android.content.IntentFilter
 import android.os.Build
 import android.content.pm.LauncherApps
 import android.content.pm.ShortcutInfo
@@ -32,14 +34,17 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Rect
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -62,6 +67,7 @@ import com.hoisly.launcher.ui.glass.isLiquidGlassReady
 import com.hoisly.launcher.ui.glass.resolveGlassMode
 import com.hoisly.launcher.ui.glass.LocalGlassStyle
 import com.hoisly.launcher.ui.home.HomeScreen
+import com.hoisly.launcher.ui.lockscreen.HoislyLockScreen
 import com.hoisly.launcher.ui.home.LauncherActions
 import com.hoisly.launcher.ui.icon.BadgeSource
 import com.hoisly.launcher.ui.icon.IconLoader
@@ -79,6 +85,14 @@ import kotlin.math.roundToInt
 class MainActivity : ComponentActivity(), LauncherActions {
 
     private val vm: LauncherViewModel by viewModels()
+    private var showWakeLockScreen by mutableStateOf(false)
+    private var screenWasTurnedOff = false
+    private var screenReceiverRegistered = false
+    private val screenStateReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == Intent.ACTION_SCREEN_OFF) screenWasTurnedOff = true
+        }
+    }
     private val launcherApps: LauncherApps by lazy { getSystemService(LauncherApps::class.java) }
 
     /** Photo widget waiting for the picker result; kept across process death. */
@@ -149,7 +163,12 @@ class MainActivity : ComponentActivity(), LauncherActions {
                 LocalGlassLight provides glassLight,
                 LocalAccent provides AccentColors.resolve(settings.dynamicColor, iconLoader.wallpaperColor),
             ) {
-                HomeScreen(vm, actions = this)
+                androidx.compose.foundation.layout.Box {
+                    HomeScreen(vm, actions = this)
+                    if (showWakeLockScreen && settings.showLockScreenAfterSleep) {
+                        HoislyLockScreen(onDismiss = { showWakeLockScreen = false })
+                    }
+                }
             }
         }
         WallpaperManager.getInstance(this)
@@ -194,6 +213,10 @@ class MainActivity : ComponentActivity(), LauncherActions {
         // Cheap when nothing changed; also picks up a freshly granted file access permission.
         vm.refreshWallpaper()
         vm.refreshWidgets()
+        if (screenWasTurnedOff) {
+            screenWasTurnedOff = false
+            if (vm.settings.state.value.showLockScreenAfterSleep) showWakeLockScreen = true
+        }
         if (homeIntents.resume()) vm.returnToHome.tryEmit(Unit)
         var closing = false
         var returning = false
@@ -208,12 +231,21 @@ class MainActivity : ComponentActivity(), LauncherActions {
 
     override fun onStart() {
         super.onStart()
+        if (!screenReceiverRegistered) {
+            val filter = IntentFilter(Intent.ACTION_SCREEN_OFF)
+            ContextCompat.registerReceiver(this, screenStateReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
+            screenReceiverRegistered = true
+        }
         // Widgets of other apps only update while their host listens.
         vm.appWidgets.startListening()
     }
 
     override fun onStop() {
         super.onStop()
+        if (screenReceiverRegistered) {
+            runCatching { unregisterReceiver(screenStateReceiver) }
+            screenReceiverRegistered = false
+        }
         vm.appWidgets.stopListening()
         leftHome = true
         homeIntents.stop()

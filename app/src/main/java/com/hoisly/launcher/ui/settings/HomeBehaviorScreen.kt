@@ -124,6 +124,19 @@ fun HomeBehaviorScreen(vm: SettingsViewModel, onBack: () -> Unit) {
                 }
             }
         }
+        item { SectionHeader(stringResource(R.string.lock_screen_title)) }
+        item {
+            SettingsCard {
+                SwitchRow(
+                    stringResource(R.string.home_lock_on_wake),
+                    settings.showLockScreenAfterSleep,
+                    onCheckedChange = { enabled ->
+                        vm.settings.update { it.copy(showLockScreenAfterSleep = enabled) }
+                    },
+                    description = stringResource(R.string.home_lock_on_wake_footer),
+                )
+            }
+        }
         item { SectionHeader(stringResource(R.string.home_section_pages)) }
         item {
             SettingsCard {

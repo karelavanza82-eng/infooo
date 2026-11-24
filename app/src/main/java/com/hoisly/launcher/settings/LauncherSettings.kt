@@ -65,6 +65,7 @@ class LauncherSettings private constructor(context: Context) {
             putString(KEY_TRANSITION, next.pageTransition.name)
             putBoolean(KEY_OPEN_ANIM, next.openCloseAnimation)
             putBoolean(KEY_RESUME_ANIM, next.resumeAnimation)
+            putBoolean(KEY_LOCK_AFTER_SLEEP, next.showLockScreenAfterSleep)
             putFloat(KEY_GLASS_TINT, next.glassTint)
             putBoolean(KEY_GLASS_EDGE, next.glassEdge)
             putString(KEY_GLASS_MODE, next.glassMode.name)
@@ -193,6 +194,7 @@ class LauncherSettings private constructor(context: Context) {
             ?: PageTransition.Default,
         openCloseAnimation = prefs.getBoolean(KEY_OPEN_ANIM, true),
         resumeAnimation = prefs.getBoolean(KEY_RESUME_ANIM, true),
+        showLockScreenAfterSleep = prefs.getBoolean(KEY_LOCK_AFTER_SLEEP, true),
         glassTint = prefs.getFloat(KEY_GLASS_TINT, Defaults.glassTint),
         glassEdge = prefs.getBoolean(KEY_GLASS_EDGE, Defaults.glassEdge),
         glassMode = GlassMode.fromStored(prefs.getString(KEY_GLASS_MODE, null), Defaults.glassMode),
@@ -277,6 +279,7 @@ class LauncherSettings private constructor(context: Context) {
         private const val KEY_TRANSITION = "page_transition"
         private const val KEY_OPEN_ANIM = "open_close_animation"
         private const val KEY_RESUME_ANIM = "resume_animation"
+        private const val KEY_LOCK_AFTER_SLEEP = "show_lock_screen_after_sleep"
         private const val KEY_HIDDEN = "hidden_apps"
         private const val KEY_LABELS = "custom_labels"
         private const val KEY_ICONS = "custom_icons"

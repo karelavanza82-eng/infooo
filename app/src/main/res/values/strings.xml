@@ -437,8 +437,8 @@
         <item quantity="one">%d more notification</item>
         <item quantity="other">%d more notifications</item>
     </plurals>
-    <string name="home_lock_on_wake">Show Lock Screen after sleep</string>
-    <string name="home_lock_on_wake_footer">When the display was off, the launcher shows its own Lock Screen first. Swiping it away makes the icons pop in. It adds no security: the system lock screen is separate.</string>
+    <string name="home_lock_on_wake">Enable Hoisly Lock Screen</string>
+    <string name="home_lock_on_wake_footer">Show Hoisly’s decorative clock screen when returning to the launcher after the display was off. Android’s secure lock screen remains in control.</string>
     <string name="home_wallpaper_parallax">Moving wallpaper</string>
     <string name="home_wallpaper_parallax_footer">The wallpaper moves when you tilt the phone and settles in after unlock. It needs All files access to read the wallpaper and does not work with live wallpapers.</string>
     <string name="control_mobile_data">Mobile Data</string>

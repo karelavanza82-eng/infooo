@@ -1,0 +1,17 @@
+HOISLY - LOCK SCREEN ADDITION
+
+What changed:
+- Added a Hoisly decorative lock-screen overlay with a large live clock and date.
+- Added swipe-up dismissal.
+- Added a persistent Enable Hoisly Lock Screen switch under Settings > Home Behavior.
+- The feature is enabled by default on a fresh install.
+- Added a dynamic ACTION_SCREEN_OFF receiver while the launcher is started. When Android returns the launcher to the foreground after the display was off, Hoisly displays its lock-screen overlay if enabled.
+
+Important Android limitation:
+This is a launcher overlay, NOT a replacement for Android/HiOS Keyguard. Android's own lock screen and PIN/pattern/fingerprint security remain in control. On a secured device, Hoisly's screen can only appear after Android allows the launcher to resume (normally after the user has authenticated). Android/OEM background-launch and lifecycle policies may affect timing. No artificial timer delay is added, but zero-millisecond presentation cannot be guaranteed.
+
+Build:
+Use the included GitHub Actions workflows or run ./gradlew :app:assembleDebug in an environment with the configured Android SDK and Gradle distribution available.
+
+Validation note:
+The source changes were inspected, but a local Gradle build could not be completed in this environment because services.gradle.org was unreachable. Please run the repository's GitHub Actions build to verify compilation before installing.
