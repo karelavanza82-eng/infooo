@@ -1,16 +1,20 @@
 package com.hoisly.launcher.ui.lockscreen
 
-import android.app.KeyguardManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
+import android.os.SystemClock
 import android.text.format.DateFormat
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitVerticalTouchSlopOrCancellation
+import androidx.compose.foundation.gestures.verticalDrag
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,6 +41,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,6 +56,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
@@ -61,11 +67,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.awaitVerticalTouchSlopOrCancellation
-import androidx.compose.foundation.gestures.verticalDrag
-import androidx.compose.ui.input.pointer.positionChange
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hoisly.launcher.R
@@ -82,24 +83,25 @@ import java.util.Date
 import java.util.Locale
 
 private const val MAX_CARDS = 3
+private const val FEEDBACK_MILLIS = 900L
 
 /**
- * Hoisly's launcher lock screen: a decorative surface shown above the swipe keyguard. It is
- * deliberately not an Android security/keyguard replacement; [onDismiss] asks Android to dismiss
- * its own keyguard, so PIN, pattern and biometrics stay with the system. [onCamera] opens the
- * secure camera.
+ * Hoisly's pattern lock screen (LockDroid-style swipe lock) shown above the swipe keyguard.
+ * With an unlock pattern set in Lock Screen settings, the pad must be drawn correctly before
+ * [onDismiss] runs; without one, a swipe up unlocks as before. [onDismiss] asks Android to
+ * dismiss its own keyguard, so Android's PIN, pattern and biometrics are not replaced. [onCamera]
+ * opens the secure camera.
  */
 @Composable
-fun HoislyLockScreen(onDismiss: () -> Unit, onCamera: () -> Unit = {}) {
+fun PatternLockScreen(onDismiss: () -> Unit, onCamera: () -> Unit = {}) {
     val context = LocalContext.current
     val prefs = LocalSettingsState.current.panels
     val wallpaper = LocalGlassSource.current?.sharp?.takeIf { prefs.lockWallpaper }
     val torch = rememberTorch()
-    // On a device with a PIN, pattern or password the cards never show message text.
-    val secureDevice = remember { context.getSystemService(KeyguardManager::class.java)?.isDeviceSecure == true }
     val scope = rememberCoroutineScope()
     val offset = remember { Animatable(0f) }
     var heightPx by remember { mutableFloatStateOf(1f) }
+    val hasPattern = prefs.lockPattern.isNotEmpty()
 
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
     LaunchedEffect(Unit) {
@@ -119,6 +121,38 @@ fun HoislyLockScreen(onDismiss: () -> Unit, onCamera: () -> Unit = {}) {
         emptyList()
     }
 
+    var padState by remember { mutableStateOf(PadState.Normal) }
+    var failed by remember { mutableIntStateOf(0) }
+    var lastFailure by remember { mutableLongStateOf(0L) }
+    var lockedSeconds by remember { mutableLongStateOf(0L) }
+    LaunchedEffect(failed, lastFailure) {
+        while (true) {
+            val left = lockoutRemaining(failed, lastFailure, SystemClock.elapsedRealtime())
+            lockedSeconds = (left + 999L) / 1000L
+            if (left == 0L) {
+                if (failed >= MAX_FAILED_ATTEMPTS) failed = 0
+                break
+            }
+            delay(1000L)
+        }
+    }
+    val locked = lockedSeconds > 0L
+    fun tryPattern(nodes: List<Int>) {
+        scope.launch {
+            if (verifyPattern(prefs.lockPattern, nodes)) {
+                padState = PadState.Valid
+                delay(FEEDBACK_MILLIS / 3)
+                onDismiss()
+            } else {
+                padState = PadState.Warning
+                failed += 1
+                lastFailure = SystemClock.elapsedRealtime()
+                delay(FEEDBACK_MILLIS)
+                padState = PadState.Normal
+            }
+        }
+    }
+
     Box(
         Modifier
             .fillMaxSize()
@@ -127,18 +161,20 @@ fun HoislyLockScreen(onDismiss: () -> Unit, onCamera: () -> Unit = {}) {
                 translationY = offset.value
                 alpha = 1f - unlockProgress(offset.value, size.height) * 0.6f
             }
-            .swipeUpToUnlock(
-                onDrag = { delta -> scope.launch { offset.snapTo((offset.value + delta).coerceAtMost(0f)) } },
-                onEnd = { velocity ->
-                    scope.launch {
-                        if (shouldUnlock(offset.value, heightPx, velocity)) {
-                            offset.animateTo(-heightPx, Motion.expand())
-                            onDismiss()
-                        } else {
-                            offset.animateTo(0f, Motion.sheet())
+            .then(
+                if (hasPattern) Modifier else Modifier.swipeUpToUnlock(
+                    onDrag = { delta -> scope.launch { offset.snapTo((offset.value + delta).coerceAtMost(0f)) } },
+                    onEnd = { velocity ->
+                        scope.launch {
+                            if (shouldUnlock(offset.value, heightPx, velocity)) {
+                                offset.animateTo(-heightPx, Motion.expand())
+                                onDismiss()
+                            } else {
+                                offset.animateTo(0f, Motion.sheet())
+                            }
                         }
-                    }
-                },
+                    },
+                ),
             ),
     ) {
         Backdrop(wallpaper, prefs.lockWallpaperBlur)
@@ -161,37 +197,51 @@ fun HoislyLockScreen(onDismiss: () -> Unit, onCamera: () -> Unit = {}) {
                 textAlign = TextAlign.Center,
             )
         }
-        if (cards.isNotEmpty()) {
-            Column(
-                Modifier
-                    .align(Alignment.BottomCenter)
-                    .windowInsetsPadding(WindowInsets.safeDrawing)
-                    .padding(start = 16.dp, end = 16.dp, bottom = 168.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                cards.forEach { LockNotificationCard(it, hideContent = prefs.hideNotificationContent || secureDevice) }
-            }
-        }
-        Row(
+        Column(
             Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
                 .windowInsetsPadding(WindowInsets.safeDrawing)
-                .padding(horizontal = 48.dp, vertical = 56.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
+                .padding(horizontal = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            ShortcutButton(
-                Icons.Rounded.FlashlightOn, stringResource(R.string.lock_flashlight), active = torch.on,
-            ) { torch.toggle() }
-            ShortcutButton(Icons.Rounded.CameraAlt, stringResource(R.string.lock_camera), active = false, onClick = onCamera)
+            if (cards.isNotEmpty()) {
+                Column(Modifier.padding(bottom = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    cards.forEach { LockNotificationCard(it, hideContent = prefs.hideNotificationContent) }
+                }
+            }
+            if (hasPattern) {
+                PatternPad(
+                    state = if (locked) PadState.Warning else padState,
+                    onComplete = { nodes -> if (!locked) tryPattern(nodes) },
+                    modifier = Modifier.width(240.dp),
+                )
+            }
+            Text(
+                hintFor(hasPattern, padState, locked, lockedSeconds),
+                modifier = Modifier.padding(top = 12.dp),
+                color = Color.White.copy(alpha = .85f), fontSize = 14.sp, textAlign = TextAlign.Center,
+            )
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 24.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                ShortcutButton(
+                    Icons.Rounded.FlashlightOn, stringResource(R.string.lock_flashlight), active = torch.on,
+                ) { torch.toggle() }
+                ShortcutButton(Icons.Rounded.CameraAlt, stringResource(R.string.lock_camera), active = false, onClick = onCamera)
+            }
         }
-        Text(
-            stringResource(R.string.lock_swipe_hint),
-            modifier = Modifier.align(Alignment.BottomCenter).windowInsetsPadding(WindowInsets.safeDrawing).padding(bottom = 24.dp),
-            color = Color.White.copy(alpha = .85f), fontSize = 14.sp,
-        )
     }
+}
+
+@Composable
+private fun hintFor(hasPattern: Boolean, state: PadState, locked: Boolean, seconds: Long): String = when {
+    !hasPattern -> stringResource(R.string.lock_swipe_hint)
+    locked -> stringResource(R.string.lock_pattern_locked, seconds.toInt())
+    state == PadState.Warning -> stringResource(R.string.lock_pattern_wrong)
+    else -> stringResource(R.string.lock_pattern_unlock)
 }
 
 @Composable
@@ -210,7 +260,7 @@ private fun Backdrop(wallpaper: androidx.compose.ui.graphics.ImageBitmap?, amoun
         contentScale = ContentScale.Crop,
         modifier = Modifier.fillMaxSize().blur((amount * 24f).dp),
     )
-    // A scrim keeps the clock readable on bright wallpapers; stronger blur dims a little more.
+    // A scrim keeps the clock and the pad readable on bright wallpapers; stronger blur dims a little more.
     Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.18f + 0.2f * amount)))
 }
 

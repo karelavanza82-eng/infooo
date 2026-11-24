@@ -493,4 +493,15 @@
     <string name="backup_confirm_title">Restore backup?</string>
     <string name="backup_confirm_body">Your current settings and home screen layout will be replaced, and Hoisly will restart.</string>
     <string name="backup_restore_action">Restore</string>
+    <string name="lock_pattern_title">Unlock Pattern</string>
+    <string name="lock_pattern_set">Set Pattern</string>
+    <string name="lock_pattern_change">Change Pattern</string>
+    <string name="lock_pattern_remove">Remove Pattern</string>
+    <string name="lock_pattern_draw">Draw an unlock pattern</string>
+    <string name="lock_pattern_confirm">Draw the pattern again to confirm</string>
+    <string name="lock_pattern_short">Connect at least 4 dots</string>
+    <string name="lock_pattern_mismatch">Patterns don\'t match. Try again</string>
+    <string name="lock_pattern_unlock">Draw your pattern to unlock</string>
+    <string name="lock_pattern_wrong">Wrong pattern</string>
+    <string name="lock_pattern_locked">Too many attempts. Try again in %1$d s</string>
 </resources>

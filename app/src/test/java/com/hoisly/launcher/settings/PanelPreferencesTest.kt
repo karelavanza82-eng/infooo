@@ -43,6 +43,13 @@ class PanelPreferencesLockScreenTest {
     }
 
     @Test
+    fun patternHashRoundTripsAndDefaultsToNone() {
+        assertEquals("", PanelPreferences.fromStored(emptyMap<String, Any>()).lockPattern)
+        val original = PanelPreferences(lockPattern = "00ff:11aa")
+        assertEquals(original, PanelPreferences.fromStored(original.storedValues()))
+    }
+
+    @Test
     fun outOfRangeValuesAreClamped() {
         val prefs = PanelPreferences.fromStored(mapOf("lock_clock_weight" to 99, "lock_clock_scale" to 5f, "lock_wallpaper_blur" to -1f))
         assertEquals(PanelPreferences.MAX_WEIGHT, prefs.lockClockWeight)

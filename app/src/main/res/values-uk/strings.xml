@@ -521,4 +521,15 @@
     <string name="backup_confirm_title">Restore backup?</string>
     <string name="backup_confirm_body">Your current settings and home screen layout will be replaced, and Hoisly will restart.</string>
     <string name="backup_restore_action">Restore</string>
+    <string name="lock_pattern_title">Графічний ключ</string>
+    <string name="lock_pattern_set">Задати ключ</string>
+    <string name="lock_pattern_change">Змінити ключ</string>
+    <string name="lock_pattern_remove">Видалити ключ</string>
+    <string name="lock_pattern_draw">Намалюйте графічний ключ</string>
+    <string name="lock_pattern_confirm">Повторіть ключ для підтвердження</string>
+    <string name="lock_pattern_short">З’єднайте щонайменше 4 точки</string>
+    <string name="lock_pattern_mismatch">Ключі не збігаються. Спробуйте ще раз</string>
+    <string name="lock_pattern_unlock">Намалюйте ключ, щоб розблокувати</string>
+    <string name="lock_pattern_wrong">Неправильний ключ</string>
+    <string name="lock_pattern_locked">Забагато спроб. Повторіть через %1$d с</string>
 </resources>

@@ -491,4 +491,15 @@
     <string name="backup_confirm_title">Восстановить копию?</string>
     <string name="backup_confirm_body">Текущие настройки и раскладка будут заменены, Hoisly перезапустится.</string>
     <string name="backup_restore_action">Восстановить</string>
+    <string name="lock_pattern_title">Графический ключ</string>
+    <string name="lock_pattern_set">Задать ключ</string>
+    <string name="lock_pattern_change">Изменить ключ</string>
+    <string name="lock_pattern_remove">Удалить ключ</string>
+    <string name="lock_pattern_draw">Нарисуйте графический ключ</string>
+    <string name="lock_pattern_confirm">Повторите ключ для подтверждения</string>
+    <string name="lock_pattern_short">Соедините не менее 4 точек</string>
+    <string name="lock_pattern_mismatch">Ключи не совпадают. Попробуйте снова</string>
+    <string name="lock_pattern_unlock">Нарисуйте ключ, чтобы разблокировать</string>
+    <string name="lock_pattern_wrong">Неверный ключ</string>
+    <string name="lock_pattern_locked">Слишком много попыток. Повторите через %1$d с</string>
 </resources>

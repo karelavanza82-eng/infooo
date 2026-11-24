@@ -516,4 +516,15 @@
     <string name="backup_confirm_title">Restore backup?</string>
     <string name="backup_confirm_body">Your current settings and home screen layout will be replaced, and Hoisly will restart.</string>
     <string name="backup_restore_action">Restore</string>
+    <string name="lock_pattern_title">Schéma de déverrouillage</string>
+    <string name="lock_pattern_set">Définir le schéma</string>
+    <string name="lock_pattern_change">Modifier le schéma</string>
+    <string name="lock_pattern_remove">Supprimer le schéma</string>
+    <string name="lock_pattern_draw">Dessinez un schéma de déverrouillage</string>
+    <string name="lock_pattern_confirm">Redessinez le schéma pour confirmer</string>
+    <string name="lock_pattern_short">Reliez au moins 4 points</string>
+    <string name="lock_pattern_mismatch">Les schémas ne correspondent pas. Réessayez</string>
+    <string name="lock_pattern_unlock">Dessinez votre schéma pour déverrouiller</string>
+    <string name="lock_pattern_wrong">Schéma incorrect</string>
+    <string name="lock_pattern_locked">Trop de tentatives. Réessayez dans %1$d s</string>
 </resources>

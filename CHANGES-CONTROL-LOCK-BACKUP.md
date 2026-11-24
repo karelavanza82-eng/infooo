@@ -21,8 +21,3 @@
 
 ## Tests added
 ControlLogicTest, LockLogicTest, BackupCodecTest, PanelPreferences lock-screen tests.
-
-## Fix: lock screen never appeared after the display was turned off
-- The screen-off receiver was registered only between onStart and onStop and missed the broadcast.
-  It now lives from onCreate to onDestroy, and onStop also arms the lock screen when the display is already off.
-- Notification cards on the lock screen hide message text whenever the device has a PIN, pattern or password.

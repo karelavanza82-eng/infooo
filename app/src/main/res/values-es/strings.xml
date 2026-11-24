@@ -516,4 +516,15 @@
     <string name="backup_confirm_title">Restore backup?</string>
     <string name="backup_confirm_body">Your current settings and home screen layout will be replaced, and Hoisly will restart.</string>
     <string name="backup_restore_action">Restore</string>
+    <string name="lock_pattern_title">Patrón de desbloqueo</string>
+    <string name="lock_pattern_set">Establecer patrón</string>
+    <string name="lock_pattern_change">Cambiar patrón</string>
+    <string name="lock_pattern_remove">Eliminar patrón</string>
+    <string name="lock_pattern_draw">Dibuja un patrón de desbloqueo</string>
+    <string name="lock_pattern_confirm">Dibuja el patrón otra vez para confirmar</string>
+    <string name="lock_pattern_short">Une al menos 4 puntos</string>
+    <string name="lock_pattern_mismatch">Los patrones no coinciden. Inténtalo de nuevo</string>
+    <string name="lock_pattern_unlock">Dibuja tu patrón para desbloquear</string>
+    <string name="lock_pattern_wrong">Patrón incorrecto</string>
+    <string name="lock_pattern_locked">Demasiados intentos. Inténtalo de nuevo en %1$d s</string>
 </resources>

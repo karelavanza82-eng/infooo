@@ -516,4 +516,15 @@
     <string name="backup_confirm_title">Restore backup?</string>
     <string name="backup_confirm_body">Your current settings and home screen layout will be replaced, and Hoisly will restart.</string>
     <string name="backup_restore_action">Restore</string>
+    <string name="lock_pattern_title">Sequenza di sblocco</string>
+    <string name="lock_pattern_set">Imposta sequenza</string>
+    <string name="lock_pattern_change">Cambia sequenza</string>
+    <string name="lock_pattern_remove">Rimuovi sequenza</string>
+    <string name="lock_pattern_draw">Disegna una sequenza di sblocco</string>
+    <string name="lock_pattern_confirm">Disegna di nuovo la sequenza per confermare</string>
+    <string name="lock_pattern_short">Collega almeno 4 punti</string>
+    <string name="lock_pattern_mismatch">Le sequenze non corrispondono. Riprova</string>
+    <string name="lock_pattern_unlock">Disegna la sequenza per sbloccare</string>
+    <string name="lock_pattern_wrong">Sequenza errata</string>
+    <string name="lock_pattern_locked">Troppi tentativi. Riprova tra %1$d s</string>
 </resources>

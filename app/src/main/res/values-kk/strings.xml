@@ -513,4 +513,15 @@
     <string name="backup_confirm_title">Restore backup?</string>
     <string name="backup_confirm_body">Your current settings and home screen layout will be replaced, and Hoisly will restart.</string>
     <string name="backup_restore_action">Restore</string>
+    <string name="lock_pattern_title">Бекіту өрнегі</string>
+    <string name="lock_pattern_set">Өрнекті орнату</string>
+    <string name="lock_pattern_change">Өрнекті өзгерту</string>
+    <string name="lock_pattern_remove">Өрнекті жою</string>
+    <string name="lock_pattern_draw">Бекіту өрнегін салыңыз</string>
+    <string name="lock_pattern_confirm">Растау үшін өрнекті қайта салыңыз</string>
+    <string name="lock_pattern_short">Кемінде 4 нүктені қосыңыз</string>
+    <string name="lock_pattern_mismatch">Өрнектер сәйкес келмейді. Қайталап көріңіз</string>
+    <string name="lock_pattern_unlock">Бекітпені ашу үшін өрнекті салыңыз</string>
+    <string name="lock_pattern_wrong">Өрнек қате</string>
+    <string name="lock_pattern_locked">Әрекет тым көп. %1$d с кейін қайталаңыз</string>
 </resources>

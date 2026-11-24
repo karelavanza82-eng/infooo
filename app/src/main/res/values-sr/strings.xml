@@ -517,4 +517,15 @@
     <string name="backup_confirm_title">Restore backup?</string>
     <string name="backup_confirm_body">Your current settings and home screen layout will be replaced, and Hoisly will restart.</string>
     <string name="backup_restore_action">Restore</string>
+    <string name="lock_pattern_title">Шаблон за откључавање</string>
+    <string name="lock_pattern_set">Постави шаблон</string>
+    <string name="lock_pattern_change">Промени шаблон</string>
+    <string name="lock_pattern_remove">Уклони шаблон</string>
+    <string name="lock_pattern_draw">Нацртајте шаблон за откључавање</string>
+    <string name="lock_pattern_confirm">Поново нацртајте шаблон ради потврде</string>
+    <string name="lock_pattern_short">Повежите најмање 4 тачке</string>
+    <string name="lock_pattern_mismatch">Шаблони се не поклапају. Покушајте поново</string>
+    <string name="lock_pattern_unlock">Нацртајте шаблон да откључате</string>
+    <string name="lock_pattern_wrong">Погрешан шаблон</string>
+    <string name="lock_pattern_locked">Превише покушаја. Покушајте поново за %1$d с</string>
 </resources>

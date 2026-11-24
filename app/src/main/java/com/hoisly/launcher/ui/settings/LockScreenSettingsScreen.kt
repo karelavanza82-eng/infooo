@@ -2,17 +2,23 @@ package com.hoisly.launcher.ui.settings
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hoisly.launcher.R
 import com.hoisly.launcher.settings.PanelPreferences
+import com.hoisly.launcher.ui.lockscreen.hashPattern
+import java.security.SecureRandom
 import kotlin.math.roundToInt
 
 /** Lock Screen: what the launcher's decorative lock screen shows and how the clock looks. */
@@ -23,6 +29,18 @@ fun LockScreenSettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
     fun save(change: (PanelPreferences) -> PanelPreferences) = vm.settings.update { it.copy(panels = change(it.panels)) }
     var scale by remember(panels.lockClockScale) { mutableFloatStateOf(panels.lockClockScale) }
     var blur by remember(panels.lockWallpaperBlur) { mutableFloatStateOf(panels.lockWallpaperBlur) }
+    var settingPattern by remember { mutableStateOf(false) }
+
+    if (settingPattern) {
+        PatternSetupDialog(
+            onDone = { nodes ->
+                val salt = ByteArray(16).also { SecureRandom().nextBytes(it) }
+                save { p -> p.copy(lockPattern = hashPattern(nodes, salt)) }
+                settingPattern = false
+            },
+            onCancel = { settingPattern = false },
+        )
+    }
 
     SettingsPage(stringResource(R.string.lock_title), onBack) {
         item {
@@ -30,6 +48,25 @@ fun LockScreenSettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
                 SwitchRow(stringResource(R.string.lock_enable), settings.showLockScreenAfterSleep, { value ->
                     vm.settings.update { it.copy(showLockScreenAfterSleep = value) }
                 })
+            }
+        }
+        item { SectionGap() }
+        item {
+            SettingsCard {
+                NavRow(
+                    icon = Icons.Rounded.Lock,
+                    title = stringResource(if (panels.lockPattern.isEmpty()) R.string.lock_pattern_set else R.string.lock_pattern_change),
+                    onClick = { settingPattern = true },
+                )
+                if (panels.lockPattern.isNotEmpty()) {
+                    NavRow(
+                        icon = Icons.Rounded.Lock,
+                        title = stringResource(R.string.lock_pattern_remove),
+                        onClick = { save { p -> p.copy(lockPattern = "") } },
+                        titleColor = Color(0xFFFF453A),
+                        showChevron = false,
+                    )
+                }
             }
         }
         item { SectionGap() }

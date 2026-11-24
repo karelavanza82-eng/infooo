@@ -509,4 +509,15 @@
     <string name="backup_confirm_title">Restore backup?</string>
     <string name="backup_confirm_body">Your current settings and home screen layout will be replaced, and Hoisly will restart.</string>
     <string name="backup_restore_action">Restore</string>
+    <string name="lock_pattern_title">解锁图案</string>
+    <string name="lock_pattern_set">设置图案</string>
+    <string name="lock_pattern_change">更改图案</string>
+    <string name="lock_pattern_remove">移除图案</string>
+    <string name="lock_pattern_draw">请绘制解锁图案</string>
+    <string name="lock_pattern_confirm">请再次绘制图案以确认</string>
+    <string name="lock_pattern_short">请至少连接 4 个点</string>
+    <string name="lock_pattern_mismatch">两次图案不一致，请重试</string>
+    <string name="lock_pattern_unlock">绘制图案以解锁</string>
+    <string name="lock_pattern_wrong">图案错误</string>
+    <string name="lock_pattern_locked">尝试次数过多，请 %1$d 秒后重试</string>
 </resources>
