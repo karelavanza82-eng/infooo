@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import com.hoisly.launcher.R
 import com.akira.island.core.Controls
 import com.akira.island.core.IslandBus
@@ -37,6 +38,7 @@ import com.akira.island.ui.Tile
 @Composable
 fun BanksScreen(onBack: () -> Unit) {
     val context = LocalContext.current
+    val tileLabel = stringResource(R.string.tile_label)
     val running by IslandBus.serviceRunning.collectAsState()
 
     Page(tr("Банк не пускает", "Bank app won't open"), onBack,
@@ -58,7 +60,7 @@ fun BanksScreen(onBack: () -> Unit) {
                 GroupItem(
                     Pos.First, Icons.Rounded.AddBox, tr("Добавить плитку «Остров»", "Add the Island tile"),
                     tr("В шторку быстрых настроек — одно нажатие", "To quick settings — one tap"),
-                    color = Tile.Blue, onClick = { addTile(context) },
+                    color = Tile.Blue, onClick = { addTile(context, tileLabel) },
                 ) { Arrow() }
             }
             GroupItem(
@@ -85,12 +87,12 @@ fun BanksScreen(onBack: () -> Unit) {
 }
 
 /** Android 13+: система сама спрашивает, добавить ли плитку острова в шторку. */
-private fun addTile(context: Context) {
+private fun addTile(context: Context, tileLabel: String) {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
     val bar = context.getSystemService(StatusBarManager::class.java) ?: return
     runCatching {
         bar.requestAddTileService(
-            ComponentName(context, IslandTile::class.java), context.getString(R.string.tile_label),
+            ComponentName(context, IslandTile::class.java), tileLabel,
             Icon.createWithResource(context, R.drawable.ic_tab_island), context.mainExecutor,
         ) { result ->
             if (result == StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ALREADY_ADDED) {

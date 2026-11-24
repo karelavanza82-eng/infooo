@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import com.hoisly.launcher.R
 import com.akira.island.core.tr
@@ -26,6 +27,7 @@ import com.akira.island.ui.Ui
 @Composable
 fun LauncherScreen(onBack: () -> Unit) {
     val context = LocalContext.current
+    val tileLabel = stringResource(R.string.tile_label)
     val state by LauncherVisibility.state.collectAsState()
     rememberOnResume { LauncherVisibility.refresh(context) }
     var requestingTile by remember { mutableStateOf(false) }
@@ -50,7 +52,7 @@ fun LauncherScreen(onBack: () -> Unit) {
                     val manager = context.getSystemService(StatusBarManager::class.java)
                     val requested = runCatching {
                         checkNotNull(manager).requestAddTileService(
-                            ComponentName(context, IslandTile::class.java), context.getString(R.string.tile_label),
+                            ComponentName(context, IslandTile::class.java), tileLabel,
                             Icon.createWithResource(context, R.drawable.ic_tab_island), context.mainExecutor,
                         ) { result ->
                             requestingTile = false
