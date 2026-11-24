@@ -164,7 +164,7 @@ class MainActivity : ComponentActivity(), LauncherActions {
                 LocalAccent provides AccentColors.resolve(settings.dynamicColor, iconLoader.wallpaperColor),
             ) {
                 androidx.compose.foundation.layout.Box {
-                    HomeScreen(vm, actions = this)
+                    HomeScreen(vm, actions = this@MainActivity)
                     if (showWakeLockScreen && settings.showLockScreenAfterSleep) {
                         HoislyLockScreen(onDismiss = { showWakeLockScreen = false })
                     }
