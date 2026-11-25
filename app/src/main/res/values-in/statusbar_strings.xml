@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="statusbar_title">Bilah Status</string>
+    <string name="statusbar_enable">Bilah status kustom</string>
+    <string name="statusbar_service">Layanan aksesibilitas</string>
+    <string name="statusbar_allowed">Aktif</string>
+    <string name="statusbar_allow">Aktifkan</string>
+    <string name="statusbar_off">Bilah status kustom nonaktif.</string>
+    <string name="statusbar_need_service">Aktifkan layanan aksesibilitas Dynamic Island agar bilah status tampil di atas semua aplikasi.</string>
+    <string name="statusbar_ready">Tampil di atas semua aplikasi.</string>
+    <string name="statusbar_section_color">Warna ikon</string>
+    <string name="statusbar_color_auto">Otomatis</string>
+    <string name="statusbar_color_black">Hitam</string>
+    <string name="statusbar_color_white">Putih</string>
+    <string name="statusbar_color_footer">Otomatis memilih hitam atau putih sesuai latar di belakang bilah status. Layar yang dilindungi bisa terbaca gelap.</string>
+    <string name="statusbar_section_elements">Elemen</string>
+    <string name="statusbar_show_silent">Lonceng senyap</string>
+    <string name="statusbar_show_signal">Batang sinyal</string>
+    <string name="statusbar_show_network">Jenis jaringan (5G, 4G)</string>
+    <string name="statusbar_show_wifi">Wi-Fi</string>
+    <string name="statusbar_show_battery">Baterai</string>
+    <string name="statusbar_hide_landscape">Sembunyikan saat landscape</string>
+    <string name="statusbar_section_look">Tampilan</string>
+    <string name="statusbar_clock_weight">Ketebalan jam</string>
+    <string name="statusbar_weight_regular">Reguler</string>
+    <string name="statusbar_weight_medium">Medium</string>
+    <string name="statusbar_weight_semibold">Semibold</string>
+    <string name="statusbar_weight_bold">Tebal</string>
+    <string name="statusbar_size">Ukuran</string>
+    <string name="statusbar_side_padding">Jarak samping</string>
+    <string name="statusbar_vertical_offset">Posisi vertikal</string>
+    <string name="statusbar_section_system">Bilah status sistem</string>
+    <string name="statusbar_hide_system">Sembunyikan ikon sistem</string>
+    <string name="statusbar_hide_system_footer">Meminta sistem menyembunyikan jam, sinyal, baterai, dan ikon suara bawaannya. Sebagian merek mengabaikan ini.</string>
+    <string name="statusbar_hide_system_grant">Butuh izin sekali saja. Sambungkan HP ke komputer lalu jalankan: %1$s</string>
+    <string name="statusbar_reset">Reset tampilan</string>
+</resources>
