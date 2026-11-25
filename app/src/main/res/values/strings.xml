@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">Hoisly Launcher</string>
+    <string name="app_name" translatable="false">Hiosly</string>
     <string name="search">Search</string>
     <string name="glass_prompt_title">Enable glass effect</string>
     <string name="glass_prompt_body">To blur the wallpaper under the dock, the launcher needs All files access. It\'s the only way Android shares the wallpaper image.</string>
@@ -27,6 +27,12 @@
     <string name="row_change_icon">Change App Icon</string>
     <string name="row_change_name">Change App Name</string>
     <string name="row_dynamic_color">Dynamic Color</string>
+    <string name="row_about">About Hiosly</string>
+    <string name="about_developer">Developer</string>
+    <string name="about_project_location">Project created in</string>
+    <string name="about_project_location_value">Sragen, Central Java, Indonesia</string>
+    <string name="about_description">A personal Android launcher project.</string>
+    <string name="about_version">Version 2.1.1</string>
     <string name="row_version">Version</string>
     <string name="row_license">License</string>
     <string name="general_hide_navigation">Hide navigation</string>

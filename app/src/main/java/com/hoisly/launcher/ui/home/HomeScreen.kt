@@ -214,7 +214,9 @@ fun HomeScreen(vm: LauncherViewModel, actions: LauncherActions) {
 
     // iOS-like "resume" animation: coming back from an app, the icons zoom into place.
     val resume = remember { Animatable(1f) }
-    // iOS-like return-to-home zoom, independent from the short parallel popup bursts.
+    // 0 = at the icon, 1 = full screen: the app surface, see AppTransitionOverlay.
+    val appProgress = remember { Animatable(0f) }
+    val appTransition by vm.appTransition.collectAsStateWithLifecycle()
     val resumeEnabled by rememberUpdatedState(settings.resumeAnimation)
     LaunchedEffect(Unit) {
         vm.returnedHome.collect {
@@ -225,7 +227,7 @@ fun HomeScreen(vm: LauncherViewModel, actions: LauncherActions) {
     }
 
     // 0 = sharp, 1 = fully blurred. Read only in layer blocks: it never recomposes the screen.
-    val overlayOpen = panels.panel != null || menu != null || openFolder != null || search != null || openGroupId != null || chooserApp != null || gallery
+    val overlayOpen = appTransition?.phase == AppTransitionPhase.Opening || panels.panel != null || menu != null || openFolder != null || search != null || openGroupId != null || chooserApp != null || gallery
     val blur = animateFloatAsState(
         if (overlayOpen && settings.homeBlur) 1f else 0f,
         Motion.fade(),
@@ -255,7 +257,7 @@ fun HomeScreen(vm: LauncherViewModel, actions: LauncherActions) {
                 .fillMaxSize()
                 .graphicsLayer {
                     val p = resume.value
-                    val scale = 1.15f - 0.15f * p
+                    val scale = (1.15f - 0.15f * p) * (1f - Motion.APP_HOME_SHRINK * appProgress.value)
                     scaleX = scale
                     scaleY = scale
                     alpha = p.coerceIn(0f, 1f)
@@ -401,7 +403,7 @@ fun HomeScreen(vm: LauncherViewModel, actions: LauncherActions) {
             onAddStack = { size -> vm.addSmartStack(size, widgetTarget()) },
         )
 
-        AppTransitionOverlay(vm)
+        AppTransitionOverlay(vm, appProgress)
 
         PanelHost(panels, vm)
 

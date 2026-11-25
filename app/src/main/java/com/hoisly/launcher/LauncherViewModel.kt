@@ -153,29 +153,25 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
     /** App whose "−" badge was tapped: shows the remove dialog. */
     val removeRequest: MutableStateFlow<AppInfo?> = MutableStateFlow(null)
 
-    /** Independent visual launch bursts. They are UI-only; they never create extra Android tasks. */
-    val appTransitions: MutableStateFlow<List<AppTransition>> = MutableStateFlow(emptyList())
+    /** The icon-to-screen surface of an app opening or closing, or `null`. */
+    val appTransition: MutableStateFlow<AppTransition?> = MutableStateFlow(null)
     private var appTransitionIds: Long = 0
 
-    /** Adds a new icon-origin burst without cancelling any burst already on screen. */
+    /** Starts the surface growing out of the icon at [bounds] (window pixels). */
     fun beginAppTransition(bounds: Rect, icon: ImageBitmap?) {
-        val next = AppTransition(++appTransitionIds, AppTransitionPhase.Opening, bounds, icon, iconSurfaceColor(icon))
-        appTransitions.value = (appTransitions.value + next).takeLast(12)
+        appTransition.value = AppTransition(++appTransitionIds, AppTransitionPhase.Opening, bounds, icon, iconSurfaceColor(icon))
     }
 
-    /** Marks the newest visual burst as closing when returning from the selected app. */
+    /** Turns an opening surface into a closing one. `false` if no app was opened through the surface. */
     fun beginAppClosing(): Boolean {
-        val index = appTransitions.value.indexOfLast { it.phase == AppTransitionPhase.Opening }
-        if (index < 0) return false
-        val items = appTransitions.value.toMutableList()
-        items[index] = items[index].copy(phase = AppTransitionPhase.Closing)
-        appTransitions.value = items
+        val open = appTransition.value?.takeIf { it.phase == AppTransitionPhase.Opening } ?: return false
+        appTransition.value = open.copy(id = ++appTransitionIds, phase = AppTransitionPhase.Closing)
         return true
     }
 
-    /** Removes only the completed burst; other simultaneous bursts remain untouched. */
+    /** Removes the surface once its closing finished; a newer transition stays. */
     fun endAppTransition(id: Long) {
-        appTransitions.value = appTransitions.value.filterNot { it.id == id }
+        if (appTransition.value?.id == id) appTransition.value = null
     }
 
     /** A real return from a launched app or a background Home Intent, for the return policy. */

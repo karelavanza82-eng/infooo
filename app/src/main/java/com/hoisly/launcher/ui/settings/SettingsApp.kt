@@ -29,7 +29,7 @@ import com.hoisly.launcher.ui.theme.Motion
 /** Screens of the settings app. */
 enum class SettingsRoute {
     Main, HomeBehavior, General, Grid, Transition, Animations, Glass, Icons, HomeScreen, ContextMenu,
-    HiddenApps, AppIcons, AppNames, License, Import, Weather, FinishSetup, Language,
+    HiddenApps, AppIcons, AppNames, License, About, Import, Weather, FinishSetup, Language,
     HomeIcons, DockIcons, FolderIcons, Folders,
     AppLibrary, LibraryPinned, LibraryCategories, LibraryCategory, Island, Panels,
     LockScreen, Backup, StatusBar,
@@ -92,6 +92,7 @@ fun SettingsApp(vm: SettingsViewModel, actions: SettingsActions, initialRoute: S
             SettingsRoute.AppIcons -> AppListScreen(vm, AppListMode.Icon, back)
             SettingsRoute.AppNames -> AppListScreen(vm, AppListMode.Name, back)
             SettingsRoute.License -> LicenseScreen(back)
+            SettingsRoute.About -> AboutScreen(back)
             SettingsRoute.Import -> ImportScreen(vm, back)
             SettingsRoute.Weather -> WeatherSettingsScreen(back)
             SettingsRoute.Island -> IslandSettingsScreen(vm, actions, back)

@@ -47,7 +47,7 @@ jobs:
           echo "code=$code" >> "$GITHUB_OUTPUT"
           echo "tag=v$name" >> "$GITHUB_OUTPUT"
 
-          echo "Building Hoisly Launcher $name"
+          echo "Building Hiosly $name"
 
       - name: Set up Java 17
         uses: actions/setup-java@v5
@@ -116,7 +116,7 @@ jobs:
         run: |
           mkdir -p dist
 
-          APK="Hoisly-Launcher-${VERSION}.apk"
+          APK="Hiosly-${VERSION}.apk"
 
           cp app/build/outputs/apk/release/app-release.apk "dist/$APK"
 
@@ -129,7 +129,7 @@ jobs:
       - name: Upload APK for direct download
         uses: actions/upload-artifact@v4
         with:
-          name: Hoisly-Launcher-${{ steps.version.outputs.name }}
+          name: Hiosly-${{ steps.version.outputs.name }}
           path: dist/*
           if-no-files-found: error
           retention-days: 30
@@ -142,10 +142,10 @@ jobs:
           VERSION: ${{ steps.version.outputs.name }}
           CODE: ${{ steps.version.outputs.code }}
         run: |
-          APK="Hoisly-Launcher-${VERSION}.apk"
+          APK="Hiosly-${VERSION}.apk"
 
           {
-            echo "**Hoisly Launcher ${VERSION}**"
+            echo "**Hiosly ${VERSION}**"
             echo
             echo "Version code: ${CODE}"
             echo
@@ -163,14 +163,14 @@ jobs:
             gh release upload "$TAG" dist/* --clobber
 
             gh release edit "$TAG" \
-              --title "Hoisly Launcher ${VERSION}" \
+              --title "Hiosly ${VERSION}" \
               --notes-file notes.md
           else
             echo "Creating new GitHub Release..."
 
             gh release create "$TAG" dist/* \
               --target "$GITHUB_SHA" \
-              --title "Hoisly Launcher ${VERSION}" \
+              --title "Hiosly ${VERSION}" \
               --notes-file notes.md \
               --generate-notes
           fi

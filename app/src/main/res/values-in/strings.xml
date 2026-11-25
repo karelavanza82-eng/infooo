@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Dynamic Island</string>
+    <string name="app_name">Hiosly</string>
     <string name="search">Cari</string>
     <string name="glass_prompt_title">Aktifkan efek kaca</string>
     <string name="glass_prompt_body">Untuk memburamkan wallpaper di bawah dock, launcher memerlukan akses Semua file. Android hanya membagikan gambar wallpaper melalui akses ini.</string>
@@ -27,6 +27,12 @@
     <string name="row_change_icon">Ubah ikon aplikasi</string>
     <string name="row_change_name">Ubah nama aplikasi</string>
     <string name="row_dynamic_color">Warna dinamis</string>
+    <string name="row_about">Tentang Hiosly</string>
+    <string name="about_developer">Pengembang</string>
+    <string name="about_project_location">Proyek dibuat di</string>
+    <string name="about_project_location_value">Sragen, Jawa Tengah, Indonesia</string>
+    <string name="about_description">Proyek launcher Android independen.</string>
+    <string name="about_version">Versi 2.1.1</string>
     <string name="row_version">Versi</string>
     <string name="row_license">Lisensi</string>
     <string name="general_hide_navigation">Sembunyikan navigasi</string>

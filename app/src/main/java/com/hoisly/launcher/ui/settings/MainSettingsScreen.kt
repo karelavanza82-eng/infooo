@@ -184,6 +184,7 @@ fun MainSettingsScreen(vm: SettingsViewModel, actions: SettingsActions, navigate
         item { SectionGap() }
         item {
             SettingsCard {
+                NavRow(Icons.Rounded.Info, stringResource(R.string.row_about), onClick = { navigate(SettingsRoute.About) }, tileColor = SettingsStyle.Tile.Purple)
                 NavRow(Icons.Rounded.Info, stringResource(R.string.row_version), onClick = null, value = actions.versionName)
                 NavRow(Icons.Rounded.Gavel, stringResource(R.string.row_license), onClick = { navigate(SettingsRoute.License) }, value = "GPL-3.0+")
             }
