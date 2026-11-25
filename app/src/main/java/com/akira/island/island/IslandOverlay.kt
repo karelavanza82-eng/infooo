@@ -538,6 +538,9 @@ internal fun IslandBody(
     val preview = LocalIslandPreview.current
     val context = LocalContext.current
     val haptic = rememberHaptic()
+    // Mode samping (landscape): titik oranye kecil di pulau kosong, seperti indikator iPhone
+    val sideTurn by IslandBus.contentRotation.collectAsState()
+    val showSideDot = sideTurn != 0 && !preview && !expanded && primary is Act.Idle && !calibrating
     val activities by rememberUpdatedState(LocalActivities.current)
     val scope = rememberCoroutineScope()
     val conf = LocalConfiguration.current
@@ -677,6 +680,20 @@ internal fun IslandBody(
             .then(
                 if (calibrating) Modifier.clip(shape).background(CalibrationRed).border(2.dp, Color.White, shape)
                 else Modifier.islandSurface(s, large, shape, accent, tilt = { previewTilt ?: tilt.value }, sheen = { sheen.value }),
+            )
+            .then(
+                if (showSideDot) {
+                    Modifier.drawWithContent {
+                        drawContent()
+                        val r = size.height * 0.13f
+                        val inset = size.height * 0.5f
+                        // Ujung "atas" pulau setelah diputar: kanan untuk kamera di kiri, kiri untuk kamera di kanan
+                        val cx = if (sideTurn < 0) size.width - inset else inset
+                        drawCircle(Color(0xFFFF9F0A), r, Offset(cx, size.height / 2f))
+                    }
+                } else {
+                    Modifier
+                },
             )
             .then(
                 if (egg && !calibrating) {

@@ -147,7 +147,7 @@ fun FeaturesScreen(open: (Screen) -> Unit) {
     if (confirmReset) {
         AlertDialog(
             onDismissRequest = { confirmReset = false },
-            containerColor = Ui.Card,
+            containerColor = Ui.CardSolid,
             title = { Text(tr("Сбросить настройки?", "Reset settings?")) },
             text = {
                 Text(tr("Размер, цвета, анимации, карточки и события вернутся к значениям по умолчанию.",

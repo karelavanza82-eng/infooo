@@ -1,0 +1,7 @@
+Perubahan:
+1. StatusBarView.kt: sinyal, Wi-Fi, baterai gaya iOS 27 (foto kiri); ikon pesawat klasik menghadap kanan (foto kanan).
+2. Halaman Dynamic Island: latar wallpaper transparan + kartu kaca (WallpaperBackdrop.kt, Theme.kt, Components.kt, MainActivity.kt).
+3. Landscape otomatis mengikuti kamera/notch (default "Di kamera", pengguna lama dimigrasi), titik oranye di pulau kosong saat samping.
+4. Tab Tentang: Developer Muhammadkarel, dibuat di Sragen, Jawa Tengah.
+5. .github/workflows/release.yml diganti sesuai permintaan.
+Belum dikompilasi di sini: jalankan GitHub Actions dan kirim log jika ada error.

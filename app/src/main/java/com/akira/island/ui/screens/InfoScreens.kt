@@ -25,7 +25,9 @@ import androidx.compose.material.icons.rounded.CreditCard
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Apps
 import androidx.compose.material.icons.rounded.Lightbulb
+import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.Navigation
+import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.NewReleases
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.SystemUpdate
@@ -245,22 +247,14 @@ fun AppInfoScreen(open: (Screen) -> Unit) {
                 onClick = { open(Screen.ABOUT) }, color = Tile.Indigo) { Arrow() }
         }
 
-        SectionHeader(tr("Tentang", "About"))
+        SectionHeader(tr("О приложении", "About this app"))
         Group {
-            GroupItem(
-                Pos.First,
-                Icons.Rounded.Info,
-                tr("Developer", "Developer"),
-                "Muhammadkarel",
-                color = Tile.Blue,
-            )
-            GroupItem(
-                Pos.Last,
-                Icons.Rounded.Navigation,
-                tr("Lokasi Proyek", "Project Location"),
-                "Sragen, Jawa Tengah, Indonesia",
-                color = Tile.Green,
-            )
+            GroupItem(Pos.First, Icons.Rounded.Person, tr("Разработчик", "Developer"),
+                "Muhammadkarel", color = Tile.Blue)
+            GroupItem(Pos.Middle, Icons.Rounded.LocationOn, tr("Место создания", "Made in"),
+                "Sragen, Jawa Tengah, Indonesia", color = Tile.Green)
+            GroupItem(Pos.Last, Icons.Rounded.Info, tr("Версия", "Version"),
+                version, color = Tile.Indigo)
         }
     }
 

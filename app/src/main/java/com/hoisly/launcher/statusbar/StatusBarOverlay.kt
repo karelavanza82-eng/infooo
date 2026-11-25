@@ -116,8 +116,6 @@ class StatusBarOverlay(
         }
         if (runCatching { wm.addView(v, lp) }.isFailure) return
         view = v
-        // Persistent small orange privacy-style indicator, matching the requested iOS look.
-        v.showActivityDot = true
         monitor = DeviceStatusMonitor(service) { v.state = it }.also { it.start() }
         handler.postDelayed(poll, POLL_MS)
     }
