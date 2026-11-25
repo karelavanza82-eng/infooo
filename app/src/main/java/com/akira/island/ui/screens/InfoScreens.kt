@@ -82,9 +82,9 @@ fun InstructionScreen(onBack: () -> Unit) {
     Page(tr("Инструкция", "Instructions"), onBack) {
         Step(1, tr("Спец. возможности", "Accessibility"),
             tr(
-                "Откройте «Настройки → Спец. возможности → Установленные приложения → Динамический остров» и включите службу. " +
+                "Откройте «Настройки → Спец. возможности → Установленные приложения → Hoisly» и включите службу. " +
                     "Только такая служба может рисовать поверх строки состояния, рядом с камерой.",
-                "Open Settings → Accessibility → Installed apps → Dynamic Island and turn the service on. Only such a " +
+                "Open Settings → Accessibility → Installed apps → Hoisly and turn the service on. Only such a " +
                     "service can draw over the status bar, next to the camera.",
             ))
         Step(2, tr("Если переключатель серый (Android 13+)", "If the switch is grayed out (Android 13+)"), restrictedHelp())
@@ -273,7 +273,7 @@ private fun AppHeader(version: String, update: UpdateState) {
             Image(ImageVector.vectorResource(R.drawable.ic_launcher_foreground), null, Modifier.requiredSize(126.dp))
         }
         Spacer(Modifier.height(14.dp))
-        Text(tr("Динамический остров", "Dynamic Island"), color = Ui.Text, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Text(tr("Hoisly", "Hoisly"), color = Ui.Text, fontSize = 22.sp, fontWeight = FontWeight.Bold)
         Text("Hoisly", color = Ui.Sub, fontSize = 13.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(top = 1.dp))
         Text(trf("Версия {0}", "Version {0}", version), color = Ui.Sub, fontSize = 15.sp, modifier = Modifier.padding(top = 2.dp))
         val (label, color) = when (update) {

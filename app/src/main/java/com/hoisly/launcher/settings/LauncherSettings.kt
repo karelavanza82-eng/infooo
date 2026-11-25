@@ -193,7 +193,7 @@ class LauncherSettings private constructor(context: Context) {
             ?.let { name -> PageTransition.entries.firstOrNull { it.name == name } }
             ?: PageTransition.Default,
         openCloseAnimation = prefs.getBoolean(KEY_OPEN_ANIM, true),
-        resumeAnimation = prefs.getBoolean(KEY_RESUME_ANIM, true),
+        resumeAnimation = prefs.getBoolean(KEY_RESUME_ANIM, false),
         showLockScreenAfterSleep = prefs.getBoolean(KEY_LOCK_AFTER_SLEEP, true),
         glassTint = prefs.getFloat(KEY_GLASS_TINT, Defaults.glassTint),
         glassEdge = prefs.getBoolean(KEY_GLASS_EDGE, Defaults.glassEdge),
@@ -303,7 +303,7 @@ class LauncherSettings private constructor(context: Context) {
         private const val KEY_LAYOUT_LOCKED = "layout_locked"
         private const val KEY_TRANSITION = "page_transition"
         private const val KEY_OPEN_ANIM = "open_close_animation"
-        private const val KEY_RESUME_ANIM = "resume_animation"
+        private const val KEY_RESUME_ANIM = "resume_animation_v2"
         private const val KEY_LOCK_AFTER_SLEEP = "show_lock_screen_after_sleep"
         private const val KEY_HIDDEN = "hidden_apps"
         private const val KEY_LABELS = "custom_labels"

@@ -99,8 +99,8 @@ fun LauncherScreen(onBack: () -> Unit) {
             Text(if (state.hidden) tr("Вернуть значок", "Show icon") else tr("Скрыть значок", "Hide icon"))
         }
         InfoText(tr(
-            "Чтобы вернуть значок, зажмите плитку «Остров» и нажмите «Вернуть значок». Удаление плитки тоже вернёт значок. Ещё один вход: настройки Android → Спец. возможности → Динамический остров → настройки службы (значок шестерёнки).",
-            "To restore the icon, long-press the Island tile and tap Show icon. Removing the tile also restores the icon. You can also use Android Settings → Accessibility → Dynamic Island → service settings (the gear icon).",
+            "Чтобы вернуть значок, зажмите плитку «Остров» и нажмите «Вернуть значок». Удаление плитки тоже вернёт значок. Ещё один вход: настройки Android → Спец. возможности → Hoisly → настройки службы (значок шестерёнки).",
+            "To restore the icon, long-press the Island tile and tap Show icon. Removing the tile also restores the icon. You can also use Android Settings → Accessibility → Hoisly → service settings (the gear icon).",
         ))
         InfoText(tr(
             "Некоторые рабочие столы обновляют значки с задержкой. Старый закреплённый ярлык после обновления может остаться — удалите его вручную. Android также может оставить системный значок «О приложении». Названия пунктов и видимость шестерёнки зависят от прошивки; если плитка не открывает этот экран, скрытие недоступно.",

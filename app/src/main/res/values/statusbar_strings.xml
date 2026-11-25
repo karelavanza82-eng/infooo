@@ -7,7 +7,7 @@
     <string name="statusbar_allowed">On</string>
     <string name="statusbar_allow">Turn on</string>
     <string name="statusbar_off">The custom status bar is off.</string>
-    <string name="statusbar_need_service">Turn on the Dynamic Island accessibility service so the status bar can appear over every app.</string>
+    <string name="statusbar_need_service">Turn on the Hoisly accessibility service so the status bar can appear over every app.</string>
     <string name="statusbar_ready">Showing over all apps.</string>
     <string name="statusbar_section_color">Icon color</string>
     <string name="statusbar_color_auto">Auto</string>

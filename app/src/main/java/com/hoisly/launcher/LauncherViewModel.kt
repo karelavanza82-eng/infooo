@@ -183,15 +183,20 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
     /** Emits when Home is pressed while already on the home screen: close the top state or execute RepeatHome. */
     val homePressed: MutableSharedFlow<Unit> = MutableSharedFlow(extraBufferCapacity = 1)
 
+    // Wallpaper images of the same wallpaper that an earlier instance of this ViewModel already
+    // prepared: a new instance (home activity started again) paints at once, with no blur pass.
+    private val restoredWallpaper: WallpaperSnapshot? =
+        lastWallpaper?.takeIf { it.id != -1 && it.id == WallpaperBlur.wallpaperId(app) }
+
     /** Blurred wallpaper for glass surfaces; `null` until loaded or when not accessible. */
-    val glass: MutableStateFlow<GlassSource?> = MutableStateFlow(null)
-    private val _homeWallpaper = MutableStateFlow<ImageBitmap?>(null)
+    val glass: MutableStateFlow<GlassSource?> = MutableStateFlow(restoredWallpaper?.glass)
+    private val _homeWallpaper = MutableStateFlow<ImageBitmap?>(restoredWallpaper?.home)
     /** Unsaturated wallpaper for the full backdrop blur, independent of the glass toggle. */
     val homeWallpaper: StateFlow<ImageBitmap?> = _homeWallpaper
     /** Full-resolution wallpaper the home screen draws itself while it moves with the phone. */
-    private val _parallaxWallpaper = MutableStateFlow<ImageBitmap?>(null)
+    private val _parallaxWallpaper = MutableStateFlow<ImageBitmap?>(restoredWallpaper?.parallax)
     val parallaxWallpaper: StateFlow<ImageBitmap?> = _parallaxWallpaper
-    private var wallpaperId = Int.MIN_VALUE
+    private var wallpaperId = restoredWallpaper?.id ?: Int.MIN_VALUE
     private var wallpaperJob: Job? = null
 
     private val dockCapacity: Int get() = settings.state.value.dockSlots
@@ -452,7 +457,9 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
             val surfaces = WallpaperBlur.load(getApplication(), sharp = background)
             _homeWallpaper.value = background
             glass.value = surfaces
-            _parallaxWallpaper.value = WallpaperBlur.loadFull(getApplication())
+            val full = WallpaperBlur.loadFull(getApplication())
+            _parallaxWallpaper.value = full
+            lastWallpaper = WallpaperSnapshot(id, surfaces, background, full)
         }
     }
 
@@ -463,5 +470,16 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
     private companion object {
         /** Apps a medium suggestions widget shows. */
         const val SUGGESTED_APPS = 8
+
+        /** Wallpaper images of the last load; outlives the ViewModel, see [restoredWallpaper]. */
+        @Volatile var lastWallpaper: WallpaperSnapshot? = null
     }
 }
+
+/** Prepared images of the wallpaper with [id] ([WallpaperBlur.wallpaperId]). */
+private class WallpaperSnapshot(
+    val id: Int,
+    val glass: GlassSource?,
+    val home: ImageBitmap?,
+    val parallax: ImageBitmap?,
+)

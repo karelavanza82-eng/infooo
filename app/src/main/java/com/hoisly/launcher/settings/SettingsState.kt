@@ -51,8 +51,11 @@ data class SettingsState(
     val pageTransition: PageTransition = PageTransition.Default,
     /** Scale animation when an app is launched from its icon. */
     val openCloseAnimation: Boolean = true,
-    /** Icons zoom into place when returning to the home screen from an app. */
-    val resumeAnimation: Boolean = true,
+    /**
+     * Icons fade and zoom into place when returning to the home screen from an app. Off by default:
+     * the fade starts from an empty screen, which looks like the home screen reloading.
+     */
+    val resumeAnimation: Boolean = false,
     /** Show Hoisly's decorative launcher lock screen when returning after the display was off. */
     val showLockScreenAfterSleep: Boolean = true,
 
