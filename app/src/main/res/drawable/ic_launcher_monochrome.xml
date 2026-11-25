@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- "iOS 27" for themed icons (Android 13+ and Hoisly's own Tinted appearance); only its alpha is used. -->
-<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
-    android:src="@drawable/ic_launcher_mono_art"
-    android:gravity="fill"
-    android:filter="true" />
