@@ -47,7 +47,7 @@ class StatusBarOverlay(
         jobs = listOf(
             scope.launch { StatusBarStore.state.collect { apply(it) } },
             scope.launch {
-                combine(IslandBus.shadeOpen, IslandBus.keyguard, IslandBus.screenOn) { shade, keyguard, on ->
+                combine(IslandBus.shadeOpen, IslandBus.keyguard, IslandBus.screenOn, IslandBus.landscape) { shade, keyguard, on, _ ->
                     on && !shade && !keyguard
                 }.collect { visibleByState = it; updateVisibility() }
             },
@@ -132,9 +132,12 @@ class StatusBarOverlay(
     private fun updateVisibility() {
         val v = view ?: return
         val landscape = service.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-        val show = visibleByState && (!prefs.hideInLandscape || !landscape)
+        // Landscape is always unobstructed: hide the custom overlay and, when the optional
+        // secure-setting grant exists, hide the duplicated native status icons as well.
+        val show = visibleByState && !landscape
         val target = if (show) View.VISIBLE else View.INVISIBLE
         if (v.visibility != target) v.visibility = target
+        SystemIconHider.apply(service, hide = prefs.hideSystemIcons || landscape)
     }
 
     private fun sampleNow() {

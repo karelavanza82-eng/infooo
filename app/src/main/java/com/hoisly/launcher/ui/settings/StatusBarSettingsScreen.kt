@@ -105,7 +105,6 @@ fun StatusBarSettingsScreen(onBack: () -> Unit) {
                 SwitchRow(stringResource(R.string.statusbar_show_network), prefs.showNetworkLabel, { v -> save { it.copy(showNetworkLabel = v) } })
                 SwitchRow(stringResource(R.string.statusbar_show_wifi), prefs.showWifi, { v -> save { it.copy(showWifi = v) } })
                 SwitchRow(stringResource(R.string.statusbar_show_battery), prefs.showBattery, { v -> save { it.copy(showBattery = v) } })
-                SwitchRow(stringResource(R.string.statusbar_hide_landscape), prefs.hideInLandscape, { v -> save { it.copy(hideInLandscape = v) } })
             }
         }
         item { SectionHeader(stringResource(R.string.statusbar_section_look)) }

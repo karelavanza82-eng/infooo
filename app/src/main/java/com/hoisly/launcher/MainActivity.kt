@@ -2,6 +2,7 @@ package com.hoisly.launcher
 
 import com.hoisly.launcher.ui.theme.Motion
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.Job
 import android.Manifest
 import android.content.ContentUris
 import android.provider.AlarmClock
@@ -207,6 +208,7 @@ class MainActivity : ComponentActivity(), LauncherActions {
 
     /** True after another activity covered the home screen; used for the resume animation. */
     private var leftHome = false
+    private var pendingVisualLaunch: Job? = null
     private val homeIntents = HomeIntentRouter()
     private lateinit var icons: IconLoader
     private var iconSizePx: Int = 0
@@ -354,46 +356,32 @@ class MainActivity : ComponentActivity(), LauncherActions {
     }
 
     override fun launch(app: AppInfo, bounds: Rect) {
-        // Parallel icon-to-app transitions are intentionally accepted; a new tap starts its
-        // own surface instead of waiting for the previous surface to finish.
-        vm.launchStats.recordLaunch(app.key)
         val source = bounds.toAndroidRect()
-        val animate = vm.settings.state.value.openCloseAnimation
-        if (animate && !bounds.isEmpty && animatorScale() > 0f) {
-            launchThroughSurface(app, bounds, source)
+        if (bounds.isEmpty || animatorScale() <= 0f) {
+            pendingVisualLaunch?.cancel()
+            vm.launchStats.recordLaunch(app.key)
+            val options = ActivityOptions.makeCustomAnimation(this, 0, 0)
+                .withoutSplashAnimation()
+                .toBundle()
+            startApp(app, source, options)
             return
         }
-        // If there is no icon rectangle (for example a search command), do not ask Android
-        // to run its own scale-up animation. Icon launches use the launcher-drawn surface below;
-        // launches without an origin should simply appear without a second system animation.
-        val options = ActivityOptions.makeCustomAnimation(this, 0, 0)
-            .withoutSplashAnimation()
-            .toBundle()
-        startApp(app, source, options)
-    }
 
-    /**
-     * The icon grows into a rounded surface that fills the screen while the home screen blurs;
-     * the app starts shortly before it is full and fades in over it. Returning shrinks the
-     * surface back into the icon ([onResume]).
-     */
-    private fun launchThroughSurface(app: AppInfo, bounds: Rect, source: android.graphics.Rect) {
+        // Every tap creates its own short visual burst. It is deliberately non-blocking:
+        // a new tap never waits for an earlier burst and does not start another Android task.
         vm.beginAppTransition(bounds, icons.cached(app, iconSizePx))
-        lifecycleScope.launch {
-            delay((Motion.APP_LEAD_MS * animatorScale()).toLong())
-            // The icon-origin surface is the only opening animation. Explicitly disable
-            // the app-window transition (0, 0) so Android cannot add a second animation on top.
-            // The solid-color splash style also prevents a centered app icon from scaling/fading.
+
+        // Debounce only the real Activity hand-off. While the user is tapping quickly, Hoisly
+        // remains in front and shows every popup; after the taps settle, only the last choice
+        // is actually launched. This avoids stacking several app tasks behind the launcher.
+        pendingVisualLaunch?.cancel()
+        pendingVisualLaunch = lifecycleScope.launch {
+            delay(PARALLEL_LAUNCH_SETTLE_MS)
+            vm.launchStats.recordLaunch(app.key)
             val options = ActivityOptions.makeCustomAnimation(this@MainActivity, 0, 0)
                 .withoutSplashAnimation()
                 .toBundle()
-            if (!startApp(app, source, options)) {
-                vm.beginAppClosing()
-                return@launch
-            }
-            // Still in front after this long: the app did not open, so the surface goes home again.
-            delay(Motion.APP_START_TIMEOUT_MS)
-            if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) vm.beginAppClosing()
+            startApp(app, source, options)
         }
     }
 
@@ -535,6 +523,7 @@ class MainActivity : ComponentActivity(), LauncherActions {
     private companion object {
         const val REQUEST_CONFIGURE_WIDGET = 41
         const val KEY_PENDING_PHOTO = "pending_photo_widget"
+        const val PARALLEL_LAUNCH_SETTLE_MS = 430L
     }
 
     private fun Rect.toAndroidRect(): android.graphics.Rect =

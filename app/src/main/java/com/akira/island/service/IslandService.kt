@@ -515,7 +515,12 @@ class IslandService : AccessibilityService() {
             !(landscape && s.landscape == LandscapeMode.HIDE) && !IslandBus.offSchedule.value &&
             !(keyguard && s.lockScreen == LockScreenMode.HIDE) && !(s.hideOnAod && isAmbientDisplay())
         // «У камеры»: в альбомной ориентации остров повёрнут к краю с камерой; иначе — как обычно, сверху
-        val turn = if (landscape && s.landscape == LandscapeMode.CAMERA) rotation else 0
+        val turn = when {
+            !landscape -> 0
+            s.landscape == LandscapeMode.CAMERA -> rotation
+            s.landscape == LandscapeMode.FOLLOW_NOTCH -> notchSideRotation(rotation)
+            else -> 0
+        }
         IslandBus.contentRotation.value = turn
         display?.visibility = if (visible) View.VISIBLE else View.GONE
         // Остров спрятан — выключен, вне расписания, на экране блокировки или в повороте (скажем, смотрят видео):
@@ -527,6 +532,26 @@ class IslandService : AccessibilityService() {
         if (!visible) Controls.collapse()
         if (placeDisplayWindow(s, turn)) display?.let { v -> runCatching { wm?.updateViewLayout(v, displayParams) } }
         updateTouchWindow()
+    }
+
+
+    /**
+     * Resolve the physical side of the display cutout in the current landscape orientation.
+     * Rotation is only a fallback for devices/ROMs that do not expose DisplayCutout to overlays.
+     */
+    private fun notchSideRotation(fallback: Int): Int {
+        val cutout = runCatching {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                wm?.currentWindowMetrics?.windowInsets?.displayCutout
+            } else {
+                display?.rootWindowInsets?.displayCutout
+            }
+        }.getOrNull() ?: return fallback
+        val bounds = cutout.boundingRects.maxByOrNull { it.width().toLong() * it.height().toLong() }
+            ?: return fallback
+        val screenWidth = resources.displayMetrics.widthPixels
+        if (screenWidth <= 0) return fallback
+        return if (bounds.centerX() < screenWidth / 2) -90 else 90
     }
 
     /**

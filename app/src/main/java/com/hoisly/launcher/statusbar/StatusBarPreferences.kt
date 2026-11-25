@@ -20,7 +20,7 @@ data class StatusBarPreferences(
     val showNetworkLabel: Boolean = true,
     val showWifi: Boolean = true,
     val showBattery: Boolean = true,
-    val hideInLandscape: Boolean = false,
+    val hideInLandscape: Boolean = true,
     /** Experimental: asks SystemUI to hide its own clock/signal/battery slots (needs WRITE_SECURE_SETTINGS). */
     val hideSystemIcons: Boolean = false,
     val scale: Float = DEFAULT_SCALE,

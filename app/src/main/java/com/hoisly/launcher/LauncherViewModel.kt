@@ -1,7 +1,8 @@
 package com.hoisly.launcher
 
 import com.hoisly.launcher.ui.home.AppTransition
-import com.hoisly.launcher.ui.home.AppTransitionState
+import com.hoisly.launcher.ui.home.AppTransitionPhase
+import com.hoisly.launcher.ui.home.iconSurfaceColor
 import android.app.Application
 import android.appwidget.AppWidgetProviderInfo
 import com.hoisly.launcher.data.AppWidgetItem
@@ -152,14 +153,30 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
     /** App whose "−" badge was tapped: shows the remove dialog. */
     val removeRequest: MutableStateFlow<AppInfo?> = MutableStateFlow(null)
 
-    /** Independent app-opening surfaces; the state holder keeps parallel transitions in sync. */
-    private val appTransitionState = AppTransitionState()
-    val appTransition: MutableStateFlow<AppTransition?> get() = appTransitionState.current
-    val appTransitions: MutableStateFlow<List<AppTransition>> get() = appTransitionState.active
+    /** Independent visual launch bursts. They are UI-only; they never create extra Android tasks. */
+    val appTransitions: MutableStateFlow<List<AppTransition>> = MutableStateFlow(emptyList())
+    private var appTransitionIds: Long = 0
 
-    fun beginAppTransition(bounds: Rect, icon: ImageBitmap?) = appTransitionState.begin(bounds, icon)
-    fun beginAppClosing(): Boolean = appTransitionState.closeOpening()
-    fun endAppTransition(id: Long) = appTransitionState.finish(id)
+    /** Adds a new icon-origin burst without cancelling any burst already on screen. */
+    fun beginAppTransition(bounds: Rect, icon: ImageBitmap?) {
+        val next = AppTransition(++appTransitionIds, AppTransitionPhase.Opening, bounds, icon, iconSurfaceColor(icon))
+        appTransitions.value = (appTransitions.value + next).takeLast(12)
+    }
+
+    /** Marks the newest visual burst as closing when returning from the selected app. */
+    fun beginAppClosing(): Boolean {
+        val index = appTransitions.value.indexOfLast { it.phase == AppTransitionPhase.Opening }
+        if (index < 0) return false
+        val items = appTransitions.value.toMutableList()
+        items[index] = items[index].copy(phase = AppTransitionPhase.Closing)
+        appTransitions.value = items
+        return true
+    }
+
+    /** Removes only the completed burst; other simultaneous bursts remain untouched. */
+    fun endAppTransition(id: Long) {
+        appTransitions.value = appTransitions.value.filterNot { it.id == id }
+    }
 
     /** A real return from a launched app or a background Home Intent, for the return policy. */
     val returnToHome: MutableSharedFlow<Unit> = MutableSharedFlow(extraBufferCapacity = 1)

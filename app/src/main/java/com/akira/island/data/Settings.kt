@@ -140,6 +140,7 @@ enum class LandscapeMode(private val ru: String, private val en: String, private
         "Остров остаётся над камерой, как на iPhone: повёрнут вместе с телефоном и не уезжает",
         "The island stays over the camera like on iPhone: it turns with the phone and doesn't move"),
     TOP("Сверху по центру", "Top center", "Посередине верхнего края экрана", "In the middle of the top edge of the screen"),
+    FOLLOW_NOTCH("Следовать за вырезом", "Follow the notch", "Автоматически следует за камерой при любом повороте", "Automatically follows the camera cutout in either landscape orientation"),
     ;
 
     val title: String get() = tr(ru, en)
@@ -406,7 +407,7 @@ data class IslandSettings(
     /** Остров на экране блокировки */
     val lockScreen: LockScreenMode = LockScreenMode.SHOW,
     /** Остров в альбомной ориентации; заменяет «Скрывать в альбомной ориентации» */
-    val landscape: LandscapeMode = LandscapeMode.HIDE,
+    val landscape: LandscapeMode = LandscapeMode.FOLLOW_NOTCH,
     /** Зарядка — только плашка при подключении, без капсулы с процентами всё время зарядки */
     val chargingBrief: Boolean = false,
 
@@ -541,15 +542,23 @@ object SettingsRepo {
             }
         }
         migrateTo5()
+        migrateTo6()
     }
 
     /**
-     * 1.7: вместо «Скрывать в альбомной ориентации» — выбор из трёх. Выключенное скрытие было островом
+     * 1.7: instead of the old hide-in-landscape flag, migrate to the landscape placement choices.
+     * The disabled legacy hide flag becomes top-center until the automatic notch mode migration.
      * сверху по центру — так и остаётся.
      */
     private fun migrateTo5() {
         if (current.layoutVersion >= 5) return
         update { copy(landscape = if (hideInLandscape) LandscapeMode.HIDE else LandscapeMode.TOP, layoutVersion = 5) }
+    }
+
+    /** 1.7.1: add automatic notch-following landscape behavior as the default. */
+    private fun migrateTo6() {
+        if (current.layoutVersion >= 6) return
+        update { copy(landscape = LandscapeMode.FOLLOW_NOTCH, layoutVersion = 6) }
     }
 
     fun update(block: IslandSettings.() -> IslandSettings) {

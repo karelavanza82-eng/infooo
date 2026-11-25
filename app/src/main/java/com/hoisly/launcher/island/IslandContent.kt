@@ -99,19 +99,6 @@ internal fun IslandContent(
 
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
-    var islandFrame by remember { mutableStateOf(IntSize.Zero) }
-    val landscapeOffset = if (islandFrame == IntSize.Zero) {
-        (IslandTokens.IdleWidth - IslandTokens.CompactHeight) / 2
-    } else {
-        with(LocalDensity.current) {
-            ((islandFrame.width - islandFrame.height).coerceAtLeast(0) / 2).toDp()
-        }
-    }
-    LaunchedEffect(geometry.isLandscape, islandFrame) {
-        if (islandFrame != IntSize.Zero) {
-            resize(if (geometry.isLandscape) IntSize(islandFrame.height, islandFrame.width) else islandFrame)
-        }
-    }
 
     val squeeze by animateFloatAsState(
         if (pressed && !card.expanded) PRESSED_SCALE else 1f,
@@ -145,16 +132,10 @@ internal fun IslandContent(
                     )
                 },
                 modifier = Modifier
-                    .offset(y = if (geometry.isLandscape) landscapeOffset else 0.dp)
                     .graphicsLayer {
-                        rotationZ = if (geometry.isLandscape) 90f else 0f
                         scaleX = squeeze
                         scaleY = squeeze
-                        transformOrigin = if (geometry.isLandscape) {
-                            TransformOrigin(0.5f, 0.5f)
-                        } else {
-                            TransformOrigin(0.5f, 0f)
-                        }
+                        transformOrigin = TransformOrigin(0.5f, 0f)
                     }
                     .pointerInput(actions) {
                         awaitEachGesture {
@@ -191,7 +172,7 @@ internal fun IslandContent(
                     ) {
                         actions.event(IslandEvent.Expand)
                     },
-                onFrame = { frame -> islandFrame = frame },
+                onFrame = resize,
                 onSettled = { item, size ->
                     settled = item to size
                     if (item == IslandCard.Hidden) exited()
