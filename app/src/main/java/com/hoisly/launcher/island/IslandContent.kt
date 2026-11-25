@@ -147,7 +147,6 @@ internal fun IslandContent(
                 } ?: CompactPlaceholder()
             }
         }
-        } // closes IslandMorph
         // Orange activity indicator dot — appears at top-right of island when active
         if (hasActivity) {
             Box(

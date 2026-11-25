@@ -1,16 +1,11 @@
 name: Release
 
+# Publishes a GitHub release when versionName in app/build.gradle.kts gets a value
+# that has no v<versionName> tag yet.
 on:
   push:
     branches: [main]
-    paths:
-      - 'app/build.gradle.kts'
-      - '.github/workflows/release.yml'
-      - 'app/src/**'
-      - 'gradle/**'
-      - 'gradlew'
-      - 'settings.gradle.kts'
-      - 'build.gradle.kts'
+    paths: [app/build.gradle.kts, .github/workflows/release.yml]
   workflow_dispatch:
 
 concurrency:
@@ -22,48 +17,51 @@ permissions:
 
 jobs:
   release:
-    name: Build and Publish APK
+    name: Release new version
     runs-on: ubuntu-latest
     timeout-minutes: 60
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v5
 
       - name: Read version
         id: version
         run: |
-          name=$(sed -nE 's/^[[:space:]]*versionName[[:space:]]*=[[:space:]]*"([^"]+)".*/\1/p' app/build.gradle.kts | head -1)
-          code=$(sed -nE 's/^[[:space:]]*versionCode[[:space:]]*=[[:space:]]*([0-9]+).*/\1/p' app/build.gradle.kts | head -1)
-
+          name=$(sed -nE 's/^\s*versionName\s*=\s*"([^"]+)".*/\1/p' app/build.gradle.kts)
+          code=$(sed -nE 's/^\s*versionCode\s*=\s*([0-9]+).*/\1/p' app/build.gradle.kts)
           if [ -z "$name" ] || [ -z "$code" ]; then
-            echo "::error::versionName or versionCode not found"
+            echo "::error::versionName or versionCode not found in app/build.gradle.kts"
             exit 1
           fi
-
           echo "name=$name" >> "$GITHUB_OUTPUT"
           echo "code=$code" >> "$GITHUB_OUTPUT"
           echo "tag=v$name" >> "$GITHUB_OUTPUT"
+          if git ls-remote --exit-code --tags origin "refs/tags/v$name" > /dev/null; then
+            echo "Tag v$name already exists, nothing to release."
+            echo "new=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "new=true" >> "$GITHUB_OUTPUT"
+          fi
 
-          echo "Building Hoisly Launcher $name"
-
-      - name: Set up Java 17
-        uses: actions/setup-java@v5
+      - uses: actions/setup-java@v5
+        if: steps.version.outputs.new == 'true'
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v3
+        if: steps.version.outputs.new == 'true'
+        # The default package list includes the removed legacy "tools" package.
         with:
           packages: platform-tools
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v4
+        if: steps.version.outputs.new == 'true'
+        with:
+          cache-read-only: true
 
-      - name: Configure Gradle memory
+      # Hosted runners have 16 GB; the project defaults are sized for a small desktop.
+      - name: Raise Gradle memory limits
+        if: steps.version.outputs.new == 'true'
         run: |
           mkdir -p ~/.gradle
           cat >> ~/.gradle/gradle.properties <<'EOF'
@@ -72,112 +70,58 @@ jobs:
           EOF
 
       - name: Restore signing keystore
+        if: steps.version.outputs.new == 'true'
         env:
           KEYSTORE_BASE64: ${{ secrets.HOISLY_KEYSTORE_BASE64 }}
         run: |
           if [ -z "$KEYSTORE_BASE64" ]; then
-            echo "::error::HOISLY_KEYSTORE_BASE64 secret is missing"
+            echo "::error::Secret HOISLY_KEYSTORE_BASE64 is not set; releases must be signed with the project key."
             exit 1
           fi
-
           echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.keystore"
-
-          if [ ! -s "$RUNNER_TEMP/release.keystore" ]; then
-            echo "::error::Keystore is empty or invalid"
-            exit 1
-          fi
-
           echo "HOISLY_KEYSTORE_FILE=$RUNNER_TEMP/release.keystore" >> "$GITHUB_ENV"
 
       - name: Test and build release APK
+        if: steps.version.outputs.new == 'true'
         env:
           HOISLY_KEYSTORE_PASSWORD: ${{ secrets.HOISLY_KEYSTORE_PASSWORD }}
           HOISLY_KEY_ALIAS: ${{ secrets.HOISLY_KEY_ALIAS }}
           HOISLY_KEY_PASSWORD: ${{ secrets.HOISLY_KEY_PASSWORD }}
+        run: ./gradlew :app:testDebugUnitTest :app:assembleRelease --stacktrace
+
+      - name: Prepare assets
+        if: steps.version.outputs.new == 'true'
         run: |
-          chmod +x gradlew
-          ./gradlew :app:testDebugUnitTest :app:assembleRelease --stacktrace
-
-      - name: Verify APK
-        run: |
-          APK="app/build/outputs/apk/release/app-release.apk"
-
-          if [ ! -f "$APK" ]; then
-            echo "::error::Release APK was not generated"
-            find app/build/outputs -type f
-            exit 1
-          fi
-
-          ls -lh "$APK"
-
-      - name: Prepare release assets
-        env:
-          VERSION: ${{ steps.version.outputs.name }}
-        run: |
-          mkdir -p dist
-
-          APK="Hoisly-Launcher-${VERSION}.apk"
-
-          cp app/build/outputs/apk/release/app-release.apk "dist/$APK"
-
+          mkdir dist
+          apk="Hoisly-Launcher-${{ steps.version.outputs.name }}.apk"
+          cp app/build/outputs/apk/release/app-release.apk "dist/$apk"
           cd dist
-          sha256sum "$APK" > "$APK.sha256"
+          sha256sum "$apk" > "$apk.sha256"
+          cat "$apk.sha256"
 
-          ls -lh
-
-      # Direct download from GitHub Actions
-      - name: Upload APK for direct download
-        uses: actions/upload-artifact@v4
-        with:
-          name: Hoisly-Launcher-${{ steps.version.outputs.name }}
-          path: dist/*
-          if-no-files-found: error
-          retention-days: 30
-
-      # Publish APK to GitHub Releases
-      - name: Publish GitHub Release
+      - name: Create release
+        if: steps.version.outputs.new == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.version.outputs.tag }}
-          VERSION: ${{ steps.version.outputs.name }}
+          NAME: ${{ steps.version.outputs.name }}
           CODE: ${{ steps.version.outputs.code }}
         run: |
-          APK="Hoisly-Launcher-${VERSION}.apk"
-
+          apk="Hoisly-Launcher-$NAME.apk"
           {
-            echo "**Hoisly Launcher ${VERSION}**"
-            echo
-            echo "Version code: ${CODE}"
-            echo
-            echo "Release APK is available below."
+            echo "**Hoisly Launcher $NAME** (versionCode $CODE)"
             echo
             echo "SHA-256:"
             echo '```'
-            cat "dist/${APK}.sha256"
+            cat "dist/$apk.sha256"
             echo '```'
           } > notes.md
+          gh release create "$TAG" dist/* \
+            --target "$GITHUB_SHA" \
+            --title "Hoisly Launcher $NAME" \
+            --notes-file notes.md \
+            --generate-notes
 
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            echo "Release already exists. Updating APK assets..."
-
-            gh release upload "$TAG" dist/* --clobber
-
-            gh release edit "$TAG" \
-              --title "Hoisly Launcher ${VERSION}" \
-              --notes-file notes.md
-          else
-            echo "Creating new GitHub Release..."
-
-            gh release create "$TAG" dist/* \
-              --target "$GITHUB_SHA" \
-              --title "Hoisly Launcher ${VERSION}" \
-              --notes-file notes.md \
-              --generate-notes
-          fi
-
-          echo "Release published successfully!"
-
-      - name: Remove signing keystore
+      - name: Remove keystore
         if: always()
-        run: |
-          rm -f "$RUNNER_TEMP/release.keystore"
+        run: rm -f "$RUNNER_TEMP/release.keystore"
