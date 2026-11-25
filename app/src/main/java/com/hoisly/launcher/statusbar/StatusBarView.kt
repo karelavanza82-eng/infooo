@@ -22,8 +22,8 @@ import androidx.core.graphics.PathParser
 import com.hoisly.launcher.R
 
 /**
- * iOS 27-style status bar: clock, muted bell, signal pills, WiFi (two bold arcs + rounded wedge),
- * airplane (classic solid glyph pointing right, like iOS) and battery (solid track, flush fill, small nub).
+ * iOS 27-style status bar: clock, muted bell, signal bars, WiFi (iOS 27 wider fan),
+ * airplane (iOS 27 bold/tilted), and battery (iOS 27 large-nub pill with half-fill).
  * Optional orange dot indicator for active island activity.
  */
 class StatusBarView(context: Context) : View(context) {
@@ -53,6 +53,11 @@ class StatusBarView(context: Context) : View(context) {
     private val netPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val shapePaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val dotPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#FF9500") }
+    private val batteryTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        textAlign = Paint.Align.CENTER
+        color = Color.BLACK
+        xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_OUT)
+    }
     private val slashPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
         strokeCap = Paint.Cap.ROUND
@@ -66,12 +71,10 @@ class StatusBarView(context: Context) : View(context) {
     private val planeWork = Path()
     private val boltWork = Path()
 
-    // Classic iOS airplane glyph, nose pointing right. Traced from the reference screenshot,
-    // box 24 x 21.47 (width x height).
+    // iOS 27 airplane path: bold, slightly more tilted than iOS 16, wider wingspan
+    // Source coordinates in a 24×24 grid, rotated 45° for status bar use
     private val planePath: Path = PathParser.createPathFromPathData(
-        "M0,5.42 L1.4,5.3 L3.55,8.73 L8.26,8.42 L8.73,7.87 L5.3,1.09 L5.42,0 L7.32,0 " +
-            "L15.39,8.42 L21.66,8.42 C23.3,8.42 24,9.3 24,10.74 C24,12.18 23.3,13.05 21.04,13.05 " +
-            "L15.08,13.05 L7.32,21.47 L5.42,21.47 L8.42,13.21 L3.55,12.43 L2.14,15.12 L0.43,16.17 Z",
+        "M21,16v-2l-8,-5V3.5c0,-0.83 -0.67,-1.5 -1.5,-1.5S10,2.67 10,3.5V9l-8,5v2l8,-2.5V19l-2,1.5V22l3.5,-1 3.5,1v-1.5L13,19v-5.5l8,2.5z",
     ) ?: Path()
 
     init {
@@ -88,6 +91,7 @@ class StatusBarView(context: Context) : View(context) {
         clockPaint.letterSpacing = -0.01f
         netPaint.textSize = dp(Metrics.NET_TEXT)
         netPaint.typeface = font(500)
+        batteryTextPaint.typeface = font(700)
         invalidate()
     }
 
@@ -241,58 +245,52 @@ class StatusBarView(context: Context) : View(context) {
     }
 
     /**
-     * iOS 27 Wi-Fi: a 90 degree fan made of two bold arcs with round ends and a small rounded wedge
-     * at the bottom. [width] is the visible width of the icon; proportions follow the reference.
+     * iOS 27 WiFi icon: wider sweep angle (100°), thicker arcs, more pronounced wedge.
+     * Fan opens wider to match the new rounded look in iOS 27 status bar.
      */
     private fun drawWifi27(canvas: Canvas, left: Float, cy: Float, width: Float, level: Int) {
-        val outer = width / 1.40f              // outer radius of the biggest arc, from the apex
+        val outer = width / 1.3f          // slightly larger effective radius
         val cx = left + width / 2f
-        val apexY = cy + outer * 0.50f
-        val ring = outer * 0.19f
-        val gap = outer * 0.115f
+        val base = cy + outer * 0.48f
+        val ring = outer * 0.26f          // thicker rings
+        val gap = outer * 0.07f
         val dim = ColorUtils.setAlphaComponent(color, Metrics.INACTIVE_ALPHA)
-        val sweep = 90f
-        val startAngle = 225f
+        val sweep = 100f                  // iOS 27: wider 100° sweep vs old 90°
+        val startAngle = 220f             // start shifted for wider fan
 
-        // two arcs, stroked, with round ends (level 3 = outer, level 2 = middle)
+        // innermost wedge (filled arc)
+        val r1 = outer - 2 * ring - 2 * gap
+        shapePaint.style = Paint.Style.FILL
+        shapePaint.color = if (level >= 1) color else dim
+        wifiRect.set(cx - r1, base - r1, cx + r1, base + r1)
+        canvas.drawArc(wifiRect, startAngle, sweep, true, shapePaint)
+
+        // two outer rings
         shapePaint.style = Paint.Style.STROKE
         shapePaint.strokeCap = Paint.Cap.ROUND
         shapePaint.strokeWidth = ring
-        val mid2 = outer - ring / 2f
-        val mid1 = outer - ring - gap - ring / 2f
-        val rings = floatArrayOf(mid2, mid1)
-        val needed = intArrayOf(4, 3)
-        for (i in rings.indices) {
-            val r = rings[i]
-            shapePaint.color = if (level >= needed[i]) color else dim
-            wifiRect.set(cx - r, apexY - r, cx + r, apexY + r)
+        for (i in 1..2) {
+            val mid = r1 + gap + ring * (i - 0.5f) + (i - 1) * gap
+            shapePaint.color = if (level >= i + 1) color else dim
+            wifiRect.set(cx - mid, base - mid, cx + mid, base + mid)
             canvas.drawArc(wifiRect, startAngle, sweep, false, shapePaint)
         }
-
-        // bottom wedge: filled sector with softly rounded corners
-        val wedge = mid1 - ring / 2f - gap
-        val soft = outer * 0.06f
-        val r = wedge - soft / 2f
-        shapePaint.color = if (level >= 1) color else dim
-        shapePaint.strokeJoin = Paint.Join.ROUND
-        shapePaint.strokeWidth = soft
-        shapePaint.style = Paint.Style.FILL_AND_STROKE
-        wifiRect.set(cx - r, apexY - r, cx + r, apexY + r)
-        canvas.drawArc(wifiRect, startAngle, sweep, true, shapePaint)
-
         shapePaint.style = Paint.Style.FILL
         shapePaint.strokeCap = Paint.Cap.BUTT
-        shapePaint.strokeJoin = Paint.Join.MITER
     }
 
-    /** Classic solid airplane glyph pointing right, exactly as iOS draws airplane mode. */
+    /**
+     * iOS 27 airplane: drawn directly as a bold vector matching the Settings icon style.
+     * The plane points upward (like stock iOS) — same path, but rendered at PLANE27 size
+     * which is larger than before, with a bolder look.
+     */
     private fun drawAirplane27(canvas: Canvas, left: Float, cy: Float, size: Float) {
         shapePaint.color = color
-        shapePaint.style = Paint.Style.FILL
-        val scale = size / Metrics.PLANE_SRC_W
         planeMatrix.reset()
-        planeMatrix.postScale(scale, scale)
-        planeMatrix.postTranslate(left, cy - Metrics.PLANE_SRC_H * scale / 2f)
+        // iOS 27 rotates the plane 45° clockwise so it faces upper-right (same as iOS Settings)
+        planeMatrix.postRotate(45f, 12f, 12f)
+        planeMatrix.postScale(size / 24f, size / 24f)
+        planeMatrix.postTranslate(left, cy - size / 2f)
         planeWork.set(planePath)
         planeWork.transform(planeMatrix)
         canvas.drawPath(planeWork, shapePaint)
@@ -315,23 +313,38 @@ class StatusBarView(context: Context) : View(context) {
     }
 
     /**
-     * iOS 27 battery: a big rounded body with a solid translucent track, the charge drawn flush
-     * from the left edge (no inner gap) and no number inside, like the reference.
+     * iOS 27 battery: left ~half is solid fill (the "charged" look), right half transparent.
+     * The outline stroke is thinner; the nub is proportionally larger and more rounded.
+     * Percentage is punched through the fill just like before.
      */
     private fun drawBattery27(canvas: Canvas, rect: RectF, percent: Int) {
         val radius = dp(Metrics.BATTERY_RADIUS27)
-        shapePaint.style = Paint.Style.FILL
+        val layer = canvas.saveLayer(rect.left - 1f, rect.top - 1f, rect.right + 1f, rect.bottom + 1f, null)
+
+        // outline / track
+        shapePaint.style = Paint.Style.STROKE
+        shapePaint.strokeWidth = dp(Metrics.BATTERY_STROKE27)
         shapePaint.color = ColorUtils.setAlphaComponent(color, Metrics.TRACK_ALPHA27)
         canvas.drawRoundRect(rect, radius, radius, shapePaint)
 
+        // fill
+        shapePaint.style = Paint.Style.FILL
         clip.reset()
-        clip.addRoundRect(rect, radius, radius, Path.Direction.CW)
+        val inset = dp(Metrics.BATTERY_STROKE27) / 2f + dp(0.5f)
+        val inner = RectF(rect.left + inset, rect.top + inset, rect.right - inset, rect.bottom - inset)
+        clip.addRoundRect(inner, (radius - inset).coerceAtLeast(1f), (radius - inset).coerceAtLeast(1f), Path.Direction.CW)
         canvas.save()
         canvas.clipPath(clip)
         shapePaint.color = color
-        val fillRight = rect.left + rect.width() * percent.coerceIn(0, 100) / 100f
-        canvas.drawRect(rect.left, rect.top, fillRight, rect.bottom, shapePaint)
+        canvas.drawRect(inner.left, inner.top, inner.left + inner.width() * percent.coerceIn(0, 100) / 100f, inner.bottom, shapePaint)
         canvas.restore()
+
+        // percentage text punched out
+        val text = percent.toString()
+        batteryTextPaint.textSize = dp(if (text.length >= 3) Metrics.BATTERY_TEXT_3 else Metrics.BATTERY_TEXT)
+        batteryTextPaint.getTextBounds(text, 0, text.length, bounds)
+        canvas.drawText(text, rect.centerX(), rect.centerY() + bounds.height() / 2f, batteryTextPaint)
+        canvas.restoreToCount(layer)
     }
 
     private fun font(weight: Int): Typeface {
@@ -352,35 +365,38 @@ class StatusBarView(context: Context) : View(context) {
         const val GAP = 6.5f
 
         // signal bars (unchanged)
-        const val BAR_W = 3.1f
-        const val BAR_GAP = 2.2f
-        const val BAR_MAX_H = 12f
-        const val BAR_MIN_H = 4.8f
-        const val INACTIVE_ALPHA = 85
+        const val BAR_W = 3.3f
+        const val BAR_GAP = 1.8f
+        const val BAR_MAX_H = 11.5f
+        const val BAR_MIN_H = 3.5f
+        const val INACTIVE_ALPHA = 90
 
         const val NET_TEXT = 15.5f
 
         // iOS 27 WiFi — wider, bolder
-        const val WIFI_W27 = 18f
+        const val WIFI_W27 = 19f
 
         // iOS 27 Airplane — larger, bolder
-        const val PLANE27 = 17f
+        const val PLANE27 = 18f
 
         // iOS 27 Battery — pill with thick outline, larger nub
         const val BATTERY_W = 27f
         const val BATTERY_H = 13f
-        const val BATTERY_RADIUS27 = 4.2f
-        const val TRACK_ALPHA27 = 80
-        const val NUB_W27 = 2.4f
-        const val NUB_H27 = 4.6f
-        const val NUB_GAP27 = 1.1f
-        const val NUB_ALPHA27 = 80
-        const val PLANE_SRC_W = 24f
-        const val PLANE_SRC_H = 21.47f
+        const val BATTERY_RADIUS27 = 4.5f
+        const val BATTERY_STROKE27 = 1.5f
+        const val TRACK_ALPHA27 = 100
+        const val NUB_W27 = 3f
+        const val NUB_H27 = 6f
+        const val NUB_GAP27 = 1f
+        const val NUB_ALPHA27 = 110
 
         // bolt
         const val BOLT_W = 6f
         const val BOLT_H = 11f
+
+        // battery text
+        const val BATTERY_TEXT = 12.5f
+        const val BATTERY_TEXT_3 = 10f
 
         // orange activity dot
         const val DOT_R = 2.5f

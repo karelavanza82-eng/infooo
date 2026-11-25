@@ -141,7 +141,7 @@ fun HomeScreen(open: (Screen) -> Unit) {
     val (perms, _) = rememberPermState()
     val missing = perms.missing
 
-    Page(tr("Hoisly", "Hoisly")) {
+    Page(tr("Динамический остров", "Dynamic Island")) {
         IslandPreview()
         UpdateSection()
 
@@ -209,7 +209,7 @@ private fun StartCard(onOpen: () -> Unit, onHelp: () -> Unit) {
         Text(
             tr(
                 "Капсулу рядом с камерой может рисовать только служба спец. возможностей. " +
-                    "Откройте «Спец. возможности» → «Hoisly» и включите её.",
+                    "Откройте «Спец. возможности» → «Динамический остров» и включите её.",
                 "Only an accessibility service can draw the capsule next to the camera. Open Accessibility → Dynamic " +
                     "Island and turn it on.",
             ),

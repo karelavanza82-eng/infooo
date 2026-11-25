@@ -65,6 +65,8 @@ class LauncherSettings private constructor(context: Context) {
             putString(KEY_TRANSITION, next.pageTransition.name)
             putBoolean(KEY_OPEN_ANIM, next.openCloseAnimation)
             putBoolean(KEY_RESUME_ANIM, next.resumeAnimation)
+            putInt(KEY_ANIMATION_SPEED, next.animationSpeedPercent)
+            com.hoisly.launcher.ui.theme.Motion.setSpeedPercent(next.animationSpeedPercent)
             putBoolean(KEY_LOCK_AFTER_SLEEP, next.showLockScreenAfterSleep)
             putFloat(KEY_GLASS_TINT, next.glassTint)
             putBoolean(KEY_GLASS_EDGE, next.glassEdge)
@@ -124,6 +126,7 @@ class LauncherSettings private constructor(context: Context) {
     fun setCustomTextSize(value: Boolean): Unit = update { it.copy(customTextSize = value) }
     fun setOpenCloseAnimation(value: Boolean): Unit = update { it.copy(openCloseAnimation = value) }
     fun setResumeAnimation(value: Boolean): Unit = update { it.copy(resumeAnimation = value) }
+    fun setAnimationSpeedPercent(value: Int): Unit = update { it.copy(animationSpeedPercent = value.coerceIn(0, 100)) }
     fun setPageTransition(value: PageTransition): Unit = update { it.copy(pageTransition = value) }
     fun setTextScale(value: Float): Unit = update { it.copy(textScale = value) }
     fun setLayoutLocked(value: Boolean): Unit = update { it.copy(layoutLocked = value) }
@@ -193,7 +196,8 @@ class LauncherSettings private constructor(context: Context) {
             ?.let { name -> PageTransition.entries.firstOrNull { it.name == name } }
             ?: PageTransition.Default,
         openCloseAnimation = prefs.getBoolean(KEY_OPEN_ANIM, true),
-        resumeAnimation = prefs.getBoolean(KEY_RESUME_ANIM, false),
+        resumeAnimation = prefs.getBoolean(KEY_RESUME_ANIM, true),
+        animationSpeedPercent = prefs.getInt(KEY_ANIMATION_SPEED, 30).coerceIn(0, 100).also { com.hoisly.launcher.ui.theme.Motion.setSpeedPercent(it) },
         showLockScreenAfterSleep = prefs.getBoolean(KEY_LOCK_AFTER_SLEEP, true),
         glassTint = prefs.getFloat(KEY_GLASS_TINT, Defaults.glassTint),
         glassEdge = prefs.getBoolean(KEY_GLASS_EDGE, Defaults.glassEdge),
@@ -303,7 +307,8 @@ class LauncherSettings private constructor(context: Context) {
         private const val KEY_LAYOUT_LOCKED = "layout_locked"
         private const val KEY_TRANSITION = "page_transition"
         private const val KEY_OPEN_ANIM = "open_close_animation"
-        private const val KEY_RESUME_ANIM = "resume_animation_v2"
+        private const val KEY_RESUME_ANIM = "resume_animation"
+        private const val KEY_ANIMATION_SPEED = "animation_speed_percent"
         private const val KEY_LOCK_AFTER_SLEEP = "show_lock_screen_after_sleep"
         private const val KEY_HIDDEN = "hidden_apps"
         private const val KEY_LABELS = "custom_labels"

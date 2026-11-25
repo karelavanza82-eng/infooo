@@ -6,7 +6,7 @@
     <string name="statusbar_allowed">Aktif</string>
     <string name="statusbar_allow">Aktifkan</string>
     <string name="statusbar_off">Bilah status kustom nonaktif.</string>
-    <string name="statusbar_need_service">Aktifkan layanan aksesibilitas Hoisly agar bilah status tampil di atas semua aplikasi.</string>
+    <string name="statusbar_need_service">Aktifkan layanan aksesibilitas Dynamic Island agar bilah status tampil di atas semua aplikasi.</string>
     <string name="statusbar_ready">Tampil di atas semua aplikasi.</string>
     <string name="statusbar_section_color">Warna ikon</string>
     <string name="statusbar_color_auto">Otomatis</string>

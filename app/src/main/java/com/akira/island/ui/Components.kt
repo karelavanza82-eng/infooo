@@ -96,8 +96,19 @@ fun Page(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val scroll = rememberScrollState()
-    // Latar transparan: wallpaper digambar sekali di AppRoot, halaman hanya meneruskan
-    Box(Modifier.fillMaxSize()) {
+    // Glass / wallpaper-transparent background matching the launcher home screen aesthetic.
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    listOf(
+                        Color(0xCC0D0D18),  // dark translucent at the top
+                        Color(0xDD10101E),  // slightly more opaque towards the bottom
+                    )
+                )
+            )
+    ) {
     Column(
         Modifier.fillMaxSize()
             .then(if (preview == null) Modifier.verticalScroll(scroll) else Modifier)
@@ -480,7 +491,7 @@ fun <T> ChoiceDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = Ui.CardSolid,
+        containerColor = Ui.Card,
         titleContentColor = Ui.Text,
         title = { Text(title) },
         text = {

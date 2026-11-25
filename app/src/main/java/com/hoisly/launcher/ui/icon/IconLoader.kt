@@ -66,10 +66,9 @@ class IconLoader(
     private val appContext = activity.applicationContext
     @Volatile private var iconPackMappings: Pair<String, Map<String, String>>? = null
 
-    // Shared by every loader of the process: when the home activity is created again (Home
-    // pressed after the system dropped it) its icons are drawn at once instead of being
-    // rendered one by one. Keys carry the whole spec, so a stale bitmap can never match.
-    private val cache: LruCache<String, ImageBitmap> = SHARED_CACHE
+    private val cache = object : LruCache<String, ImageBitmap>(MAX_CACHE_BYTES) {
+        override fun sizeOf(key: String, value: ImageBitmap): Int = value.width * value.height * 4
+    }
 
     // Inputs of the spec; written on the main thread only.
     @Volatile private var prefs: SettingsState = settings.state.value
@@ -306,10 +305,6 @@ class IconLoader(
     private companion object {
         /** About 300 icons at the default size, fewer at bigger sizes. */
         const val MAX_CACHE_BYTES = 36 * 1024 * 1024
-
-        val SHARED_CACHE: LruCache<String, ImageBitmap> = object : LruCache<String, ImageBitmap>(MAX_CACHE_BYTES) {
-            override fun sizeOf(key: String, value: ImageBitmap): Int = value.width * value.height * 4
-        }
     }
 }
 

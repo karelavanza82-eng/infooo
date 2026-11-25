@@ -224,6 +224,18 @@ fun AnimationSettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
                     checked = settings.openCloseAnimation,
                     onCheckedChange = vm.settings::setOpenCloseAnimation,
                 )
+                var speedDraft by remember(settings.animationSpeedPercent) {
+                    mutableFloatStateOf(settings.animationSpeedPercent.toFloat())
+                }
+                SliderRow(
+                    title = "Animation speed",
+                    value = speedDraft,
+                    valueText = "${speedDraft.toInt()}%",
+                    onValueChange = { speedDraft = it },
+                    onValueChangeFinished = { vm.settings.setAnimationSpeedPercent(speedDraft.toInt()) },
+                    onValueChangeCancelled = { speedDraft = settings.animationSpeedPercent.toFloat() },
+                    valueRange = 0f..100f,
+                )
             }
         }
     }

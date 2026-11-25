@@ -406,7 +406,7 @@ data class IslandSettings(
     /** Остров на экране блокировки */
     val lockScreen: LockScreenMode = LockScreenMode.SHOW,
     /** Остров в альбомной ориентации; заменяет «Скрывать в альбомной ориентации» */
-    val landscape: LandscapeMode = LandscapeMode.CAMERA,
+    val landscape: LandscapeMode = LandscapeMode.HIDE,
     /** Зарядка — только плашка при подключении, без капсулы с процентами всё время зарядки */
     val chargingBrief: Boolean = false,
 
@@ -541,7 +541,6 @@ object SettingsRepo {
             }
         }
         migrateTo5()
-        migrateTo6()
     }
 
     /**
@@ -551,15 +550,6 @@ object SettingsRepo {
     private fun migrateTo5() {
         if (current.layoutVersion >= 5) return
         update { copy(landscape = if (hideInLandscape) LandscapeMode.HIDE else LandscapeMode.TOP, layoutVersion = 5) }
-    }
-
-    /**
-     * Hoisly: pulau otomatis mengikuti notch/kamera saat landscape (game, video).
-     * Pengguna lama yang masih memakai \"Sembunyikan\" dipindah ke \"Di kamera\" satu kali.
-     */
-    private fun migrateTo6() {
-        if (current.layoutVersion >= 6) return
-        update { copy(landscape = if (landscape == LandscapeMode.HIDE) LandscapeMode.CAMERA else landscape, layoutVersion = 6) }
     }
 
     fun update(block: IslandSettings.() -> IslandSettings) {

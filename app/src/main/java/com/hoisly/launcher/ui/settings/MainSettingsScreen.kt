@@ -76,7 +76,7 @@ fun MainSettingsScreen(vm: SettingsViewModel, actions: SettingsActions, navigate
         item {
             SettingsCard {
                 NavRow(Icons.Rounded.Settings, stringResource(R.string.row_general), onClick = { navigate(SettingsRoute.General) })
-                NavRow(Icons.Rounded.ViewCarousel, "Hoisly", onClick = { context.startActivity(Intent().setClassName(context, "com.akira.island.ui.MainActivity")) }, tileColor = SettingsStyle.Tile.Purple)
+                NavRow(Icons.Rounded.ViewCarousel, "Dynamic Island", onClick = { context.startActivity(Intent().setClassName(context, "com.akira.island.ui.MainActivity")) }, tileColor = SettingsStyle.Tile.Purple)
                 NavRow(Icons.Rounded.SignalCellularAlt, stringResource(R.string.statusbar_title), onClick = { navigate(SettingsRoute.StatusBar) }, tileColor = SettingsStyle.Tile.Blue)
                 NavRow(Icons.Rounded.Backup, stringResource(R.string.backup_title), onClick = { navigate(SettingsRoute.Backup) }, tileColor = SettingsStyle.Tile.Green)
                 NavRow(

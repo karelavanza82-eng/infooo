@@ -170,7 +170,7 @@ private fun AppRoot(launcherSettingsRequest: Int) {
     LangScope {
         WhatsNewDialog()
 
-        Box(Modifier.fillMaxSize().wallpaperBackdrop()) {
+        Box(Modifier.fillMaxSize().background(Ui.Bg)) {
             val key = stack.lastOrNull()?.name ?: "tab$tab"
             AnimatedContent(
                 targetState = key,

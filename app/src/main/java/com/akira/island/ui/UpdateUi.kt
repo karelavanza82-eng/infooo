@@ -193,7 +193,7 @@ fun NotesDialog(onDismiss: () -> Unit) {
     }
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = Ui.CardSolid,
+        containerColor = Ui.Card,
         titleContentColor = Ui.Text,
         title = { Text(trf("Что нового в {0}", "What's new in {0}", current)) },
         text = {

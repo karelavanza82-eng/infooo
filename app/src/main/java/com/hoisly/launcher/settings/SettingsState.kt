@@ -51,11 +51,10 @@ data class SettingsState(
     val pageTransition: PageTransition = PageTransition.Default,
     /** Scale animation when an app is launched from its icon. */
     val openCloseAnimation: Boolean = true,
-    /**
-     * Icons fade and zoom into place when returning to the home screen from an app. Off by default:
-     * the fade starts from an empty screen, which looks like the home screen reloading.
-     */
-    val resumeAnimation: Boolean = false,
+    /** Icons zoom into place when returning to the home screen from an app. */
+    val resumeAnimation: Boolean = true,
+    /** Global animation speed preference, 0 = slowest and 100 = fastest. */
+    val animationSpeedPercent: Int = 30,
     /** Show Hoisly's decorative launcher lock screen when returning after the display was off. */
     val showLockScreenAfterSleep: Boolean = true,
 
@@ -195,6 +194,7 @@ data class SettingsState(
     /** Brings every numeric value back into its allowed range. */
     fun sanitized(): SettingsState = copy(
         textScale = textScale.coerceIn(MIN_TEXT_SCALE, MAX_TEXT_SCALE),
+        animationSpeedPercent = animationSpeedPercent.coerceIn(0, 100),
         labelSpacing = if (labelSpacing.isNaN()) 6f else labelSpacing.coerceIn(MIN_LABEL_SPACING, MAX_LABEL_SPACING),
         gridMargins = gridMargins.sanitized(),
         homeStyle = homeStyle.sanitized(),

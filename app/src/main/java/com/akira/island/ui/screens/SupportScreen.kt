@@ -29,8 +29,8 @@ fun SupportAuthorItem(onClick: () -> Unit) {
         color = Tile.Purple, onClick = onClick,
     ) { Arrow() }
     InfoText(tr(
-        "Спасибо @uswer1106 за помощь в развитии Hoisly!",
-        "Thank you @uswer1106 for helping improve Hoisly!",
+        "Спасибо @uswer1106 за помощь в развитии Dynamic Island!",
+        "Thank you @uswer1106 for helping improve Dynamic Island!",
     ))
 }
 
@@ -50,8 +50,8 @@ fun SupportScreen(onBack: () -> Unit) {
 
     Page(tr("Поддержка автора", "Support the developer"), onBack) {
         InfoText(tr(
-            "Спасибо, что помогаете развивать Hoisly. Присоединяйтесь к общению в Telegram или поддержите автора на Boosty.",
-            "Thank you for helping Hoisly grow. Join the conversation on Telegram or support the developer on Boosty.",
+            "Спасибо, что помогаете развивать Dynamic Island. Присоединяйтесь к общению в Telegram или поддержите автора на Boosty.",
+            "Thank you for helping Dynamic Island grow. Join the conversation on Telegram or support the developer on Boosty.",
         ))
         Group {
             GroupItem(
