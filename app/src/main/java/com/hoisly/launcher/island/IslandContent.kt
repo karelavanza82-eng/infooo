@@ -1,3 +1,4 @@
+
 package com.hoisly.launcher.island
 
 import androidx.compose.animation.core.animateFloatAsState
@@ -61,104 +62,180 @@ internal fun IslandContent(
     val render by state.collectAsStateWithLifecycle()
     val geometry by bounds.collectAsStateWithLifecycle()
     val canBlur by blurSupported.collectAsStateWithLifecycle()
+
     // The last visible content keeps showing while the shape morphs away into the camera.
     val last = remember { arrayOf(render) }
     if (render.model.card != IslandCard.Hidden) last[0] = render
     val shown = last[0]
     val style = render.style
     val card = render.model.card
+
     // The card the shape last came to rest at, and its size: only a settled card gets blur.
     var settled by remember { mutableStateOf<Pair<IslandCard, IntSize>?>(null) }
     val held = remember { arrayOf(IslandCard.Hidden) }
     val wantsGlass = style.blur && canBlur && card.expanded && settled?.first == card
-    val clear by animateFloatAsState(if (wantsGlass) 1f else 0f,
-        tween(if (wantsGlass) Motion.ISLAND_IN_MS else Motion.ISLAND_OUT_MS), label = "islandGlass")
+
+    val clear by animateFloatAsState(
+        if (wantsGlass) 1f else 0f,
+        tween(if (wantsGlass) Motion.ISLAND_IN_MS else Motion.ISLAND_OUT_MS),
+        label = "islandGlass"
+    )
+
     // A collapsing card waits for its blur to fade, so the blurred area never sticks out of it.
     val target = if (!card.expanded && held[0].expanded && clear > 0f) held[0] else card
     held[0] = target
-    LaunchedEffect(target) { if (settled?.first != target) settled = null }
-    val onGlass by rememberUpdatedState(glass)
-    LaunchedEffect(Unit) {
-        snapshotFlow { clear to settled?.second }.collect { (progress, size) -> onGlass(if (size == null) 0f else progress, size ?: IntSize.Zero) }
+
+    LaunchedEffect(target) {
+        if (settled?.first != target) settled = null
     }
+
+    val onGlass by rememberUpdatedState(glass)
+
+    LaunchedEffect(Unit) {
+        snapshotFlow { clear to settled?.second }.collect { (progress, size) ->
+            onGlass(if (size == null) 0f else progress, size ?: IntSize.Zero)
+        }
+    }
+
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
-    val squeeze by animateFloatAsState(if (pressed && !card.expanded) PRESSED_SCALE else 1f, Motion.press(), label = "islandPress")
-    val canExpand = render.model.expansionAllowed && (card == IslandCard.MusicCompact || card == IslandCard.TimerCompact)
+
+    val squeeze by animateFloatAsState(
+        if (pressed && !card.expanded) PRESSED_SCALE else 1f,
+        Motion.press(),
+        label = "islandPress"
+    )
+
+    val canExpand = render.model.expansionAllowed &&
+        (card == IslandCard.MusicCompact || card == IslandCard.TimerCompact)
+
     // Show orange activity dot when island has active content (not hidden, not idle)
     val hasActivity = card != IslandCard.Hidden && card != IslandCard.Idle
+
     CompositionLocalProvider(LocalIslandStyle provides style) {
         Box(contentAlignment = Alignment.TopEnd) {
-        IslandMorph(
-            initial = IslandCard.Hidden,
-            target = target,
-            accent = {
-                when (shown.model.card) {
-                    IslandCard.TimerCompact, IslandCard.TimerExpanded -> IslandTokens.Orange
-                    else -> shown.accent?.takeIf { style.artworkTint }?.let(::Color)
-                }
-            },
-            translucency = { clear },
-            maxSize = with(LocalDensity.current) {
-                IntSize((geometry.widthDp + style.sideMargin * 2).dp.roundToPx(), geometry.maxHeightDp.dp.roundToPx())
-            },
-            modifier = Modifier
-                .graphicsLayer {
-                    scaleX = squeeze
-                    scaleY = squeeze
-                    transformOrigin = TransformOrigin(0.5f, 0f)
-                }
-                .pointerInput(actions) {
-                    awaitEachGesture {
-                        awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
-                        actions.event(IslandEvent.Interaction)
-                        waitForUpOrCancellation(pass = PointerEventPass.Final)
-                        actions.event(IslandEvent.Interaction)
+
+            IslandMorph(
+                initial = IslandCard.Hidden,
+                target = target,
+                accent = {
+                    when (shown.model.card) {
+                        IslandCard.TimerCompact, IslandCard.TimerExpanded -> IslandTokens.Orange
+                        else -> shown.accent?.takeIf { style.artworkTint }?.let(::Color)
                     }
+                },
+                translucency = { clear },
+                maxSize = with(LocalDensity.current) {
+                    IntSize(
+                        (geometry.widthDp + style.sideMargin * 2).dp.roundToPx(),
+                        geometry.maxHeightDp.dp.roundToPx()
+                    )
+                },
+                modifier = Modifier
+                    .graphicsLayer {
+                        scaleX = squeeze
+                        scaleY = squeeze
+                        transformOrigin = TransformOrigin(0.5f, 0f)
+                    }
+                    .pointerInput(actions) {
+                        awaitEachGesture {
+                            awaitFirstDown(
+                                requireUnconsumed = false,
+                                pass = PointerEventPass.Initial
+                            )
+                            actions.event(IslandEvent.Interaction)
+                            waitForUpOrCancellation(pass = PointerEventPass.Final)
+                            actions.event(IslandEvent.Interaction)
+                        }
+                    }
+                    .then(
+                        if (card.expanded) Modifier.pointerInput(actions) {
+                            var travel = 0f
+                            detectVerticalDragGestures(
+                                onDragStart = { travel = 0f },
+                                onDragEnd = {
+                                    if (travel < -COLLAPSE_SWIPE_DP.dp.toPx()) {
+                                        actions.event(IslandEvent.Collapse)
+                                    }
+                                }
+                            ) { _, dy ->
+                                travel += dy
+                            }
+                        } else Modifier
+                    )
+                    .clickable(
+                        interaction,
+                        indication = null,
+                        enabled = canExpand,
+                        role = Role.Button,
+                        onClickLabel = stringResource(R.string.island_expand)
+                    ) {
+                        actions.event(IslandEvent.Expand)
+                    },
+                onFrame = resize,
+                onSettled = { item, size ->
+                    settled = item to size
+                    if (item == IslandCard.Hidden) exited()
+                },
+            ) { item ->
+
+                val model = shown.model
+                val accent = shown.accent?.takeIf { style.artworkTint }?.let(::Color)
+
+                when (item) {
+                    IslandCard.Hidden ->
+                        Box(Modifier.size(IslandTokens.Dot))
+
+                    IslandCard.Idle ->
+                        Box(Modifier.size(IslandTokens.IdleWidth, IslandTokens.CompactHeight))
+
+                    IslandCard.MusicCompact ->
+                        model.selected?.let {
+                            CompactMusic(it, shown.artwork, accent)
+                        } ?: CompactPlaceholder()
+
+                    IslandCard.MusicExpanded ->
+                        model.selected?.let { media ->
+                            MusicCard(
+                                media,
+                                shown.artwork,
+                                accent,
+                                geometry.widthDp.dp,
+                                { action, position ->
+                                    actions.command(media.id, action, position)
+                                },
+                                { actions.openPlayer(media.id) }
+                            )
+                        } ?: CompactPlaceholder()
+
+                    IslandCard.Charging ->
+                        CompactCharging(model.batteryPercent)
+
+                    IslandCard.TimerCompact ->
+                        model.timer?.let {
+                            CompactTimer(it)
+                        } ?: CompactPlaceholder()
+
+                    IslandCard.TimerExpanded ->
+                        model.timer?.let { timer ->
+                            TimerCard(timer, geometry.widthDp.dp) {
+                                actions.timer(timer.key, it)
+                            }
+                        } ?: CompactPlaceholder()
                 }
-                .then(if (card.expanded) Modifier.pointerInput(actions) {
-                    var travel = 0f
-                    detectVerticalDragGestures(onDragStart = { travel = 0f }, onDragEnd = {
-                        if (travel < -COLLAPSE_SWIPE_DP.dp.toPx()) actions.event(IslandEvent.Collapse)
-                    }) { _, dy -> travel += dy }
-                } else Modifier)
-                .clickable(interaction, indication = null, enabled = canExpand, role = Role.Button,
-                    onClickLabel = stringResource(R.string.island_expand)) { actions.event(IslandEvent.Expand) },
-            onFrame = resize,
-            onSettled = { item, size ->
-                settled = item to size
-                if (item == IslandCard.Hidden) exited()
-            },
-        ) { item ->
-            val model = shown.model
-            val accent = shown.accent?.takeIf { style.artworkTint }?.let(::Color)
-            when (item) {
-                IslandCard.Hidden -> Box(Modifier.size(IslandTokens.Dot))
-                IslandCard.Idle -> Box(Modifier.size(IslandTokens.IdleWidth, IslandTokens.CompactHeight))
-                IslandCard.MusicCompact -> model.selected?.let { CompactMusic(it, shown.artwork, accent) } ?: CompactPlaceholder()
-                IslandCard.MusicExpanded -> model.selected?.let { media ->
-                    MusicCard(media, shown.artwork, accent, geometry.widthDp.dp,
-                        { action, position -> actions.command(media.id, action, position) }, { actions.openPlayer(media.id) })
-                } ?: CompactPlaceholder()
-                IslandCard.Charging -> CompactCharging(model.batteryPercent)
-                IslandCard.TimerCompact -> model.timer?.let { CompactTimer(it) } ?: CompactPlaceholder()
-                IslandCard.TimerExpanded -> model.timer?.let { timer ->
-                    TimerCard(timer, geometry.widthDp.dp) { actions.timer(timer.key, it) }
-                } ?: CompactPlaceholder()
+            }
+
+            // Orange activity indicator dot — appears at top-right of island when active
+            if (hasActivity) {
+                Box(
+                    Modifier
+                        .offset(x = 3.dp, y = (-2).dp)
+                        .size(7.dp)
+                        .clip(CircleShape)
+                        .background(IslandTokens.Orange)
+                )
             }
         }
-        } // closes IslandMorph
-        // Orange activity indicator dot — appears at top-right of island when active
-        if (hasActivity) {
-            Box(
-                Modifier
-                    .offset(x = 3.dp, y = (-2).dp)
-                    .size(7.dp)
-                    .clip(CircleShape)
-                    .background(IslandTokens.Orange)
-            )
-        }
-        } // closes outer Box
     }
 }
 
