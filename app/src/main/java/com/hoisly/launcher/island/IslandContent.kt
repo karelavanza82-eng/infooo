@@ -160,6 +160,7 @@ internal fun IslandContent(
         }
         } // closes outer Box
     }
+}
 
 private const val PRESSED_SCALE = 0.94f
 private const val COLLAPSE_SWIPE_DP = 24
