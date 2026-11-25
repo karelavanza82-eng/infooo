@@ -287,8 +287,8 @@ class StatusBarView(context: Context) : View(context) {
     private fun drawAirplane27(canvas: Canvas, left: Float, cy: Float, size: Float) {
         shapePaint.color = color
         planeMatrix.reset()
-        // iOS 27 rotates the plane 45° clockwise so it faces upper-right (same as iOS Settings)
-        planeMatrix.postRotate(45f, 12f, 12f)
+        // The reference airplane glyph points horizontally to the right.
+        planeMatrix.postRotate(90f, 12f, 12f)
         planeMatrix.postScale(size / 24f, size / 24f)
         planeMatrix.postTranslate(left, cy - size / 2f)
         planeWork.set(planePath)

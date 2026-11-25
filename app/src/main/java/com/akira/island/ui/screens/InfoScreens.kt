@@ -244,8 +244,6 @@ fun AppInfoScreen(open: (Screen) -> Unit) {
                 tr("Что умеет и откуда идея", "What it does and where the idea comes from"),
                 onClick = { open(Screen.ABOUT) }, color = Tile.Indigo) { Arrow() }
         }
-    }
-
 
         SectionHeader(tr("Tentang", "About"))
         Group {
@@ -253,7 +251,7 @@ fun AppInfoScreen(open: (Screen) -> Unit) {
                 Pos.First,
                 Icons.Rounded.Info,
                 tr("Developer", "Developer"),
-                "Muhammadkarrel",
+                "Muhammadkarel",
                 color = Tile.Blue,
             )
             GroupItem(
@@ -264,6 +262,7 @@ fun AppInfoScreen(open: (Screen) -> Unit) {
                 color = Tile.Green,
             )
         }
+    }
 
     if (notes) NotesDialog { notes = false }
 }

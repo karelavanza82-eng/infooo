@@ -81,8 +81,7 @@ internal fun islandGeometry(
         maxHeightDp       = expansionHeight.coerceAtLeast(0f),
         available         = width >= style.compactWidth &&
                             expansionHeight >= IslandTokens.CompactHeight.value * font.coerceAtLeast(1f),
-        expansionAllowed  = !landscape &&
-                            width >= IslandTokens.MinCardWidth.value &&
+        expansionAllowed  = width >= IslandTokens.MinCardWidth.value &&
                             expansionHeight >= IslandTokens.CARD_FIXED_HEIGHT_DP + IslandTokens.CARD_TEXT_HEIGHT_DP * font,
         isLandscape       = landscape,
     )
