@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -57,23 +58,58 @@ fun iconSurfaceColor(icon: ImageBitmap?): Color {
  */
 @Composable
 fun AppTransitionOverlay(vm: LauncherViewModel, progress: Animatable<Float, AnimationVector1D>) {
-    val current by vm.appTransition.collectAsStateWithLifecycle()
-    val transition = current
-    LaunchedEffect(transition?.id) {
-        val t = transition ?: return@LaunchedEffect
-        when (t.phase) {
-            AppTransitionPhase.Opening -> {
-                progress.snapTo(0f)
-                progress.animateTo(1f, tween(Motion.APP_OPEN_MS, easing = Motion.IosEasing))
-            }
-            AppTransitionPhase.Closing -> {
-                progress.animateTo(0f, tween(Motion.APP_CLOSE_MS, easing = Motion.IosEasing))
-                vm.endAppTransition(t.id)
+    val transitions by vm.appTransitions.collectAsStateWithLifecycle()
+    val latest = transitions.lastOrNull()
+
+    // Keep the existing home-screen shrink effect, driven by the newest transition.
+    LaunchedEffect(latest?.id, latest?.phase) {
+        val t = latest
+        if (t == null) {
+            progress.snapTo(0f)
+        } else {
+            when (t.phase) {
+                AppTransitionPhase.Opening -> {
+                    progress.snapTo(0f)
+                    progress.animateTo(1f, tween(Motion.APP_OPEN_MS, easing = Motion.IosEasing))
+                }
+                AppTransitionPhase.Closing -> {
+                    progress.animateTo(0f, tween(Motion.APP_CLOSE_MS, easing = Motion.IosEasing))
+                }
             }
         }
     }
-    if (transition == null) return
-    Canvas(Modifier.fillMaxSize()) { drawSurface(transition, progress.value) }
+
+    // Each icon gets its own Animatable and Canvas. Multiple surfaces can therefore animate
+    // at the same time without cancelling or delaying one another.
+    transitions.forEach { transition ->
+        key(transition.id) {
+            AppTransitionSurface(vm, transition)
+        }
+    }
+}
+
+@Composable
+private fun AppTransitionSurface(vm: LauncherViewModel, transition: AppTransition) {
+    val surfaceProgress = androidx.compose.runtime.remember(transition.id) {
+        Animatable(if (transition.phase == AppTransitionPhase.Closing) 1f else 0f)
+    }
+
+    LaunchedEffect(transition.id, transition.phase) {
+        when (transition.phase) {
+            AppTransitionPhase.Opening -> {
+                surfaceProgress.snapTo(0f)
+                surfaceProgress.animateTo(1f, tween(Motion.APP_OPEN_MS, easing = Motion.IosEasing))
+            }
+            AppTransitionPhase.Closing -> {
+                surfaceProgress.animateTo(0f, tween(Motion.APP_CLOSE_MS, easing = Motion.IosEasing))
+                vm.endAppTransition(transition.id)
+            }
+        }
+    }
+
+    Canvas(Modifier.fillMaxSize()) {
+        drawSurface(transition, surfaceProgress.value)
+    }
 }
 
 private fun DrawScope.drawSurface(t: AppTransition, p: Float) {

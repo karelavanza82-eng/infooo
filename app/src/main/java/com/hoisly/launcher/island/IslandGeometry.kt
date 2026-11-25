@@ -37,13 +37,11 @@ internal fun islandGeometry(
     val centerX: Int
 
     if (landscape) {
-        centerY = cameraY ?: if (statusBarPx > 0) {
-            statusBarPx / 2
-        } else {
-            (IslandTokens.EdgeGap.value * scale + compact / 2).roundToInt()
-        }
-
-        centerX = cameraX ?: (leftPx + (widthPx - leftPx - rightPx) / 2)
+        // In landscape the camera cutout is on a side edge. Keep the island at the
+        // vertical middle of that edge instead of leaving it at the old top-center.
+        centerY = cameraY ?: heightPx / 2
+        val sideInset = ((IslandTokens.EdgeGap.value + IslandTokens.CompactHeight.value / 2) * scale).roundToInt()
+        centerX = cameraX ?: (leftPx + sideInset)
     } else {
         centerY = cameraY ?: if (statusBarPx > 0) {
             statusBarPx / 2
@@ -54,9 +52,12 @@ internal fun islandGeometry(
         centerX = cameraX ?: (leftPx + (widthPx - leftPx - rightPx) / 2)
     }
 
-    val top = (
-        centerY - compact / 2 + style.topOffset * scale
-    ).roundToInt().coerceAtLeast(0)
+    val top = if (landscape) {
+        // The landscape capsule is rotated: reserve its long axis vertically.
+        (centerY - IslandTokens.IdleWidth.value * scale / 2f).roundToInt().coerceAtLeast(0)
+    } else {
+        (centerY - compact / 2 + style.topOffset * scale).roundToInt().coerceAtLeast(0)
+    }
 
     val width = (widthPx - leftPx - rightPx) / scale -
         style.sideMargin * 2

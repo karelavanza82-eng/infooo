@@ -1,8 +1,7 @@
 package com.hoisly.launcher
 
 import com.hoisly.launcher.ui.home.AppTransition
-import com.hoisly.launcher.ui.home.AppTransitionPhase
-import com.hoisly.launcher.ui.home.iconSurfaceColor
+import com.hoisly.launcher.ui.home.AppTransitionState
 import android.app.Application
 import android.appwidget.AppWidgetProviderInfo
 import com.hoisly.launcher.data.AppWidgetItem
@@ -153,26 +152,14 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
     /** App whose "−" badge was tapped: shows the remove dialog. */
     val removeRequest: MutableStateFlow<AppInfo?> = MutableStateFlow(null)
 
-    /** The icon-to-screen surface of an app opening or closing, or `null`. */
-    val appTransition: MutableStateFlow<AppTransition?> = MutableStateFlow(null)
-    private var appTransitionIds: Long = 0
+    /** Independent app-opening surfaces; the state holder keeps parallel transitions in sync. */
+    private val appTransitionState = AppTransitionState()
+    val appTransition: MutableStateFlow<AppTransition?> get() = appTransitionState.current
+    val appTransitions: MutableStateFlow<List<AppTransition>> get() = appTransitionState.active
 
-    /** Starts the surface growing out of the icon at [bounds] (window pixels). */
-    fun beginAppTransition(bounds: Rect, icon: ImageBitmap?) {
-        appTransition.value = AppTransition(++appTransitionIds, AppTransitionPhase.Opening, bounds, icon, iconSurfaceColor(icon))
-    }
-
-    /** Turns an opening surface into a closing one. `false` if no app was opened through the surface. */
-    fun beginAppClosing(): Boolean {
-        val open = appTransition.value?.takeIf { it.phase == AppTransitionPhase.Opening } ?: return false
-        appTransition.value = open.copy(id = ++appTransitionIds, phase = AppTransitionPhase.Closing)
-        return true
-    }
-
-    /** Removes the surface once its closing finished; a newer transition stays. */
-    fun endAppTransition(id: Long) {
-        if (appTransition.value?.id == id) appTransition.value = null
-    }
+    fun beginAppTransition(bounds: Rect, icon: ImageBitmap?) = appTransitionState.begin(bounds, icon)
+    fun beginAppClosing(): Boolean = appTransitionState.closeOpening()
+    fun endAppTransition(id: Long) = appTransitionState.finish(id)
 
     /** A real return from a launched app or a background Home Intent, for the return policy. */
     val returnToHome: MutableSharedFlow<Unit> = MutableSharedFlow(extraBufferCapacity = 1)

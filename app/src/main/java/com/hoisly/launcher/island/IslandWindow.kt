@@ -85,7 +85,15 @@ internal class IslandWindow(
         val windowInsets = metrics.windowInsets
         val insets = windowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout())
         val status = windowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.statusBars()).top
-        val camera = windowInsets.displayCutout?.boundingRectTop?.takeUnless { it.isEmpty }
+        val landscape = metrics.bounds.width() > metrics.bounds.height()
+        val cutout = windowInsets.displayCutout
+        val camera = if (landscape) {
+            // A punch-hole camera rotates onto the left or right edge in landscape.
+            cutout?.boundingRectLeft?.takeUnless { it.isEmpty }
+                ?: cutout?.boundingRectRight?.takeUnless { it.isEmpty }
+        } else {
+            cutout?.boundingRectTop?.takeUnless { it.isEmpty }
+        }
         val config = context.resources.configuration
         return islandGeometry(metrics.bounds.width(), metrics.bounds.height(), insets.left, insets.right, insets.bottom,
             status, camera?.centerX(), camera?.centerY(), context.resources.displayMetrics.density, config.fontScale,
@@ -209,6 +217,7 @@ internal class IslandWindow(
             return
         }
         val x = anchorX() - shape.width / 2
+        // In landscape [shape] is already width/height-swapped for the rotated capsule.
         val y = geometry.value.topPx
         if (layout.width == shape.width && layout.height == shape.height && layout.x == x && layout.y == y) return
         layout.width = shape.width

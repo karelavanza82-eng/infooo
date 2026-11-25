@@ -1,6 +1,7 @@
 package com.hoisly.launcher.island
 
 import android.media.session.PlaybackState
+import com.hoisly.launcher.ui.theme.IslandTokens
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -37,6 +38,14 @@ class IslandPlatformPolicyTest {
         assertEquals(56, offCenter.topPx)
         val noCutout = islandGeometry(1080, 2400, 0, 0, 0, 100, null, null, 2f, 1f)
         assertEquals(16, noCutout.topPx)
+    }
+
+    @Test fun landscapeIslandMovesToSideCameraAndRotatesAroundScreenMidline() {
+        val geometry = islandGeometry(2400, 1080, 0, 0, 10, 30, 72, 540, 3f, 1f)
+        assertTrue(geometry.isLandscape)
+        assertEquals(72 - 1200, geometry.centerOffsetPx)
+        assertEquals((540 - IslandTokens.IdleWidth.value * 3f / 2f).toInt(), geometry.topPx)
+        assertFalse(geometry.expansionAllowed)
     }
 
     @Test fun landscapeIsCompactAndCrampedOrLargeFontWindowsCannotExpand() {

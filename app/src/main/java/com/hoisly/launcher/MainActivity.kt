@@ -354,8 +354,8 @@ class MainActivity : ComponentActivity(), LauncherActions {
     }
 
     override fun launch(app: AppInfo, bounds: Rect) {
-        // A surface is still growing or shrinking: ignore the extra tap.
-        if (vm.appTransition.value != null) return
+        // Parallel icon-to-app transitions are intentionally accepted; a new tap starts its
+        // own surface instead of waiting for the previous surface to finish.
         vm.launchStats.recordLaunch(app.key)
         val source = bounds.toAndroidRect()
         val animate = vm.settings.state.value.openCloseAnimation
