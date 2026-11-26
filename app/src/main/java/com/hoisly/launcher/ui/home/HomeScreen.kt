@@ -218,6 +218,9 @@ fun HomeScreen(vm: LauncherViewModel, actions: LauncherActions) {
     // 0 = at the icon, 1 = full screen: the app surface, see AppTransitionOverlay.
     val appProgress = remember { Animatable(0f) }
     val appTransition by vm.appTransition.collectAsStateWithLifecycle()
+    // Capture the delegated State value in an immutable local for graphicsLayer lambdas.
+    // Kotlin cannot smart-cast a delegated property across a captured lambda.
+    val currentAppTransition = appTransition
     val resumeEnabled by rememberUpdatedState(settings.resumeAnimation)
     LaunchedEffect(Unit) {
         vm.returnedHome.collect {
@@ -260,17 +263,18 @@ fun HomeScreen(vm: LauncherViewModel, actions: LauncherActions) {
                 .fillMaxSize()
                 .graphicsLayer {
                     val p = resume.value
-                    if (ios27Launch && appTransition != null) {
+                    val transition = currentAppTransition
+                    if (ios27Launch && transition != null) {
                         // Launchii Zoom In enlarges Hoisly Home around the tapped icon as the app card grows.
                         val scale = 1f + (LaunchiiAppMotion.HOME_ZOOM - 1f) * appProgress.value
                         scaleX = scale
                         scaleY = scale
                         transformOrigin = TransformOrigin(
-                            (appTransition.bounds.center.x / size.width).coerceIn(0f, 1f),
-                            (appTransition.bounds.center.y / size.height).coerceIn(0f, 1f),
+                            (transition.bounds.center.x / size.width).coerceIn(0f, 1f),
+                            (transition.bounds.center.y / size.height).coerceIn(0f, 1f),
                         )
                         alpha = 1f
-                    } else if (appTransition != null && settings.appAnimationStyle == "ANTICIPATE") {
+                    } else if (transition != null && settings.appAnimationStyle == "ANTICIPATE") {
                         val p = appProgress.value.coerceIn(0f, 1f)
                         val scale = if (p < 0.24f) 1f - 0.035f * (p / 0.24f) else 0.965f + 0.10f * ((p - 0.24f) / 0.76f)
                         scaleX = scale
