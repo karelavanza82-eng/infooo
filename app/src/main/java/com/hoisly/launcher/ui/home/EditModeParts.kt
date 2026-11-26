@@ -14,13 +14,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.Widgets
 import androidx.compose.material.icons.rounded.Wallpaper
-import androidx.compose.material.icons.rounded.DeleteOutline
+import androidx.compose.material.icons.rounded.DeleteSweep
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -126,7 +125,7 @@ private fun EditMenu(onAddWidget: () -> Unit, onCustomize: () -> Unit, onWallpap
         EditMenuRow(Icons.Rounded.Widgets, stringResource(R.string.edit_add_widget), onAddWidget)
         EditMenuRow(Icons.Rounded.Tune, stringResource(R.string.edit_customize), onCustomize)
         EditMenuRow(Icons.Rounded.Wallpaper, stringResource(R.string.edit_wallpapers), onWallpapers)
-        EditMenuRow(Icons.Rounded.DeleteOutline, stringResource(R.string.edit_manage_widgets), onManageWidgets)
+        EditMenuRow(Icons.Rounded.DeleteSweep, stringResource(R.string.edit_manage_widgets), onManageWidgets)
     }
 }
 
@@ -143,34 +142,6 @@ private fun EditMenuRow(icon: ImageVector, text: String, onClick: () -> Unit) {
         Icon(icon, contentDescription = null, tint = Tokens.TextPrimary, modifier = Modifier.size(22.dp))
         Spacer(Modifier.width(14.dp))
         Text(text, color = Tokens.TextPrimary, fontSize = 16.sp)
-    }
-}
-
-/** A permanent recovery path for removing widgets, even when the page itself is empty. */
-@Composable
-fun ManageWidgetsDialog(items: List<Pair<String, String>>, onRemove: (String) -> Unit, onDismiss: () -> Unit) {
-    val shape = ContinuousRoundedShape(28.dp)
-    Dialog(onDismissRequest = onDismiss) {
-        Column(
-            Modifier.width(320.dp).clip(shape).background(Color(0xF02C2C2E))
-                .shapeBorder(1.dp, Color.White.copy(alpha = 0.12f), shape).padding(18.dp),
-        ) {
-            Text(stringResource(R.string.edit_manage_widgets), color = Tokens.TextPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
-            Spacer(Modifier.height(8.dp))
-            if (items.isEmpty()) {
-                Text(stringResource(R.string.edit_no_widgets), color = Tokens.TextSecondary, fontSize = 14.sp)
-            } else {
-                items.forEach { (id, label) ->
-                    Row(Modifier.fillMaxWidth().padding(vertical = 5.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Text(label, color = Tokens.TextPrimary, fontSize = 14.sp, modifier = Modifier.weight(1f))
-                        Text(stringResource(R.string.widget_remove), color = Tokens.Destructive, fontSize = 13.sp,
-                            modifier = Modifier.clip(CircleShape).clickable { onRemove(id) }.padding(horizontal = 10.dp, vertical = 8.dp))
-                    }
-                }
-            }
-            Spacer(Modifier.height(12.dp))
-            DialogPill(stringResource(R.string.action_done), Tokens.TextPrimary, onDismiss)
-        }
     }
 }
 

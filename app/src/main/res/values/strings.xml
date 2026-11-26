@@ -65,8 +65,6 @@
     <string name="edit_done">Done</string>
     <string name="edit_customize">Customize</string>
     <string name="edit_wallpapers">Wallpapers</string>
-    <string name="edit_manage_widgets">Manage Widgets</string>
-    <string name="edit_no_widgets">There are no widgets on this Home Screen.</string>
     <string name="remove_dialog_title">Remove “%1$s”?</string>
     <string name="remove_dialog_message">The app stays installed, it just leaves the Home Screen.</string>
     <string name="remove_dialog_remove_from_home">Remove from Home Screen</string>
@@ -519,4 +517,8 @@
     <string name="widget_dailyquote">Daily Quote</string>
     <string name="widget_dailyquote_description">A short daily reminder.</string>
     <string name="widget_variant_dailyquote">Daily Quote</string>
+    <string name="edit_manage_widgets">Manage Widgets</string>
+    <string name="manage_widgets_description">Remove widgets here, even when the home screen page is empty.</string>
+    <string name="manage_widgets_empty">No widgets are currently placed on your home screen.</string>
+    <string name="manage_widget_remove">Remove widget</string>
 </resources>

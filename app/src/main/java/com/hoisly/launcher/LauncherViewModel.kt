@@ -143,6 +143,9 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
     /** The "Add Widget" sheet is open. */
     val widgetGallery: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
+    /** Widget manager can be opened even when the current home page has no widgets. */
+    val widgetManager: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
     /** iOS "jiggle mode": icons can be dragged, removed and grouped into folders. */
     val editMode: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
@@ -343,6 +346,15 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
 
     fun closeWidgetGallery() {
         widgetGallery.value = false
+    }
+
+    fun openWidgetManager() {
+        closeMenu()
+        widgetManager.value = true
+    }
+
+    fun closeWidgetManager() {
+        widgetManager.value = false
     }
 
     /** Adds a Smart Stack of the built-in widgets of [size] (see [smartStack]). */

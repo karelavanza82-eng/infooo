@@ -23,7 +23,7 @@ import com.hoisly.launcher.R
 
 /**
  * iOS 27-style status bar: clock, muted bell, signal bars, WiFi (iOS 27 wider fan),
- * airplane (iOS 27 bold/tilted), and battery (iOS 27 large-nub pill with half-fill).
+ * airplane (horizontal), and battery (iOS 27 large-nub pill with half-fill).
  * Optional orange dot indicator for active island activity.
  */
 class StatusBarView(context: Context) : View(context) {
@@ -72,7 +72,7 @@ class StatusBarView(context: Context) : View(context) {
     private val boltWork = Path()
 
     // iOS 27 airplane path: bold, slightly more tilted than iOS 16, wider wingspan
-    // Source coordinates in a 24×24 grid, rotated 90° for status bar use
+    // Source coordinates in a 24×24 grid, rotated 45° for status bar use
     private val planePath: Path = PathParser.createPathFromPathData(
         "M21,16v-2l-8,-5V3.5c0,-0.83 -0.67,-1.5 -1.5,-1.5S10,2.67 10,3.5V9l-8,5v2l8,-2.5V19l-2,1.5V22l3.5,-1 3.5,1v-1.5L13,19v-5.5l8,2.5z",
     ) ?: Path()
@@ -281,14 +281,14 @@ class StatusBarView(context: Context) : View(context) {
 
     /**
      * iOS 27 airplane: drawn directly as a bold vector matching the Settings icon style.
-     * The plane points upward (like stock iOS) — same path, but rendered at PLANE27 size
+     * The source path points upward; it is rotated horizontally to match the supplied reference
      * which is larger than before, with a bolder look.
      */
     private fun drawAirplane27(canvas: Canvas, left: Float, cy: Float, size: Float) {
         shapePaint.color = color
         planeMatrix.reset()
-        // iOS 27 rotates the plane 90° clockwise so it faces upper-right (same as iOS Settings)
-        planeMatrix.postRotate(90f, 12f, 12f)
+        // Keep the airplane level and pointing left, matching the supplied reference.
+        planeMatrix.postRotate(-90f, 12f, 12f)
         planeMatrix.postScale(size / 24f, size / 24f)
         planeMatrix.postTranslate(left, cy - size / 2f)
         planeWork.set(planePath)
