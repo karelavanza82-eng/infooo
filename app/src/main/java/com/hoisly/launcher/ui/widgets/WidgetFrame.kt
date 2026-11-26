@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Alignment
@@ -40,7 +41,10 @@ import com.hoisly.launcher.data.WeatherState
 import com.hoisly.launcher.data.WidgetEntry
 import com.hoisly.launcher.data.WidgetKind
 import com.hoisly.launcher.data.WidgetSize
+import com.hoisly.launcher.data.WidgetVisualStyle
 import com.hoisly.launcher.ui.glass.glass
+import com.hoisly.launcher.ui.glass.GlassMode
+import com.hoisly.launcher.ui.glass.LocalGlassStyle
 import com.hoisly.launcher.ui.shape.ContinuousRoundedShape
 import com.hoisly.launcher.ui.shape.shapeBorder
 import com.hoisly.launcher.ui.theme.Tokens
@@ -70,6 +74,9 @@ data class WidgetEnvironment(
 
 val LocalWidgetEnvironment = compositionLocalOf { WidgetEnvironment() }
 
+/** Foreground color follows the selected per-widget Light/Dark appearance. */
+val LocalWidgetForeground = compositionLocalOf { Color.White }
+
 /**
  * A widget's card filling the size given by [modifier]. The content is laid out on a canvas
  * with the design height (see [designSize]) and the card's aspect ratio, then scaled to the
@@ -77,26 +84,32 @@ val LocalWidgetEnvironment = compositionLocalOf { WidgetEnvironment() }
  */
 @Composable
 fun WidgetBody(entry: WidgetEntry, modifier: Modifier = Modifier) {
-    BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
-        val design = entry.size.designSize
-        val scale = min(maxWidth / design.width.value, maxHeight / design.height.value).value
-        val canvas = DpSize(maxWidth / scale, maxHeight / scale)
-        val shape = ContinuousRoundedShape(WidgetRadius * scale)
-        Box(
-            Modifier
-                .fillMaxSize()
-                .widgetBackground(entry, shape)
-                .clip(shape),
-            contentAlignment = Alignment.Center,
-        ) {
+    val currentGlass = LocalGlassStyle.current
+    val widgetGlass = if (entry.visualStyle == WidgetVisualStyle.LiquidGlass) currentGlass.copy(
+        mode = GlassMode.Liquid,
+        tintAlpha = 0.018f,
+        fallback = Color.White.copy(alpha = 0.035f),
+    ) else currentGlass
+    val foreground = if (entry.visualStyle == WidgetVisualStyle.Light) Color(0xFF17181C) else Color.White
+    CompositionLocalProvider(LocalGlassStyle provides widgetGlass, LocalWidgetForeground provides foreground) {
+        BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
+            val design = entry.size.designSize
+            val scale = min(maxWidth / design.width.value, maxHeight / design.height.value).value
+            val canvas = DpSize(maxWidth / scale, maxHeight / scale)
+            val shape = ContinuousRoundedShape(WidgetRadius * scale)
             Box(
                 Modifier
-                    .requiredSize(canvas)
-                    .graphicsLayer {
-                        scaleX = scale
-                        scaleY = scale
-                    },
-            ) { WidgetContent(entry) }
+                    .fillMaxSize()
+                    .widgetBackground(entry, shape)
+                    .clip(shape),
+                contentAlignment = Alignment.Center,
+            ) {
+                Box(
+                    Modifier
+                        .requiredSize(canvas)
+                        .graphicsLayer { scaleX = scale; scaleY = scale },
+                ) { WidgetContent(entry) }
+            }
         }
     }
 }
@@ -111,18 +124,23 @@ private fun WidgetContent(entry: WidgetEntry) {
         WidgetKind.Battery -> BatteryWidget()
         WidgetKind.Suggestions -> SuggestionsWidget(entry.size)
         WidgetKind.Music -> MusicWidget()
+        else -> ExtraWidget(entry.kind, entry.size)
     }
 }
 
 @Composable
-private fun Modifier.widgetBackground(entry: WidgetEntry, shape: ContinuousRoundedShape): Modifier = when (entry.kind) {
-    WidgetKind.Suggestions -> glass(shape, tint = Color.White.copy(alpha = 0.06f))
-    WidgetKind.Weather -> {
-        val forecast = LocalWidgetEnvironment.current.weather.forecast
-        background(weatherBrush(forecast?.condition, forecast?.isDay ?: false), shape)
-            .shapeBorder(1.dp, WidgetStroke, shape)
+private fun Modifier.widgetBackground(entry: WidgetEntry, shape: ContinuousRoundedShape): Modifier = when (entry.visualStyle) {
+    WidgetVisualStyle.LiquidGlass -> glass(shape, tint = Color.White.copy(alpha = 0.018f))
+    WidgetVisualStyle.Light -> background(Color(0xFFF4F5F8), shape).shapeBorder(1.dp, Color.White.copy(alpha = 0.9f), shape)
+    WidgetVisualStyle.Dark -> when (entry.kind) {
+        WidgetKind.Suggestions -> glass(shape, tint = Color.White.copy(alpha = 0.06f))
+        WidgetKind.Weather -> {
+            val forecast = LocalWidgetEnvironment.current.weather.forecast
+            background(weatherBrush(forecast?.condition, forecast?.isDay ?: false), shape)
+                .shapeBorder(1.dp, WidgetStroke, shape)
+        }
+        else -> background(Tokens.WidgetBackground, shape).shapeBorder(1.dp, WidgetStroke, shape)
     }
-    else -> background(Tokens.WidgetBackground, shape).shapeBorder(1.dp, WidgetStroke, shape)
 }
 
 private val WidgetStroke = Color.White.copy(alpha = 0.10f)
@@ -165,6 +183,19 @@ val WidgetKind.titleRes: Int
         WidgetKind.Battery -> R.string.widget_battery
         WidgetKind.Suggestions -> R.string.widget_suggestions
         WidgetKind.Music -> R.string.widget_music
+        WidgetKind.WorldClock -> R.string.widget_worldclock
+        WidgetKind.Reminders -> R.string.widget_reminders
+        WidgetKind.BatteryPro -> R.string.widget_batterypro
+        WidgetKind.ScreenTime -> R.string.widget_screentime
+        WidgetKind.WeatherForecast -> R.string.widget_weatherforecast
+        WidgetKind.AlbumArt -> R.string.widget_albumart
+        WidgetKind.ActivityRings -> R.string.widget_activityrings
+        WidgetKind.StepCounter -> R.string.widget_stepcounter
+        WidgetKind.Countdown -> R.string.widget_countdown
+        WidgetKind.QuickNotes -> R.string.widget_quicknotes
+        WidgetKind.Calculator -> R.string.widget_calculator
+        WidgetKind.ChargingStatus -> R.string.widget_chargingstatus
+        WidgetKind.DailyQuote -> R.string.widget_dailyquote
     }
 
 val WidgetKind.descriptionRes: Int
@@ -176,6 +207,19 @@ val WidgetKind.descriptionRes: Int
         WidgetKind.Battery -> R.string.widget_battery_description
         WidgetKind.Suggestions -> R.string.widget_suggestions_description
         WidgetKind.Music -> R.string.widget_music_description
+        WidgetKind.WorldClock -> R.string.widget_worldclock_description
+        WidgetKind.Reminders -> R.string.widget_reminders_description
+        WidgetKind.BatteryPro -> R.string.widget_batterypro_description
+        WidgetKind.ScreenTime -> R.string.widget_screentime_description
+        WidgetKind.WeatherForecast -> R.string.widget_weatherforecast_description
+        WidgetKind.AlbumArt -> R.string.widget_albumart_description
+        WidgetKind.ActivityRings -> R.string.widget_activityrings_description
+        WidgetKind.StepCounter -> R.string.widget_stepcounter_description
+        WidgetKind.Countdown -> R.string.widget_countdown_description
+        WidgetKind.QuickNotes -> R.string.widget_quicknotes_description
+        WidgetKind.Calculator -> R.string.widget_calculator_description
+        WidgetKind.ChargingStatus -> R.string.widget_chargingstatus_description
+        WidgetKind.DailyQuote -> R.string.widget_dailyquote_description
     }
 
 /** Name of one size variant, e.g. "World Clock" or "Hourly Outlook". */
@@ -195,6 +239,19 @@ fun variantTitleRes(kind: WidgetKind, size: WidgetSize): Int = when (kind) {
     WidgetKind.Battery -> R.string.widget_variant_status
     WidgetKind.Suggestions -> R.string.widget_variant_app_suggestion
     WidgetKind.Music -> R.string.widget_variant_music
+    WidgetKind.WorldClock -> R.string.widget_variant_worldclock
+    WidgetKind.Reminders -> R.string.widget_variant_reminders
+    WidgetKind.BatteryPro -> R.string.widget_variant_batterypro
+    WidgetKind.ScreenTime -> R.string.widget_variant_screentime
+    WidgetKind.WeatherForecast -> R.string.widget_variant_weatherforecast
+    WidgetKind.AlbumArt -> R.string.widget_variant_albumart
+    WidgetKind.ActivityRings -> R.string.widget_variant_activityrings
+    WidgetKind.StepCounter -> R.string.widget_variant_stepcounter
+    WidgetKind.Countdown -> R.string.widget_variant_countdown
+    WidgetKind.QuickNotes -> R.string.widget_variant_quicknotes
+    WidgetKind.Calculator -> R.string.widget_variant_calculator
+    WidgetKind.ChargingStatus -> R.string.widget_variant_chargingstatus
+    WidgetKind.DailyQuote -> R.string.widget_variant_dailyquote
 }
 
 // endregion
@@ -261,7 +318,7 @@ internal fun HostedSnapshot(entry: AppWidgetEntry, modifier: Modifier) {
         } else {
             val context = LocalContext.current
             val label = remember(entry.provider) { AppWidgets.get(context).providerLabel(entry.provider) }
-            Text(label.orEmpty(), color = Tokens.TextSecondary, fontSize = 13.sp)
+            Text(label.orEmpty(), color = LocalWidgetForeground.current.copy(alpha = 0.68f), fontSize = 13.sp)
         }
     }
 }

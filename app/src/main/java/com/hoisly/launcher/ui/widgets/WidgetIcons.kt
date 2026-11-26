@@ -43,6 +43,7 @@ fun KindIcon(kind: WidgetKind, size: Dp) {
         WidgetKind.Battery -> GlyphTile(Icons.Rounded.Bolt, size, Color(0xFF30D158), Color.White)
         WidgetKind.Suggestions -> GlyphTile(Icons.Rounded.Apps, size, Color.White, Color(0xFF0A84FF))
         WidgetKind.Music -> GlyphTile(Icons.Rounded.MusicNote, size, Color(0xFF111A4A), Color.White)
+        else -> GlyphTile(Icons.Rounded.Apps, size, Color(0xFF455A64), Color.White)
     }
 }
 

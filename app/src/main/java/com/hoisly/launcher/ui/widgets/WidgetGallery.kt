@@ -76,6 +76,7 @@ import com.hoisly.launcher.ui.theme.LocalAccent
 import com.hoisly.launcher.data.WidgetEntry
 import com.hoisly.launcher.data.WidgetKind
 import com.hoisly.launcher.data.WidgetSize
+import com.hoisly.launcher.data.WidgetVisualStyle
 import com.hoisly.launcher.ui.glass.GlassProfile
 import com.hoisly.launcher.ui.glass.glass
 import com.hoisly.launcher.ui.shape.ContinuousRoundedShape
@@ -104,7 +105,7 @@ private val Featured = listOf(
 fun WidgetGallery(
     visible: Boolean,
     appWidgets: List<WidgetProviderGroup>,
-    onAdd: (WidgetKind, WidgetSize) -> Unit,
+    onAdd: (WidgetKind, WidgetSize, WidgetVisualStyle) -> Unit,
     onAddApp: (AppWidgetProviderInfo) -> Unit,
     onAddStack: (WidgetSize) -> Unit,
     onClose: () -> Unit,
@@ -150,7 +151,7 @@ fun WidgetGallery(
                 label = "gallery",
             ) { selection ->
                 when (selection) {
-                    is WidgetKind -> KindDetail(selection, onAdd = { size -> selected = null; onAdd(selection, size) }, onBack = { selected = null }, onClose = onClose)
+                    is WidgetKind -> KindDetail(selection, onAdd = { size, style -> selected = null; onAdd(selection, size, style) }, onBack = { selected = null }, onClose = onClose)
                     is WidgetProviderGroup -> AppWidgetsDetail(selection, onAdd = { info -> selected = null; onAddApp(info) }, onBack = { selected = null }, onClose = onClose)
                     SmartStackPick -> SmartStackDetail(onAdd = { size -> selected = null; onAddStack(size) }, onBack = { selected = null }, onClose = onClose)
                     else -> GalleryHome(appWidgets, listState, query, onQueryChange = { query = it }, onPick = { selected = it })
@@ -250,8 +251,9 @@ private fun KindRow(kind: WidgetKind, title: String, onClick: () -> Unit) = Gall
 
 /** The sizes of one widget, swiped like iOS, and the button that adds the shown one. */
 @Composable
-private fun KindDetail(kind: WidgetKind, onAdd: (WidgetSize) -> Unit, onBack: () -> Unit, onClose: () -> Unit) {
+private fun KindDetail(kind: WidgetKind, onAdd: (WidgetSize, WidgetVisualStyle) -> Unit, onBack: () -> Unit, onClose: () -> Unit) {
     val pager = rememberPagerState { kind.sizes.size }
+    var visualStyle by remember(kind) { mutableStateOf(WidgetVisualStyle.Dark) }
     val size = kind.sizes[pager.currentPage]
     GalleryDetail(
         icon = { KindIcon(kind, 40.dp) },
@@ -259,12 +261,13 @@ private fun KindDetail(kind: WidgetKind, onAdd: (WidgetSize) -> Unit, onBack: ()
         title = stringResource(variantTitleRes(kind, size)),
         description = stringResource(kind.descriptionRes),
         pager = pager,
-        onAdd = { onAdd(size) },
+        onAdd = { onAdd(size, visualStyle) },
+        stylePicker = { WidgetStylePicker(visualStyle) { visualStyle = it } },
         onBack = onBack,
         onClose = onClose,
     ) { page ->
         val design = kind.sizes[page].designSize
-        WidgetBody(previewEntry(kind, kind.sizes[page]), Modifier.size(design.width * 0.95f, design.height * 0.95f))
+        WidgetBody(previewEntry(kind, kind.sizes[page], visualStyle), Modifier.size(design.width * 0.95f, design.height * 0.95f))
     }
 }
 
@@ -282,6 +285,7 @@ internal fun GalleryDetail(
     onAdd: () -> Unit,
     onBack: () -> Unit,
     onClose: () -> Unit,
+    stylePicker: @Composable () -> Unit = {},
     preview: @Composable (page: Int) -> Unit,
 ) {
     Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
@@ -308,6 +312,7 @@ internal fun GalleryDetail(
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
         )
+        stylePicker()
         HorizontalPager(pager, modifier = Modifier.weight(1f).fillMaxWidth()) { page ->
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { preview(page) }
         }
@@ -376,4 +381,25 @@ internal fun GalleryRow(icon: @Composable () -> Unit, title: String, onClick: ()
     }
 }
 
-private fun previewEntry(kind: WidgetKind, size: WidgetSize) = WidgetEntry("preview-${kind.name}-${size.name}", kind, size, photo = null)
+private fun previewEntry(kind: WidgetKind, size: WidgetSize, style: WidgetVisualStyle = WidgetVisualStyle.Dark) = WidgetEntry("preview-${kind.name}-${size.name}-${style.name}", kind, size, photo = null, visualStyle = style)
+
+@Composable
+private fun WidgetStylePicker(selected: WidgetVisualStyle, onSelect: (WidgetVisualStyle) -> Unit) {
+    Row(Modifier.fillMaxWidth().padding(top = 14.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        WidgetVisualStyle.entries.forEach { style ->
+            val active = selected == style
+            Box(
+                Modifier.weight(1f).height(38.dp).clip(CircleShape)
+                    .background(if (active) LocalAccent.current.primary else Color.White.copy(alpha = 0.08f))
+                    .clickable { onSelect(style) },
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    when (style) { WidgetVisualStyle.Light -> "Light"; WidgetVisualStyle.Dark -> "Dark"; WidgetVisualStyle.LiquidGlass -> "Liquid Glass" },
+                    color = if (active) LocalAccent.current.onPrimary else Tokens.TextPrimary,
+                    fontSize = 11.sp, fontWeight = FontWeight.SemiBold,
+                )
+            }
+        }
+    }
+}

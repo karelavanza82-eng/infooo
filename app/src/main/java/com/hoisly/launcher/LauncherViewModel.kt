@@ -18,6 +18,7 @@ import com.hoisly.launcher.data.WidgetItem
 import com.hoisly.launcher.data.WidgetKind
 import com.hoisly.launcher.data.WidgetPhotos
 import com.hoisly.launcher.data.WidgetSize
+import com.hoisly.launcher.data.WidgetVisualStyle
 import com.hoisly.launcher.data.WidgetTarget
 import com.hoisly.launcher.data.addWidget
 import com.hoisly.launcher.data.allWidgets
@@ -352,9 +353,9 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     /** Adds a widget at the top of a home page or at the end of the Today page. */
-    fun addWidget(kind: WidgetKind, size: WidgetSize, target: WidgetTarget) {
+    fun addWidget(kind: WidgetKind, size: WidgetSize, visualStyle: WidgetVisualStyle, target: WidgetTarget) {
         closeWidgetGallery()
-        val widget = WidgetItem("widget-${System.currentTimeMillis()}", kind, size)
+        val widget = WidgetItem("widget-${System.currentTimeMillis()}", kind, size, visualStyle = visualStyle)
         writer.arrange { it.addWidget(widget, target, dockCapacity) }
         refreshWidgets()
     }

@@ -27,6 +27,7 @@ import com.hoisly.launcher.data.HomeState
 import com.hoisly.launcher.data.AppLibraryState
 import com.hoisly.launcher.data.WidgetKind
 import com.hoisly.launcher.data.WidgetSize
+import com.hoisly.launcher.data.WidgetVisualStyle
 import com.hoisly.launcher.ui.library.CategoryChooser
 import com.hoisly.launcher.ui.library.CategoryOverlay
 import com.hoisly.launcher.ui.library.LibraryCallbacks
@@ -54,7 +55,7 @@ internal fun HomeOverlays(
     libraryCallbacks: LibraryCallbacks,
     searchCallbacks: SearchCallbacks,
     widgetMenu: WidgetMenuActions,
-    onAddWidget: (WidgetKind, WidgetSize) -> Unit,
+    onAddWidget: (WidgetKind, WidgetSize, WidgetVisualStyle) -> Unit,
     onAddAppWidget: (AppWidgetProviderInfo) -> Unit,
     onAddStack: (WidgetSize) -> Unit,
 ) {

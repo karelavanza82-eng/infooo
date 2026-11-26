@@ -98,9 +98,9 @@ internal fun WorldClockWidget() {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 ClockDial(now, zone, measurer, seconds = true, Modifier.size(78.dp))
                 Spacer(Modifier.height(6.dp))
-                Text(name, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
-                Text(dayLabel(now.value, zone, local), color = Color.White.copy(alpha = 0.6f), fontSize = 11.sp)
-                Text(offsetLabel(now.value, zone, local), color = Color.White.copy(alpha = 0.6f), fontSize = 11.sp)
+                Text(name, color = LocalWidgetForeground.current, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
+                Text(dayLabel(now.value, zone, local), color = LocalWidgetForeground.current.copy(alpha = 0.6f), fontSize = 11.sp)
+                Text(offsetLabel(now.value, zone, local), color = LocalWidgetForeground.current.copy(alpha = 0.6f), fontSize = 11.sp)
             }
         }
     }

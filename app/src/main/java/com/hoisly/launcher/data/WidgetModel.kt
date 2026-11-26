@@ -10,6 +10,9 @@ enum class WidgetSize(val span: Span) {
     Large(Span(4, 4)),
 }
 
+/** Visual version selected independently for each placed widget. */
+enum class WidgetVisualStyle { Light, Dark, LiquidGlass }
+
 /** Built-in widgets, each available in a few [sizes] (the order of the gallery pages). */
 enum class WidgetKind(val sizes: List<WidgetSize>) {
     Clock(listOf(WidgetSize.Small, WidgetSize.Medium)),
@@ -20,6 +23,19 @@ enum class WidgetKind(val sizes: List<WidgetSize>) {
     Suggestions(listOf(WidgetSize.Small, WidgetSize.Medium)),
     /** Now Playing: the song of the active media session with a play/pause button. */
     Music(listOf(WidgetSize.Small)),
+    WorldClock(listOf(WidgetSize.Small, WidgetSize.Medium)),
+    Reminders(listOf(WidgetSize.Small, WidgetSize.Medium)),
+    BatteryPro(listOf(WidgetSize.Small, WidgetSize.Medium)),
+    ScreenTime(listOf(WidgetSize.Small, WidgetSize.Medium)),
+    WeatherForecast(listOf(WidgetSize.Medium, WidgetSize.Large)),
+    AlbumArt(listOf(WidgetSize.Small, WidgetSize.Medium)),
+    ActivityRings(listOf(WidgetSize.Small, WidgetSize.Medium)),
+    StepCounter(listOf(WidgetSize.Small, WidgetSize.Medium)),
+    Countdown(listOf(WidgetSize.Small, WidgetSize.Medium)),
+    QuickNotes(listOf(WidgetSize.Small, WidgetSize.Medium)),
+    Calculator(listOf(WidgetSize.Small, WidgetSize.Medium)),
+    ChargingStatus(listOf(WidgetSize.Small)),
+    DailyQuote(listOf(WidgetSize.Small, WidgetSize.Medium)),
 }
 
 /** Anything that lives on home pages and the Today page but never in the dock or folders. */
@@ -38,6 +54,7 @@ data class WidgetItem(
     val kind: WidgetKind,
     val size: WidgetSize,
     val photo: Long? = null,
+    val visualStyle: WidgetVisualStyle = WidgetVisualStyle.Dark,
 ) : PageWidget {
     override val span: Span get() = size.span
 }

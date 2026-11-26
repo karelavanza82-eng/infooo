@@ -71,6 +71,7 @@ private fun itemToJson(item: HomeItem): JSONObject = when (item) {
         .put("widget", item.id)
         .put("kind", item.kind.name)
         .put("size", item.size.name)
+        .put("visualStyle", item.visualStyle.name)
         .apply { item.photo?.let { put("photo", it) } }
     is AppWidgetItem -> JSONObject()
         .put("appwidget", item.id)
@@ -106,7 +107,7 @@ private fun JSONArray.toItems(): List<HomeItem> = List(length()) { i ->
             // Unknown kinds/sizes (from a newer version) are skipped instead of failing the whole layout.
             val kind = WidgetKind.entries.firstOrNull { it.name == obj.optString("kind") } ?: return@List null
             val size = WidgetSize.entries.firstOrNull { it.name == obj.optString("size") } ?: kind.sizes.first()
-            WidgetItem(obj.getString("widget"), kind, size, obj.optLong("photo").takeIf { obj.has("photo") })
+            WidgetItem(obj.getString("widget"), kind, size, obj.optLong("photo").takeIf { obj.has("photo") }, WidgetVisualStyle.entries.firstOrNull { it.name == obj.optString("visualStyle") } ?: WidgetVisualStyle.Dark)
         }
         obj.has("appwidget") -> AppWidgetItem(
             obj.getString("appwidget"),

@@ -123,7 +123,7 @@ private fun HourlyRow(forecast: Forecast, fahrenheit: Boolean) {
                 Spacer(Modifier.height(3.dp))
                 WeatherGlyph(hour.condition, hour.isDay, 24.dp)
                 Spacer(Modifier.height(3.dp))
-                Text(degrees(hour.temperature, fahrenheit), color = Color.White, fontSize = 17.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold)
+                Text(degrees(hour.temperature, fahrenheit), color = LocalWidgetForeground.current, fontSize = 17.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold)
             }
         }
     }
@@ -139,14 +139,14 @@ private fun DailyList(forecast: Forecast, fahrenheit: Boolean) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     day.date.dayOfWeek.getDisplayName(JavaTextStyle.FULL_STANDALONE, locale).replaceFirstChar { it.titlecase(locale) },
-                    color = Color.White,
+                    color = LocalWidgetForeground.current,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.weight(1f),
                 )
                 WeatherGlyph(day.condition, isDay = true, size = 22.dp)
                 Spacer(Modifier.width(40.dp))
-                Text(degrees(day.max, fahrenheit), color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.width(52.dp))
+                Text(degrees(day.max, fahrenheit), color = LocalWidgetForeground.current, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.width(52.dp))
                 Text(degrees(day.min, fahrenheit), color = Dim, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.width(46.dp))
             }
         }
@@ -156,24 +156,24 @@ private fun DailyList(forecast: Forecast, fahrenheit: Boolean) {
 @Composable
 private fun PlaceName(name: String, size: TextUnit) {
     // "Samara, Samara Oblast, Russia" → "Samara": the widget shows the city, like iOS.
-    Text(name.substringBefore(','), color = Color.White, fontSize = size, lineHeight = size * 1.2f, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Clip)
+    Text(name.substringBefore(','), color = LocalWidgetForeground.current, fontSize = size, lineHeight = size * 1.2f, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Clip)
 }
 
 @Composable
 private fun Temperature(celsius: Double, fahrenheit: Boolean, size: TextUnit) {
-    Text(degrees(celsius, fahrenheit), color = Color.White, fontSize = size, fontWeight = FontWeight.Light, lineHeight = size * 1.05f)
+    Text(degrees(celsius, fahrenheit), color = LocalWidgetForeground.current, fontSize = size, fontWeight = FontWeight.Light, lineHeight = size * 1.05f)
 }
 
 @Composable
 private fun ConditionText(condition: WeatherCondition, size: TextUnit) {
-    Text(stringResource(condition.labelRes), color = Color.White, fontSize = size, lineHeight = size * 1.2f, fontWeight = FontWeight.SemiBold, maxLines = 1)
+    Text(stringResource(condition.labelRes), color = LocalWidgetForeground.current, fontSize = size, lineHeight = size * 1.2f, fontWeight = FontWeight.SemiBold, maxLines = 1)
 }
 
 @Composable
 private fun HighLow(forecast: Forecast, fahrenheit: Boolean, size: TextUnit) {
     Text(
         stringResource(R.string.weather_high_low, degrees(forecast.todayMax, fahrenheit), degrees(forecast.todayMin, fahrenheit)),
-        color = Color.White,
+        color = LocalWidgetForeground.current,
         fontSize = size,
         lineHeight = size * 1.2f,
         fontWeight = FontWeight.SemiBold,
@@ -188,7 +188,7 @@ private fun WeatherPlaceholder(noPlace: Boolean) {
         Spacer(Modifier.height(8.dp))
         Text(
             stringResource(if (noPlace) R.string.weather_set_location else R.string.weather_loading),
-            color = Color.White,
+            color = LocalWidgetForeground.current,
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold,
         )

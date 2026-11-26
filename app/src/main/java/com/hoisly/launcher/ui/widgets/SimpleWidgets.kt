@@ -103,7 +103,7 @@ internal fun BatteryWidget() {
                 Icon(
                     Icons.Rounded.Bolt,
                     null,
-                    tint = Color.White,
+                    tint = LocalWidgetForeground.current,
                     modifier = Modifier
                         .size(16.dp)
                         .align(Alignment.TopCenter)
@@ -113,7 +113,7 @@ internal fun BatteryWidget() {
             }
         }
         Spacer(Modifier.weight(1f))
-        Text("${battery.level}%", color = Color.White, fontSize = 40.sp, fontWeight = FontWeight.Light)
+        Text("${battery.level}%", color = LocalWidgetForeground.current, fontSize = 40.sp, fontWeight = FontWeight.Light)
     }
 }
 
@@ -142,9 +142,9 @@ internal fun PhotoWidget(entry: WidgetEntry) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Icon(Icons.Rounded.AddPhotoAlternate, null, tint = Color.White, modifier = Modifier.size(34.dp))
+        Icon(Icons.Rounded.AddPhotoAlternate, null, tint = LocalWidgetForeground.current, modifier = Modifier.size(34.dp))
         Spacer(Modifier.height(8.dp))
-        Text(stringResource(R.string.widget_choose_photo), color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+        Text(stringResource(R.string.widget_choose_photo), color = LocalWidgetForeground.current, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
     }
 }
 

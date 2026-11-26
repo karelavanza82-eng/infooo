@@ -182,11 +182,11 @@ internal fun MusicWidget() {
             Column(Modifier.weight(1f)) {
                 Text(
                     text = playing?.title ?: stringResource(if (music.access) R.string.widget_music_idle else R.string.widget_music_allow),
-                    color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold, lineHeight = 17.sp,
+                    color = LocalWidgetForeground.current, fontSize = 15.sp, fontWeight = FontWeight.Bold, lineHeight = 17.sp,
                     maxLines = 2, overflow = TextOverflow.Ellipsis,
                 )
                 playing?.artist?.let {
-                    Text(it, color = Color.White.copy(alpha = 0.62f), fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(it, color = LocalWidgetForeground.current.copy(alpha = 0.62f), fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             }
             Box(
@@ -200,7 +200,7 @@ internal fun MusicWidget() {
             ) {
                 Icon(
                     if (playing?.playing == true) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
-                    contentDescription = null, tint = Color.White, modifier = Modifier.size(26.dp),
+                    contentDescription = null, tint = LocalWidgetForeground.current, modifier = Modifier.size(26.dp),
                 )
             }
         }

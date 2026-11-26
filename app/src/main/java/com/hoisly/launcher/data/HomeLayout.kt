@@ -28,6 +28,7 @@ data class WidgetEntry(
     val size: WidgetSize,
     /** Version of the chosen photo ([WidgetKind.Photo]), null when none. */
     val photo: Long?,
+    val visualStyle: WidgetVisualStyle = WidgetVisualStyle.Dark,
 ) : PageWidgetEntry {
     override val span: Span get() = size.span
 }
@@ -122,7 +123,7 @@ fun buildHomeLayout(layout: LayoutData, apps: List<AppInfo>, prefs: SettingsStat
 }
 
 private fun PageWidget.toEntry(): PageWidgetEntry = when (this) {
-    is WidgetItem -> WidgetEntry(id, kind, size, photo)
+    is WidgetItem -> WidgetEntry(id, kind, size, photo, visualStyle)
     is AppWidgetItem -> AppWidgetEntry(id, appWidgetId, provider, span)
     is WidgetStack -> WidgetStackEntry(id, size, items.map { it.toEntry() }, current)
 }

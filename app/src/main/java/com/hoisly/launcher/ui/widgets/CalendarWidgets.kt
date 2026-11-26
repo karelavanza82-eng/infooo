@@ -74,15 +74,15 @@ internal fun UpNextWidget() {
         Column(Modifier.weight(1f).fillMaxHeight()) {
             Text(
                 today.dayOfWeek.getDisplayName(JavaTextStyle.FULL, locale).uppercase(locale),
-                color = Color.White,
+                color = LocalWidgetForeground.current,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.SemiBold,
             )
-            Text(today.dayOfMonth.toString(), color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Light)
+            Text(today.dayOfMonth.toString(), color = LocalWidgetForeground.current, fontSize = 30.sp, fontWeight = FontWeight.Light)
             Spacer(Modifier.height(6.dp))
             when {
-                !environment.calendarAllowed -> Text(stringResource(R.string.calendar_no_permission), color = Color.White, fontSize = 13.sp, lineHeight = 16.sp)
-                environment.events.isEmpty() -> Text(stringResource(R.string.calendar_no_events), color = Color.White.copy(alpha = 0.6f), fontSize = 13.sp)
+                !environment.calendarAllowed -> Text(stringResource(R.string.calendar_no_permission), color = LocalWidgetForeground.current, fontSize = 13.sp, lineHeight = 16.sp)
+                environment.events.isEmpty() -> Text(stringResource(R.string.calendar_no_events), color = LocalWidgetForeground.current.copy(alpha = 0.6f), fontSize = 13.sp)
                 else -> environment.events.take(2).forEach { EventRow(it) }
             }
         }
@@ -110,8 +110,8 @@ private fun EventRow(event: CalendarEvent) {
         )
         Spacer(Modifier.width(6.dp))
         Column {
-            Text(event.title, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text(dayLabel + time, color = Color.White.copy(alpha = 0.6f), fontSize = 11.sp, maxLines = 1)
+            Text(event.title, color = LocalWidgetForeground.current, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(dayLabel + time, color = LocalWidgetForeground.current.copy(alpha = 0.6f), fontSize = 11.sp, maxLines = 1)
         }
     }
 }
@@ -126,7 +126,7 @@ private fun MonthGrid(today: LocalDate, cellHeight: Dp, fontSize: TextUnit, modi
     Column(modifier) {
         Text(
             month.month.getDisplayName(JavaTextStyle.FULL_STANDALONE, locale).uppercase(locale),
-            color = Color.White,
+            color = LocalWidgetForeground.current,
             fontSize = fontSize * 1.05f,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(start = 2.dp, bottom = 4.dp),
@@ -151,7 +151,7 @@ private fun DayCell(text: String, height: Dp, fontSize: TextUnit, bold: Boolean 
         if (today) Box(Modifier.size(height).background(TodayRed, CircleShape))
         Text(
             text,
-            color = Color.White,
+            color = LocalWidgetForeground.current,
             fontSize = fontSize,
             fontWeight = if (bold || today) FontWeight.Bold else FontWeight.Medium,
             textAlign = TextAlign.Center,

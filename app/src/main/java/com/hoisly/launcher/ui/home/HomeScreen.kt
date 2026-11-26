@@ -398,7 +398,7 @@ fun HomeScreen(vm: LauncherViewModel, actions: LauncherActions) {
             libraryCallbacks = libraryCallbacks,
             searchCallbacks = searchCallbacks,
             widgetMenu = widgetMenu,
-            onAddWidget = { kind, size -> vm.addWidget(kind, size, widgetTarget()) },
+            onAddWidget = { kind, size, visualStyle -> vm.addWidget(kind, size, visualStyle, widgetTarget()) },
             onAddAppWidget = { info -> actions.addAppWidget(info, widgetTarget()) },
             onAddStack = { size -> vm.addSmartStack(size, widgetTarget()) },
         )
