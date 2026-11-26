@@ -56,6 +56,7 @@ internal class GlassNode(
 
     // Liquid glass state: created on first use on Android 13+.
     private var liquid: LiquidGlassPainter? = null
+    private var legacyLiquid: LegacyLiquidGlassPainter? = null
     private val frame = LiquidGlassFrame()
     private var liquidDrawn = false
 
@@ -117,18 +118,18 @@ internal class GlassNode(
         val style = currentValueOf(LocalGlassStyle)
 
         liquidDrawn = false
-        if (style.mode == GlassMode.Liquid && source?.sharp != null && Build.VERSION.SDK_INT >= LIQUID_GLASS_MIN_SDK) {
+        if (style.mode == GlassMode.Liquid && source?.sharp != null && source.body != null) {
             // A pressed button grows and follows the finger, content included; the hit area stays put.
             if (press.measure(size.width, size.height, LiquidGlassTokens.PressGrow.toPx(), LiquidGlassTokens.DragStretch.toPx())) {
                 withTransform({
                     translate(press.translationX, press.translationY)
                     scale(press.scaleX, press.scaleY, center)
                 }) {
-                    liquidDrawn = drawLiquid(source, style)
+                    liquidDrawn = drawLiquidCompatible(source, style)
                     if (liquidDrawn) this@draw.drawContent()
                 }
             } else {
-                liquidDrawn = drawLiquid(source, style)
+                liquidDrawn = drawLiquidCompatible(source, style)
                 if (liquidDrawn) drawContent()
             }
             if (liquidDrawn) return
@@ -141,6 +142,40 @@ internal class GlassNode(
             if (style.edge) drawEdge(path, stroke)
         }
         drawContent()
+    }
+
+    private fun DrawScope.drawLiquidCompatible(source: GlassSource, style: GlassStyle): Boolean =
+        if (Build.VERSION.SDK_INT >= LIQUID_GLASS_MIN_SDK) {
+            drawLiquid(source, style)
+        } else {
+            drawLegacyLiquid(source, style)
+        }
+
+    /** Android 9–12 implementation using Canvas shader primitives, with the same frame inputs. */
+    private fun DrawScope.drawLegacyLiquid(source: GlassSource, style: GlassStyle): Boolean {
+        updateTone(source, style)
+        val rimToken = when (profile) {
+            GlassProfile.Panel -> LiquidGlassTokens.PanelRim
+            GlassProfile.Button -> LiquidGlassTokens.ButtonRim
+            GlassProfile.SmallButton -> LiquidGlassTokens.SmallButtonRim
+            GlassProfile.Tile -> LiquidGlassTokens.TileRim
+        }
+        val rim = effectiveRim(rimToken.toPx(), size.width, size.height)
+        frame.windowPos = windowPos
+        frame.rim = rim
+        frame.refraction = min(
+            rim * LiquidGlassTokens.MaxRefraction * style.refraction.coerceIn(0f, 1f),
+            min(size.width, size.height) / 2f,
+        )
+        frame.highlight = stroke
+        frame.edge = style.edge
+        frame.lightAngle = currentValueOf(LocalGlassLight).angle
+        val touch = press.touch
+        frame.touchX = touch.x
+        frame.touchY = touch.y
+        frame.touchAmount = press.amount.coerceIn(0f, 1f)
+        val painter = legacyLiquid ?: LegacyLiquidGlassPainter().also { legacyLiquid = it }
+        return with(painter) { draw(path, frame, source) }
     }
 
     @RequiresApi(LIQUID_GLASS_MIN_SDK)

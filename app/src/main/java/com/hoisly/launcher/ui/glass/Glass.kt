@@ -28,7 +28,7 @@ val LocalGlassSource = compositionLocalOf<GlassSource?> { null }
 /**
  * User-adjustable look of glass surfaces: [tintAlpha] of the default white tint, the [edge]
  * highlight, the rendering [mode] and, for Liquid glass, the [refraction] strength (0..1).
- * [mode] is a request: Android 12 and a shader that failed to compile always get Frosted.
+ * [mode] is a request: Android 9–12 use the Canvas compatibility renderer; Android 13+ use AGSL.
  */
 data class GlassStyle(
     val tintAlpha: Float = Tokens.GlassTint.alpha,
@@ -69,7 +69,7 @@ enum class GlassProfile(internal val touch: Boolean) {
  * wallpaper right under this element, a light [tint] on top and a thin gradient [stroke]
  * that imitates the highlight on the glass edge.
  *
- * Liquid (Android 13+): a shader computes a thick lens from the wallpaper under the element:
+ * Liquid (Android 9+): AGSL computes the lens on Android 13+, while a Canvas compatibility renderer recreates its optical layers on Android 9–12:
  * the rim refracts it, the body is blurred and tinted, a Fresnel highlight in the [stroke]
  * color follows [LocalGlassLight], and [profile] sets the lens and the touch reaction.
  *

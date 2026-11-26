@@ -60,7 +60,7 @@ object WallpaperBlur {
     const val SATURATION: Float = 1.6f
 
     /** On Android 13+ the wallpaper bitmap is only readable with "All files access". */
-    fun hasAccess(): Boolean = Environment.isExternalStorageManager()
+    fun hasAccess(): Boolean = Build.VERSION.SDK_INT < Build.VERSION_CODES.R || Environment.isExternalStorageManager()
 
     /** Changes whenever the user sets a new wallpaper; -1 if unknown. */
     fun wallpaperId(context: Context): Int = runCatching {
@@ -76,7 +76,7 @@ object WallpaperBlur {
         val small = render(context, DOWNSCALE, SATURATION) ?: return@withContext null
         val pixels = boxBlur(small, RADIUS, passes = 3)
         val luminance = LuminanceMap.fromArgb(pixels, small.width, small.height)
-        val body = if (sharp != null && isLiquidGlassSupported(Build.VERSION.SDK_INT)) renderBody(context) else null
+        val body = if (sharp != null) renderBody(context) else null
         GlassSource(small.asImageBitmap(), DOWNSCALE, sharp, PREVIEW_DOWNSCALE, luminance, body)
     }
 
@@ -130,9 +130,13 @@ object WallpaperBlur {
         if (manager.wallpaperInfo != null) return null
         val drawable = runCatching { manager.drawable }.getOrNull() ?: return null
 
-        val screen = context.getSystemService(WindowManager::class.java).maximumWindowMetrics.bounds
-        val sw = screen.width()
-        val sh = screen.height()
+        val (sw, sh) = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val bounds = context.getSystemService(WindowManager::class.java).maximumWindowMetrics.bounds
+            bounds.width() to bounds.height()
+        } else {
+            val metrics = context.resources.displayMetrics
+            metrics.widthPixels to metrics.heightPixels
+        }
         val ww = drawable.intrinsicWidth.takeIf { it > 0 } ?: sw
         val wh = drawable.intrinsicHeight.takeIf { it > 0 } ?: sh
 

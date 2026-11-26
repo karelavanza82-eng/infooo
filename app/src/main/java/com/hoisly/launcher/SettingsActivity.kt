@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Build
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -46,7 +47,6 @@ import kotlin.math.roundToInt
 class SettingsActivity : ComponentActivity(), SettingsActions {
 
     private val vm: SettingsViewModel by viewModels()
-    private val roleManager: RoleManager by lazy { getSystemService(RoleManager::class.java) }
 
     override var isDefaultHome: Boolean by mutableStateOf(false)
         private set
@@ -109,14 +109,26 @@ class SettingsActivity : ComponentActivity(), SettingsActions {
     }
 
     private fun refreshSystemState() {
-        isDefaultHome = roleManager.isRoleHeld(RoleManager.ROLE_HOME)
-        isHomeRoleAvailable = roleManager.isRoleAvailable(RoleManager.ROLE_HOME)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val roleManager = getSystemService(RoleManager::class.java)
+            isDefaultHome = roleManager?.isRoleHeld(RoleManager.ROLE_HOME) == true
+            isHomeRoleAvailable = roleManager?.isRoleAvailable(RoleManager.ROLE_HOME) == true
+        } else {
+            val homeIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
+            isDefaultHome = packageManager.resolveActivity(homeIntent, 0)?.activityInfo?.packageName == packageName
+            isHomeRoleAvailable = true
+        }
         hasWallpaperAccess = WallpaperBlur.hasAccess()
         IslandAccess.refresh(this)
     }
 
     override fun requestDefaultHome() {
-        if (isDefaultHome || !roleManager.isRoleAvailable(RoleManager.ROLE_HOME)) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            startActivity(Intent(Settings.ACTION_HOME_SETTINGS))
+            return
+        }
+        val roleManager = getSystemService(RoleManager::class.java)
+        if (isDefaultHome || roleManager == null || !roleManager.isRoleAvailable(RoleManager.ROLE_HOME)) {
             startActivity(Intent(Settings.ACTION_HOME_SETTINGS))
         } else {
             requestHomeRole.launch(roleManager.createRequestRoleIntent(RoleManager.ROLE_HOME))
@@ -124,6 +136,10 @@ class SettingsActivity : ComponentActivity(), SettingsActions {
     }
 
     override fun requestWallpaperAccess() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            vm.refreshGlass()
+            return
+        }
         val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, "package:$packageName".toUri())
         runCatching { startActivity(intent) }
             .onFailure { startActivity(Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)) }
