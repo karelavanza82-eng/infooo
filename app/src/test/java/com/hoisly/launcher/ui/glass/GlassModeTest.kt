@@ -10,16 +10,11 @@ import kotlin.math.abs
 class GlassModeTest {
 
     @Test
-    fun legacyCanvasAndModernAgslBothResolveToLiquid() {
-        assertTrue(isLiquidGlassSupported(33))
-        assertTrue(isLiquidGlassSupported(34))
-        assertFalse(isLiquidGlassSupported(28))
-        assertFalse(isLiquidGlassSupported(32))
-        assertEquals(GlassMode.Liquid, resolveGlassMode(GlassMode.Liquid, 28, shaderReady = false))
-        assertEquals(GlassMode.Liquid, resolveGlassMode(GlassMode.Liquid, 29, shaderReady = false))
-        assertEquals(GlassMode.Liquid, resolveGlassMode(GlassMode.Liquid, 32, shaderReady = false))
+    fun liquidNeedsAndroid13AndACompiledShader() {
         assertEquals(GlassMode.Liquid, resolveGlassMode(GlassMode.Liquid, 33, shaderReady = true))
         assertEquals(GlassMode.Liquid, resolveGlassMode(GlassMode.Liquid, 34, shaderReady = true))
+        assertEquals(GlassMode.Frosted, resolveGlassMode(GlassMode.Liquid, 31, shaderReady = true))
+        assertEquals(GlassMode.Frosted, resolveGlassMode(GlassMode.Liquid, 32, shaderReady = true))
         assertEquals(GlassMode.Frosted, resolveGlassMode(GlassMode.Liquid, 34, shaderReady = false))
         assertEquals(GlassMode.Frosted, resolveGlassMode(GlassMode.Frosted, 34, shaderReady = true))
     }

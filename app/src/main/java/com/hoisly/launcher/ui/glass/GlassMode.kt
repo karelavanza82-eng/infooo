@@ -23,16 +23,11 @@ const val LIQUID_GLASS_MIN_SDK: Int = 33
 fun isLiquidGlassSupported(sdkInt: Int): Boolean = sdkInt >= LIQUID_GLASS_MIN_SDK
 
 /**
- * The mode actually drawn. Android 9–12 use the Canvas compatibility renderer, while
- * Android 13+ use AGSL and require a successfully compiled RuntimeShader.
+ * The mode actually drawn: Liquid only when asked for, supported by the platform and the
+ * shader compiled; Frosted in every other case.
  */
 fun resolveGlassMode(requested: GlassMode, sdkInt: Int, shaderReady: Boolean): GlassMode =
-    when {
-        requested != GlassMode.Liquid -> GlassMode.Frosted
-        sdkInt < LIQUID_GLASS_MIN_SDK -> GlassMode.Liquid
-        shaderReady -> GlassMode.Liquid
-        else -> GlassMode.Frosted
-    }
+    if (requested == GlassMode.Liquid && isLiquidGlassSupported(sdkInt) && shaderReady) GlassMode.Liquid else GlassMode.Frosted
 
 /**
  * Whether the tilt sensor should run: only for a visible home screen with Liquid glass and
