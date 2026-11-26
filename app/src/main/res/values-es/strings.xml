@@ -473,4 +473,11 @@
     <string name="a11y_label">Dynamic Island</string>
     <string name="tile_label">Isla</string>
     <string name="a11y_desc">Muestra una cápsula al estilo Dynamic Island sobre la cámara: música, temporizadores, descargas, linterna y eventos del sistema. El servicio identifica la aplicación abierta para ocultar el reproductor y mostrar pagos. Solo lee las pantallas de las aplicaciones de navegación, Reloj y pagos mientras están abiertas: distancia al siguiente giro, calle, llegada y dirección en navegación; temporizador y cronómetro en Reloj; pantalla de pago e importe para mostrar «Acerca al terminal» y después «Pagado». Los datos leídos permanecen en el teléfono. Para buscar la letra se envían el título, el artista, el álbum y la duración de la canción. Si se activa el tiempo, la ciudad elegida y sus coordenadas se envían a Open-Meteo, sin pedir permiso de ubicación. Para el gesto opcional de volver arriba, el servicio comprueba los elementos desplazables de la aplicación abierta sin leer su texto.</string>
+
+    <string name="about_description">A personal Android launcher project.</string>
+    <string name="about_developer">Developer</string>
+    <string name="about_project_location">Project created in</string>
+    <string name="about_project_location_value">Sragen, Central Java, Indonesia</string>
+    <string name="about_version">Version 2.1.1</string>
+    <string name="row_about">About Hiosly</string>
 </resources>
