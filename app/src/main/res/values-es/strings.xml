@@ -28,7 +28,6 @@
     <string name="row_dynamic_color">Colores dinámicos</string>
     <string name="row_version">Versión</string>
     <string name="row_license">Licencia</string>
-    <string name="general_hide_navigation">Ocultar navegación</string>
     <string name="general_blur">Efecto de desenfoque</string>
     <string name="general_custom_text_size">Tamaño de texto personalizado</string>
     <string name="general_wallpaper_access">Permitir acceso al fondo</string>

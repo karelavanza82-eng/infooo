@@ -27,7 +27,6 @@
     <string name="row_dynamic_color">ダイナミックカラー</string>
     <string name="row_version">バージョン</string>
     <string name="row_license">ライセンス</string>
-    <string name="general_hide_navigation">ナビゲーションを非表示</string>
     <string name="general_blur">ぼかし効果</string>
     <string name="general_custom_text_size">文字サイズをカスタマイズ</string>
     <string name="general_wallpaper_access">壁紙へのアクセスを許可</string>

@@ -28,7 +28,6 @@
     <string name="row_dynamic_color">Динамичка боја</string>
     <string name="row_version">Верзија</string>
     <string name="row_license">Лиценца</string>
-    <string name="general_hide_navigation">Сакриј навигацију</string>
     <string name="general_blur">Ефекат замућења</string>
     <string name="general_custom_text_size">Прилагођена величина текста</string>
     <string name="general_wallpaper_access">Дозволи приступ позадини</string>

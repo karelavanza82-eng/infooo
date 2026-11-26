@@ -159,7 +159,6 @@ class MainActivity : ComponentActivity(), LauncherActions {
             val badges = remember(badgeCounts, settings.badges) {
                 settings.badges.takeIf { it != BadgeStyle.Off }?.let { BadgeSource(badgeCounts, it) }
             }
-            LaunchedEffect(settings.hideNavigation) { applyNavigationBarVisibility(settings.hideNavigation) }
             // Like iOS27L, the status bar makes room for the Edit/Done bar in edit mode.
             LaunchedEffect(editMode) { applyStatusBarVisibility(hidden = editMode) }
             CompositionLocalProvider(
@@ -306,16 +305,6 @@ class MainActivity : ComponentActivity(), LauncherActions {
         if (hidden) controller.hide(WindowInsetsCompat.Type.statusBars()) else controller.show(WindowInsetsCompat.Type.statusBars())
     }
 
-    /** Hides the navigation bar; it can still be revealed temporarily by swiping from the edge. */
-    private fun applyNavigationBarVisibility(hidden: Boolean) {
-        val controller = WindowCompat.getInsetsController(window, window.decorView)
-        if (hidden) {
-            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            controller.hide(WindowInsetsCompat.Type.navigationBars())
-        } else {
-            controller.show(WindowInsetsCompat.Type.navigationBars())
-        }
-    }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)

@@ -35,7 +35,6 @@
     <string name="about_version">Versi 2.1.1</string>
     <string name="row_version">Versi</string>
     <string name="row_license">Lisensi</string>
-    <string name="general_hide_navigation">Sembunyikan navigasi</string>
     <string name="general_blur">Efek buram</string>
     <string name="general_custom_text_size">Ukuran teks khusus</string>
     <string name="general_wallpaper_access">Izinkan akses wallpaper</string>

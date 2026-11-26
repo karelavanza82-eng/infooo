@@ -28,7 +28,6 @@
     <string name="row_dynamic_color">Динамічні кольори</string>
     <string name="row_version">Версія</string>
     <string name="row_license">Ліцензія</string>
-    <string name="general_hide_navigation">Приховати навігацію</string>
     <string name="general_blur">Ефект розмиття</string>
     <string name="general_custom_text_size">Власний розмір тексту</string>
     <string name="general_wallpaper_access">Дозволити доступ до шпалер</string>

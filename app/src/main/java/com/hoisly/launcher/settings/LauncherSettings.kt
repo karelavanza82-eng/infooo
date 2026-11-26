@@ -52,7 +52,6 @@ class LauncherSettings private constructor(context: Context) {
     fun update(transform: (SettingsState) -> SettingsState) {
         val next = transform(_state.value).sanitized()
         write {
-            putBoolean(KEY_HIDE_NAV, next.hideNavigation)
             putBoolean(KEY_BLUR, next.blurEffect)
             putBoolean(KEY_CUSTOM_TEXT, next.customTextSize)
             putFloat(KEY_TEXT_SCALE, next.textScale)
@@ -121,7 +120,6 @@ class LauncherSettings private constructor(context: Context) {
         prefs.edit { putBoolean(KEY_ONBOARDING_DONE, !needed) }
     }
 
-    fun setHideNavigation(value: Boolean): Unit = update { it.copy(hideNavigation = value) }
     fun setBlurEffect(value: Boolean): Unit = update { it.copy(blurEffect = value) }
     fun setCustomTextSize(value: Boolean): Unit = update { it.copy(customTextSize = value) }
     fun setOpenCloseAnimation(value: Boolean): Unit = update { it.copy(openCloseAnimation = value) }
@@ -178,7 +176,6 @@ class LauncherSettings private constructor(context: Context) {
     private fun read(): SettingsState = readRaw().sanitized()
 
     private fun readRaw(): SettingsState = SettingsState(
-        hideNavigation = prefs.getBoolean(KEY_HIDE_NAV, false),
         blurEffect = prefs.getBoolean(KEY_BLUR, true),
         customTextSize = prefs.getBoolean(KEY_CUSTOM_TEXT, false),
         textScale = prefs.getFloat(KEY_TEXT_SCALE, 1f),
@@ -293,7 +290,6 @@ class LauncherSettings private constructor(context: Context) {
     }
 
     companion object {
-        private const val KEY_HIDE_NAV = "hide_navigation"
         private const val KEY_BLUR = "blur_effect"
         private const val KEY_CUSTOM_TEXT = "custom_text_size"
         private const val KEY_TEXT_SCALE = "text_scale"

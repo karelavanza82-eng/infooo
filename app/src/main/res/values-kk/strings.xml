@@ -28,7 +28,6 @@
     <string name="row_dynamic_color">Динамикалық түс</string>
     <string name="row_version">Нұсқа</string>
     <string name="row_license">Лицензия</string>
-    <string name="general_hide_navigation">Шарлау жолағын жасыру</string>
     <string name="general_blur">Бұлыңғырлау әсері</string>
     <string name="general_custom_text_size">Мәтін өлшемін реттеу</string>
     <string name="general_wallpaper_access">Тұсқағазға кіруге рұқсат беру</string>

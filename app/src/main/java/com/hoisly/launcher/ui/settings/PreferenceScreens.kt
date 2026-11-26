@@ -66,7 +66,6 @@ fun GeneralSettingsScreen(vm: SettingsViewModel, actions: SettingsActions, onBac
     SettingsPage(title = stringResource(R.string.row_general), onBack = onBack) {
         item {
             SettingsCard {
-                SwitchRow(stringResource(R.string.general_hide_navigation), settings.hideNavigation, vm.settings::setHideNavigation)
                 SwitchRow(stringResource(R.string.general_blur), settings.blurEffect, vm.settings::setBlurEffect)
                 SwitchRow(stringResource(R.string.general_custom_text_size), settings.customTextSize, vm.settings::setCustomTextSize)
 

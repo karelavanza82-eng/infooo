@@ -27,7 +27,6 @@
     <string name="row_dynamic_color">动态颜色</string>
     <string name="row_version">版本</string>
     <string name="row_license">许可证</string>
-    <string name="general_hide_navigation">隐藏导航栏</string>
     <string name="general_blur">模糊效果</string>
     <string name="general_custom_text_size">自定义文字大小</string>
     <string name="general_wallpaper_access">允许访问壁纸</string>

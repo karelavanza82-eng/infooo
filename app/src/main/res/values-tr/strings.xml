@@ -28,7 +28,6 @@
     <string name="row_dynamic_color">Dinamik renk</string>
     <string name="row_version">Sürüm</string>
     <string name="row_license">Lisans</string>
-    <string name="general_hide_navigation">Gezinme çubuğunu gizle</string>
     <string name="general_blur">Bulanıklık efekti</string>
     <string name="general_custom_text_size">Özel metin boyutu</string>
     <string name="general_wallpaper_access">Duvar kâğıdına erişime izin ver</string>

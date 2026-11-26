@@ -28,7 +28,6 @@
     <string name="row_dynamic_color">Динамический цвет</string>
     <string name="row_version">Версия</string>
     <string name="row_license">Лицензия</string>
-    <string name="general_hide_navigation">Скрыть навигацию</string>
     <string name="general_blur">Эффект размытия</string>
     <string name="general_custom_text_size">Свой размер текста</string>
     <string name="general_wallpaper_access">Разрешить доступ к обоям</string>

@@ -33,8 +33,6 @@ enum class BadgeStyle {
 
 /** Every user-configurable option of the launcher. Defaults match a fresh install. */
 data class SettingsState(
-    /** Hide the system navigation bar on the home screen (swipe from the edge to show it). */
-    val hideNavigation: Boolean = false,
     /** Frosted glass (blurred wallpaper) on the dock, pills and menus. Off = flat tint. */
     val blurEffect: Boolean = true,
     /** Whether [textScale] is applied to icon labels. */

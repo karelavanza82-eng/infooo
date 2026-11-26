@@ -27,7 +27,6 @@
     <string name="row_dynamic_color">Cores dinâmicas</string>
     <string name="row_version">Versão</string>
     <string name="row_license">Licença</string>
-    <string name="general_hide_navigation">Ocultar navegação</string>
     <string name="general_blur">Efeito de desfoque</string>
     <string name="general_custom_text_size">Tamanho de texto personalizado</string>
     <string name="general_wallpaper_access">Permitir acesso ao fundo</string>

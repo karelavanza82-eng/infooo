@@ -28,7 +28,6 @@
     <string name="row_dynamic_color">Kolory dynamiczne</string>
     <string name="row_version">Wersja</string>
     <string name="row_license">Licencja</string>
-    <string name="general_hide_navigation">Ukryj nawigację</string>
     <string name="general_blur">Efekt rozmycia</string>
     <string name="general_custom_text_size">Rozmiar tekstu</string>
     <string name="general_wallpaper_access">Zezwól na dostęp do tapety</string>
