@@ -14,6 +14,9 @@ import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
+import android.app.Activity
+import com.hoisly.launcher.AppBubbles
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
@@ -76,7 +79,8 @@ internal fun buildEntries(
     val folder = entry as? FolderEntry
     val app = (entry as? AppEntry)?.app
     if (folder == null && app == null) return emptyList()
-    return menuActionsFor(folder != null, target.onHome, settings.hiddenMenuActions, settings.layoutLocked, target.inLibrary).flatMap { action ->
+    val context = LocalContext.current
+    val menuItems = menuActionsFor(folder != null, target.onHome, settings.hiddenMenuActions, settings.layoutLocked, target.inLibrary).flatMap { action ->
         when (action) {
             MenuAction.Shortcuts -> target.shortcuts.map { shortcut ->
                 MenuItem(
@@ -132,6 +136,16 @@ internal fun buildEntries(
             )
         }
     }
+    return if (app != null) menuItems + MenuItem(
+        label = "Open in bubble",
+        icon = MenuIcon.Vector(Icons.Outlined.Layers),
+        onClick = {
+            onDismiss()
+            val fallback = { actions.launch(app, target.iconBounds) }
+            val activity = context as? Activity
+            if (activity != null) AppBubbles.openOrSetup(activity, app, fallback) else fallback()
+        },
+    ) else menuItems
 }
 
 @Composable

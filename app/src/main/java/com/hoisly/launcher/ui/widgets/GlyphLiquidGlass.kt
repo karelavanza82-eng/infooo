@@ -50,7 +50,7 @@ internal fun GlyphLiquidGlassClock(
     val paint = remember {
         AndroidPaint(AndroidPaint.ANTI_ALIAS_FLAG).apply {
             style = AndroidPaint.Style.FILL
-            color = android.graphics.Color.WHITE
+            this.color = android.graphics.Color.WHITE
             textAlign = AndroidPaint.Align.LEFT
         }
     }
