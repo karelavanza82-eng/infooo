@@ -228,8 +228,9 @@ fun HomeScreen(vm: LauncherViewModel, actions: LauncherActions) {
 
     // 0 = sharp, 1 = fully blurred. Read only in layer blocks: it never recomposes the screen.
     val overlayOpen = appTransition?.phase == AppTransitionPhase.Opening || panels.panel != null || menu != null || openFolder != null || search != null || openGroupId != null || chooserApp != null || gallery
+    val ios27Launch = appTransition != null && settings.appAnimationStyle == "IOS27"
     val blur = animateFloatAsState(
-        if (overlayOpen && settings.homeBlur) 1f else 0f,
+        if (overlayOpen && (settings.homeBlur || ios27Launch)) 1f else 0f,
         Motion.fade(),
         label = "blur",
     )
@@ -384,7 +385,7 @@ fun HomeScreen(vm: LauncherViewModel, actions: LauncherActions) {
                     }
                 }
             }
-            BlurredHomeCopy(homeLayer, homeWallpaper, blur, settings.homeBlurRadius.dp, Modifier.matchParentSize())
+            BlurredHomeCopy(homeLayer, homeWallpaper, blur, (if (ios27Launch) settings.homeBlurRadius.coerceAtLeast(18f) else settings.homeBlurRadius).dp, Modifier.matchParentSize())
         }
 
         HomeOverlays(

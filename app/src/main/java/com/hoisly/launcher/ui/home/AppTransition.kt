@@ -1,6 +1,7 @@
 package com.hoisly.launcher.ui.home
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -61,19 +62,22 @@ fun AppTransitionOverlay(vm: LauncherViewModel, progress: Animatable<Float, Anim
     val transition = current
     LaunchedEffect(transition?.id) {
         val t = transition ?: return@LaunchedEffect
+        val ios27 = vm.settings.state.value.appAnimationStyle == "IOS27"
+        val easing = if (ios27) CubicBezierEasing(0.16f, 1f, 0.3f, 1f) else Motion.IosEasing
         when (t.phase) {
             AppTransitionPhase.Opening -> {
                 progress.snapTo(0f)
-                progress.animateTo(1f, tween(Motion.APP_OPEN_MS, easing = Motion.IosEasing))
+                progress.animateTo(1f, tween(if (ios27) (Motion.APP_OPEN_MS * 1.18f).toInt() else Motion.APP_OPEN_MS, easing = easing))
             }
             AppTransitionPhase.Closing -> {
-                progress.animateTo(0f, tween(Motion.APP_CLOSE_MS, easing = Motion.IosEasing))
+                progress.animateTo(0f, tween(if (ios27) (Motion.APP_CLOSE_MS * 1.12f).toInt() else Motion.APP_CLOSE_MS, easing = easing))
                 vm.endAppTransition(t.id)
             }
         }
     }
     if (transition == null) return
-    Canvas(Modifier.fillMaxSize()) { drawSurface(transition, progress.value) }
+    val ios27 = vm.settings.state.value.appAnimationStyle == "IOS27"
+    Canvas(Modifier.fillMaxSize()) { drawSurface(transition, progress.value, ios27) }
 }
 
 private fun DrawScope.drawSurface(t: AppTransition, p: Float) {
@@ -89,7 +93,7 @@ private fun DrawScope.drawSurface(t: AppTransition, p: Float) {
     )
     val icon = t.icon ?: return
     // The icon sits over the icon's own spot at p = 0, so it never visibly jumps, then fades.
-    val side = lerp(t.bounds.width, t.bounds.width * ICON_END_SCALE, p)
+    val side = lerp(t.bounds.width, t.bounds.width * if (ios27) 1.12f else ICON_END_SCALE, p)
     val center = rect.center
     drawImage(
         image = icon,

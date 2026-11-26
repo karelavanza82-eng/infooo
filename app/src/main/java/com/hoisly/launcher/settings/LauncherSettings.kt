@@ -65,6 +65,7 @@ class LauncherSettings private constructor(context: Context) {
             putBoolean(KEY_OPEN_ANIM, next.openCloseAnimation)
             putBoolean(KEY_RESUME_ANIM, next.resumeAnimation)
             putInt(KEY_ANIMATION_SPEED, next.animationSpeedPercent)
+            putString(KEY_APP_ANIMATION_STYLE, next.appAnimationStyle)
             com.hoisly.launcher.ui.theme.Motion.setSpeedPercent(next.animationSpeedPercent)
             putBoolean(KEY_LOCK_AFTER_SLEEP, next.showLockScreenAfterSleep)
             putFloat(KEY_GLASS_TINT, next.glassTint)
@@ -125,6 +126,7 @@ class LauncherSettings private constructor(context: Context) {
     fun setOpenCloseAnimation(value: Boolean): Unit = update { it.copy(openCloseAnimation = value) }
     fun setResumeAnimation(value: Boolean): Unit = update { it.copy(resumeAnimation = value) }
     fun setAnimationSpeedPercent(value: Int): Unit = update { it.copy(animationSpeedPercent = value.coerceIn(0, 100)) }
+    fun setAppAnimationStyle(value: String): Unit = update { it.copy(appAnimationStyle = if (value == "IOS27") "IOS27" else "HOISLY") }
     fun setPageTransition(value: PageTransition): Unit = update { it.copy(pageTransition = value) }
     fun setTextScale(value: Float): Unit = update { it.copy(textScale = value) }
     fun setLayoutLocked(value: Boolean): Unit = update { it.copy(layoutLocked = value) }
@@ -195,6 +197,7 @@ class LauncherSettings private constructor(context: Context) {
         openCloseAnimation = prefs.getBoolean(KEY_OPEN_ANIM, true),
         resumeAnimation = prefs.getBoolean(KEY_RESUME_ANIM, true),
         animationSpeedPercent = prefs.getInt(KEY_ANIMATION_SPEED, 30).coerceIn(0, 100).also { com.hoisly.launcher.ui.theme.Motion.setSpeedPercent(it) },
+        appAnimationStyle = prefs.getString(KEY_APP_ANIMATION_STYLE, "HOISLY")?.takeIf { it == "IOS27" } ?: "HOISLY",
         showLockScreenAfterSleep = prefs.getBoolean(KEY_LOCK_AFTER_SLEEP, true),
         glassTint = prefs.getFloat(KEY_GLASS_TINT, Defaults.glassTint),
         glassEdge = prefs.getBoolean(KEY_GLASS_EDGE, Defaults.glassEdge),
@@ -305,6 +308,7 @@ class LauncherSettings private constructor(context: Context) {
         private const val KEY_OPEN_ANIM = "open_close_animation"
         private const val KEY_RESUME_ANIM = "resume_animation"
         private const val KEY_ANIMATION_SPEED = "animation_speed_percent"
+        private const val KEY_APP_ANIMATION_STYLE = "app_animation_style"
         private const val KEY_LOCK_AFTER_SLEEP = "show_lock_screen_after_sleep"
         private const val KEY_HIDDEN = "hidden_apps"
         private const val KEY_LABELS = "custom_labels"

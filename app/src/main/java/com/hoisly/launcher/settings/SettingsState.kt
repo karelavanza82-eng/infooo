@@ -53,6 +53,8 @@ data class SettingsState(
     val resumeAnimation: Boolean = true,
     /** Global animation speed preference, 0 = slowest and 100 = fastest. */
     val animationSpeedPercent: Int = 30,
+    /** App launch/return animation preset: HOISLY or IOS27. */
+    val appAnimationStyle: String = "HOISLY",
     /** Show Hoisly's decorative launcher lock screen when returning after the display was off. */
     val showLockScreenAfterSleep: Boolean = true,
 

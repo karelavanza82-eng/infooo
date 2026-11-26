@@ -4,6 +4,8 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +17,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.weight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Wallpaper
 import androidx.compose.material3.Text
@@ -30,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -235,6 +239,48 @@ fun AnimationSettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
                     onValueChangeCancelled = { speedDraft = settings.animationSpeedPercent.toFloat() },
                     valueRange = 0f..100f,
                 )
+                Text(
+                    text = "Animation style",
+                    fontSize = 16.sp,
+                    color = Color.White,
+                    modifier = Modifier.padding(top = 18.dp, bottom = 8.dp),
+                )
+                listOf("HOISLY" to "Default Hoisly", "IOS27" to "iOS 27").forEach { (style, title) ->
+                    val selected = settings.appAnimationStyle == style
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 5.dp)
+                            .clip(RoundedCornerShape(18.dp))
+                            .background(if (selected) Color.White.copy(alpha = 0.12f) else Color.White.copy(alpha = 0.045f))
+                            .border(if (selected) 1.5.dp else 1.dp, if (selected) Color(0xFF55A7FF) else Color.White.copy(alpha = 0.12f), RoundedCornerShape(18.dp))
+                            .clickable { vm.settings.setAppAnimationStyle(style) }
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(14.dp),
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(width = 76.dp, height = 92.dp)
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(Color(0xFF17294C)),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Box(Modifier.fillMaxWidth().padding(horizontal = 10.dp).height(68.dp).clip(RoundedCornerShape(if (style == "IOS27") 24.dp else 12.dp)).background(if (style == "IOS27") Color(0xFFEEF3FF) else Color(0xFF416CB0)), contentAlignment = Alignment.Center) {
+                                Box(Modifier.size(24.dp).clip(RoundedCornerShape(8.dp)).background(if (style == "IOS27") Color(0xFF397CE8) else Color(0xFF8EB7F2)))
+                            }
+                        }
+                        Column(Modifier.weight(1f)) {
+                            Text(title, fontSize = 15.sp, color = Color.White)
+                            Text(
+                                if (style == "IOS27") "Zoom lembut dengan efek blur" else "Animasi bawaan Hoisly",
+                                fontSize = 12.sp,
+                                color = Color.White.copy(alpha = 0.65f),
+                            )
+                        }
+                        if (selected) Text("✓", color = Color(0xFF55A7FF), fontSize = 22.sp)
+                    }
+                }
             }
         }
     }

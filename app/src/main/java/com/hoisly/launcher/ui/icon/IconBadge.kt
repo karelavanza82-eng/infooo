@@ -157,4 +157,4 @@ private val BadgePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
     typeface = Typeface.create(Typeface.DEFAULT, BADGE_FONT_WEIGHT, false)
 }
 
-private const val BADGE_FONT_WEIGHT = 600
+private const val BADGE_FONT_WEIGHT = Typeface.BOLD
