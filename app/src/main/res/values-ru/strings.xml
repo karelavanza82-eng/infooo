@@ -477,4 +477,17 @@
     <string name="a11y_label">Динамический остров</string>
     <string name="tile_label">Остров</string>
     <string name="a11y_desc">Показывает капсулу в стиле Dynamic Island над камерой: музыку, таймеры, прогресс загрузок, фонарик и системные события. Служба узнаёт, какое приложение открыто, чтобы прятать плеер и показывать оплату. Экран читается только у навигаторов (2ГИС, Яндекс Навигатор, Карты и др.), приложения «Часы» и приложений оплаты, пока они открыты: у навигаторов — расстояние до манёвра, улица, время прибытия и направление стрелки, у «Часов» — время таймера и секундомера, у приложений оплаты (Mir Pay, T-Pay, Google Кошелёк и др.) — экран оплаты телефоном и сумма, чтобы показать «К терминалу», а потом «Оплачено». Прочитанное остаётся на телефоне. Для поиска текста отправляются название песни, исполнитель, альбом и длительность. При включённой погоде выбранный город и координаты передаются Open-Meteo. Определение шторки читает только системную панель уведомлений; контакты и шаги остаются на телефоне. Для выбранного жеста прокрутки наверх служба проверяет прокручиваемые элементы открытого приложения, не читая их текст.</string>
+    <string name="bold_clock_customize">Настроить Bold Clock</string>
+    <string name="bold_clock_preview_hint">Предпросмотр · сведите или разведите два пальца, чтобы изменить размер</string>
+    <string name="bold_clock_appearance">Внешний вид</string>
+    <string name="bold_clock_font">Шрифт</string>
+    <string name="bold_clock_size">Размер: %1$d%%</string>
+    <string name="bold_clock_style_light">Светлый</string>
+    <string name="bold_clock_style_dark">Тёмный</string>
+    <string name="bold_clock_style_liquid">Жидкое стекло</string>
+    <string name="bold_clock_font_heavy_sans">Тяжёлый гротеск</string>
+    <string name="bold_clock_font_bold_italic">Жирный курсив</string>
+    <string name="bold_clock_font_heavy_serif">Жирный антиква</string>
+    <string name="bold_clock_font_tech_mono">Технологический моноширинный</string>
+    <string name="bold_clock_font_rounded_heavy">Жирный скруглённый</string>
 </resources>

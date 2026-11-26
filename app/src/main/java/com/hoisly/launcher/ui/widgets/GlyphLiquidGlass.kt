@@ -12,15 +12,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.dp
 import com.hoisly.launcher.ui.glass.GlassOutline
-import com.hoisly.launcher.ui.glass.GlassSource
 import com.hoisly.launcher.ui.glass.LIQUID_GLASS_MIN_SDK
 import com.hoisly.launcher.ui.glass.LiquidGlassFrame
 import com.hoisly.launcher.ui.glass.LiquidGlassPainter
@@ -39,6 +39,8 @@ internal fun GlyphLiquidGlassClock(
     fontSize: Dp,
     typeface: Typeface,
     modifier: Modifier = Modifier,
+    liquidGlass: Boolean = true,
+    color: Color = Color.White,
 ) {
     val source = LocalGlassSource.current
     val density = LocalDensity.current
@@ -49,7 +51,7 @@ internal fun GlyphLiquidGlassClock(
         AndroidPaint(AndroidPaint.ANTI_ALIAS_FLAG).apply {
             style = AndroidPaint.Style.FILL
             color = android.graphics.Color.WHITE
-            textAlign = AndroidPaint.Align.CENTER
+            textAlign = AndroidPaint.Align.LEFT
         }
     }
     val pos = remember { floatArrayOf(0f, 0f) }
@@ -70,10 +72,11 @@ internal fun GlyphLiquidGlassClock(
         mask.reset()
         val metrics = paint.fontMetrics
         val baseline = size.height / 2f - (metrics.ascent + metrics.descent) / 2f
-        paint.getTextPath(text, 0, text.length, size.width / 2f, baseline, mask)
+        val textLeft = (size.width - paint.measureText(text)) / 2f
+        paint.getTextPath(text, 0, text.length, textLeft, baseline, mask)
 
         val glassSource = source
-        if (Build.VERSION.SDK_INT >= LIQUID_GLASS_MIN_SDK && glassSource?.sharp != null && glassSource.body != null && isLiquidGlassReady()) {
+        if (liquidGlass && Build.VERSION.SDK_INT >= LIQUID_GLASS_MIN_SDK && glassSource?.sharp != null && glassSource.body != null && isLiquidGlassReady()) {
             frame.outline = GlassOutline.rounded(size.width, size.height, 0f, 0f, 0f, 0f)
             frame.windowPos = Offset(pos[0], pos[1])
             frame.rim = with(density) { 13.dp.toPx() }
@@ -88,16 +91,23 @@ internal fun GlyphLiquidGlassClock(
             frame.edge = true
             frame.lightAngle = 0f
             frame.touchAmount = 0f
+            var rendered = false
             drawIntoCanvas { canvas ->
                 val native = canvas.nativeCanvas
                 val save = native.save()
                 native.clipPath(mask)
-                with(painter) { draw(frame, glassSource) }
+                rendered = with(painter) { draw(frame, glassSource) }
                 native.restoreToCount(save)
+            }
+            if (!rendered) {
+                drawIntoCanvas { canvas ->
+                    paint.color = color.toArgb()
+                    canvas.nativeCanvas.drawPath(mask, paint)
+                }
             }
         } else {
             drawIntoCanvas { canvas ->
-                paint.color = android.graphics.Color.WHITE
+                paint.color = color.toArgb()
                 canvas.nativeCanvas.drawPath(mask, paint)
             }
         }
