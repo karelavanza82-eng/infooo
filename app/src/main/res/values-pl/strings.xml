@@ -573,4 +573,22 @@
     <string name="manage_widget_remove">Usuń widżet</string>
     <string name="manage_widgets_description">Usuwaj tutaj widżety, nawet gdy strona ekranu głównego jest pusta.</string>
     <string name="manage_widgets_empty">Na ekranie głównym nie ma obecnie żadnych widżetów.</string>
+
+    <string name="bold_clock_appearance">Appearance</string>
+    <string name="bold_clock_customize">Customize Bold Clock</string>
+    <string name="bold_clock_font">Font</string>
+    <string name="bold_clock_font_bold_italic">Bold Italic</string>
+    <string name="bold_clock_font_heavy_sans">Heavy Sans</string>
+    <string name="bold_clock_font_heavy_serif">Heavy Serif</string>
+    <string name="bold_clock_font_rounded_heavy">Rounded Heavy</string>
+    <string name="bold_clock_font_tech_mono">Tech Mono</string>
+    <string name="bold_clock_preview_hint">Preview · pinch with two fingers to resize</string>
+    <string name="bold_clock_size">Size: %1$d%%</string>
+    <string name="bold_clock_style_dark">Dark</string>
+    <string name="bold_clock_style_light">Light</string>
+    <string name="bold_clock_style_liquid">Liquid Glass</string>
+    <string name="edit_remove_empty_pages">Remove Empty Pages</string>
+    <string name="widget_bold_clock">Bold Clock</string>
+    <string name="widget_bold_clock_description">A bold digital clock. Pinch to resize and choose a heavy number style.</string>
+    <string name="widget_variant_bold_clock">Bold Digital</string>
 </resources>
