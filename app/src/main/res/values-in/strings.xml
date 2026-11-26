@@ -65,6 +65,8 @@
     <string name="edit_done">Selesai</string>
     <string name="edit_customize">Sesuaikan</string>
     <string name="edit_wallpapers">Wallpaper</string>
+    <string name="edit_manage_widgets">Kelola Widget</string>
+    <string name="edit_no_widgets">Tidak ada widget di Layar Utama ini.</string>
     <string name="remove_dialog_title">Remove “%1$s”?</string>
     <string name="remove_dialog_message">The app stays installed, it just leaves the Home Screen.</string>
     <string name="remove_dialog_remove_from_home">Remove from Home Screen</string>

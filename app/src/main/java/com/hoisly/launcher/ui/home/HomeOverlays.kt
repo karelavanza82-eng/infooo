@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -36,6 +37,11 @@ import com.hoisly.launcher.ui.menu.WidgetMenuActions
 import com.hoisly.launcher.ui.search.SearchCallbacks
 import com.hoisly.launcher.ui.search.SearchOverlay
 import com.hoisly.launcher.ui.widgets.WidgetGallery
+import com.hoisly.launcher.ui.home.ManageWidgetsDialog
+import com.hoisly.launcher.data.PageWidgetEntry
+import com.hoisly.launcher.data.WidgetEntry
+import com.hoisly.launcher.data.AppWidgetEntry
+import com.hoisly.launcher.data.WidgetStackEntry
 import com.hoisly.launcher.ui.theme.Motion
 
 /**
@@ -68,6 +74,7 @@ internal fun HomeOverlays(
     val chooserApp by vm.library.choosingCategory.collectAsStateWithLifecycle()
     val gallery by vm.widgetGallery.collectAsStateWithLifecycle()
     val editingStack by vm.stacks.editing.collectAsStateWithLifecycle()
+    var manageWidgetsOpen by remember { androidx.compose.runtime.mutableStateOf(false) }
 
     AnimatedVisibility(
         visible = editMode,
@@ -82,7 +89,22 @@ internal fun HomeOverlays(
             onAddWidget = vm::openWidgetGallery,
             onCustomize = actions::openSettings,
             onWallpapers = actions::openWallpaperPicker,
+            onManageWidgets = { manageWidgetsOpen = true },
         )
+    }
+
+
+    if (manageWidgetsOpen) {
+        val widgets = (state.pages.flatten().filterIsInstance<PageWidgetEntry>() + state.today)
+            .distinctBy { it.id }.map { widget ->
+                val label = when (widget) {
+                    is WidgetEntry -> widget.kind.name.replaceFirstChar { it.uppercase() } + " · " + widget.size.name
+                    is AppWidgetEntry -> "App widget"
+                    is WidgetStackEntry -> "Smart Stack · ${widget.items.size}"
+                }
+                widget.id to label
+            }
+        ManageWidgetsDialog(items = widgets, onRemove = { id -> widgetMenu.remove(id) }, onDismiss = { manageWidgetsOpen = false })
     }
 
     FolderOverlay(

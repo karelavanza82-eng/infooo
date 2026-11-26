@@ -72,7 +72,7 @@ class StatusBarView(context: Context) : View(context) {
     private val boltWork = Path()
 
     // iOS 27 airplane path: bold, slightly more tilted than iOS 16, wider wingspan
-    // Source coordinates in a 24×24 grid, rotated 45° for status bar use
+    // Source coordinates in a 24×24 grid, rotated 90° for status bar use
     private val planePath: Path = PathParser.createPathFromPathData(
         "M21,16v-2l-8,-5V3.5c0,-0.83 -0.67,-1.5 -1.5,-1.5S10,2.67 10,3.5V9l-8,5v2l8,-2.5V19l-2,1.5V22l3.5,-1 3.5,1v-1.5L13,19v-5.5l8,2.5z",
     ) ?: Path()
@@ -287,8 +287,8 @@ class StatusBarView(context: Context) : View(context) {
     private fun drawAirplane27(canvas: Canvas, left: Float, cy: Float, size: Float) {
         shapePaint.color = color
         planeMatrix.reset()
-        // iOS 27 rotates the plane 45° clockwise so it faces upper-right (same as iOS Settings)
-        planeMatrix.postRotate(45f, 12f, 12f)
+        // iOS 27 rotates the plane 90° clockwise so it faces upper-right (same as iOS Settings)
+        planeMatrix.postRotate(90f, 12f, 12f)
         planeMatrix.postScale(size / 24f, size / 24f)
         planeMatrix.postTranslate(left, cy - size / 2f)
         planeWork.set(planePath)

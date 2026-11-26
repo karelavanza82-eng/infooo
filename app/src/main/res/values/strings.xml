@@ -65,6 +65,8 @@
     <string name="edit_done">Done</string>
     <string name="edit_customize">Customize</string>
     <string name="edit_wallpapers">Wallpapers</string>
+    <string name="edit_manage_widgets">Manage Widgets</string>
+    <string name="edit_no_widgets">There are no widgets on this Home Screen.</string>
     <string name="remove_dialog_title">Remove “%1$s”?</string>
     <string name="remove_dialog_message">The app stays installed, it just leaves the Home Screen.</string>
     <string name="remove_dialog_remove_from_home">Remove from Home Screen</string>
