@@ -570,4 +570,8 @@
         <string name="widget_dailyquote">Daily Quote</string>
         <string name="widget_dailyquote_description">A short daily reminder.</string>
         <string name="widget_variant_dailyquote">Daily Quote</string>
+    <string name="edit_manage_widgets">Керування віджетами</string>
+    <string name="manage_widget_remove">Видалити віджет</string>
+    <string name="manage_widgets_description">Видаляйте віджети тут, навіть якщо сторінка головного екрана порожня.</string>
+    <string name="manage_widgets_empty">На головному екрані наразі немає віджетів.</string>
 </resources>

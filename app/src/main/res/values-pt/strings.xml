@@ -564,4 +564,8 @@
         <string name="widget_dailyquote">Daily Quote</string>
         <string name="widget_dailyquote_description">A short daily reminder.</string>
         <string name="widget_variant_dailyquote">Daily Quote</string>
+    <string name="edit_manage_widgets">Gerenciar widgets</string>
+    <string name="manage_widget_remove">Remover widget</string>
+    <string name="manage_widgets_description">Remova widgets aqui, mesmo quando a página inicial estiver vazia.</string>
+    <string name="manage_widgets_empty">Não há widgets na tela inicial no momento.</string>
 </resources>

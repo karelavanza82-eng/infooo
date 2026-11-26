@@ -566,4 +566,8 @@
         <string name="widget_dailyquote">Daily Quote</string>
         <string name="widget_dailyquote_description">A short daily reminder.</string>
         <string name="widget_variant_dailyquote">Daily Quote</string>
+    <string name="edit_manage_widgets">Управљање виџетима</string>
+    <string name="manage_widget_remove">Уклони виџет</string>
+    <string name="manage_widgets_description">Овде уклоните виџете, чак и када је страница почетног екрана празна.</string>
+    <string name="manage_widgets_empty">Тренутно нема виџета на почетном екрану.</string>
 </resources>

@@ -561,4 +561,8 @@
         <string name="widget_dailyquote">Daily Quote</string>
         <string name="widget_dailyquote_description">A short daily reminder.</string>
         <string name="widget_variant_dailyquote">Daily Quote</string>
+    <string name="edit_manage_widgets">Widgets verwalten</string>
+    <string name="manage_widget_remove">Widget entfernen</string>
+    <string name="manage_widgets_description">Entferne Widgets hier, auch wenn die Startbildschirmseite leer ist.</string>
+    <string name="manage_widgets_empty">Auf deinem Startbildschirm befinden sich derzeit keine Widgets.</string>
 </resources>

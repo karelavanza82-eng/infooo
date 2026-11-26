@@ -558,4 +558,8 @@
         <string name="widget_dailyquote">Daily Quote</string>
         <string name="widget_dailyquote_description">A short daily reminder.</string>
         <string name="widget_variant_dailyquote">Daily Quote</string>
+    <string name="edit_manage_widgets">管理小组件</string>
+    <string name="manage_widget_remove">移除小组件</string>
+    <string name="manage_widgets_description">即使主屏幕页面为空，也可以在此移除小组件。</string>
+    <string name="manage_widgets_empty">主屏幕上目前没有放置任何小组件。</string>
 </resources>

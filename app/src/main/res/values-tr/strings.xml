@@ -562,4 +562,8 @@
         <string name="widget_dailyquote">Daily Quote</string>
         <string name="widget_dailyquote_description">A short daily reminder.</string>
         <string name="widget_variant_dailyquote">Daily Quote</string>
+    <string name="edit_manage_widgets">Araç Takımlarını Yönet</string>
+    <string name="manage_widget_remove">Araç takımını kaldır</string>
+    <string name="manage_widgets_description">Ana ekran sayfası boş olsa bile araç takımlarını buradan kaldırabilirsiniz.</string>
+    <string name="manage_widgets_empty">Ana ekranınızda şu anda herhangi bir araç takımı yok.</string>
 </resources>

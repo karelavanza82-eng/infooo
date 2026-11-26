@@ -515,4 +515,8 @@
         <string name="widget_dailyquote">Daily Quote</string>
         <string name="widget_dailyquote_description">A short daily reminder.</string>
         <string name="widget_variant_dailyquote">Daily Quote</string>
+    <string name="edit_manage_widgets">Виджеттерді басқару</string>
+    <string name="manage_widget_remove">Виджетті жою</string>
+    <string name="manage_widgets_description">Негізгі экран беті бос болса да, виджеттерді осы жерден жоюға болады.</string>
+    <string name="manage_widgets_empty">Қазіргі уақытта негізгі экранда виджеттер жоқ.</string>
 </resources>
