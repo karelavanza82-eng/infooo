@@ -23,8 +23,6 @@ data class StatusBarPreferences(
     val hideInLandscape: Boolean = true,
     /** Experimental: asks SystemUI to hide its own clock/signal/battery slots (needs WRITE_SECURE_SETTINGS). */
     val hideSystemIcons: Boolean = false,
-    /** User's global Hide System Status Bar setting; applied through Shizuku by CleanBarController. */
-    val hideSystemStatusBar: Boolean = false,
     val scale: Float = DEFAULT_SCALE,
     val sidePadding: Float = DEFAULT_SIDE_PADDING,
     val verticalOffset: Float = 0f,
@@ -40,7 +38,7 @@ data class StatusBarPreferences(
     fun storedValues(): Map<String, Any> = mapOf(
         ENABLED to enabled, COLOR_MODE to colorMode.name, SHOW_SILENT to showSilent,
         SHOW_SIGNAL to showSignal, SHOW_NETWORK to showNetworkLabel, SHOW_WIFI to showWifi, SHOW_BATTERY to showBattery,
-        HIDE_LANDSCAPE to hideInLandscape, HIDE_SYSTEM to hideSystemIcons, HIDE_SYSTEM_STATUS_BAR to hideSystemStatusBar, SCALE to scale,
+        HIDE_LANDSCAPE to hideInLandscape, HIDE_SYSTEM to hideSystemIcons, SCALE to scale,
         SIDE_PADDING to sidePadding, VERTICAL_OFFSET to verticalOffset, CLOCK_WEIGHT to clockWeight,
         BATTERY_THEME to batteryTheme, WIFI_THEME to wifiTheme, SIGNAL_THEME to signalTheme, CLOCK_THEME to clockTheme, AIRPLANE_THEME to airplaneTheme,
     )
@@ -63,7 +61,6 @@ data class StatusBarPreferences(
         private const val SHOW_BATTERY = "sb_show_battery"
         private const val HIDE_LANDSCAPE = "sb_hide_landscape"
         private const val HIDE_SYSTEM = "sb_hide_system"
-        private const val HIDE_SYSTEM_STATUS_BAR = "sb_hide_android_status_bar"
         private const val SCALE = "sb_scale"
         private const val SIDE_PADDING = "sb_side_padding"
         private const val VERTICAL_OFFSET = "sb_vertical_offset"
@@ -92,7 +89,6 @@ data class StatusBarPreferences(
                 showBattery = flag(SHOW_BATTERY, d.showBattery),
                 hideInLandscape = flag(HIDE_LANDSCAPE, d.hideInLandscape),
                 hideSystemIcons = flag(HIDE_SYSTEM, false),
-                hideSystemStatusBar = flag(HIDE_SYSTEM_STATUS_BAR, false),
                 scale = number(SCALE, d.scale, SCALE_RANGE),
                 sidePadding = number(SIDE_PADDING, d.sidePadding, SIDE_PADDING_RANGE),
                 verticalOffset = number(VERTICAL_OFFSET, d.verticalOffset, VERTICAL_OFFSET_RANGE),

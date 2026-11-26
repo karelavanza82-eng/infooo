@@ -155,7 +155,6 @@ class MainActivity : ComponentActivity(), LauncherActions {
         setContent {
             val glass by vm.glass.collectAsStateWithLifecycle()
             val settings by vm.settings.state.collectAsStateWithLifecycle()
-            val statusBarPrefs by StatusBarStore.state.collectAsStateWithLifecycle()
             val editMode by vm.editMode.collectAsStateWithLifecycle()
             // Not read here: each icon reads its own count from it (see BadgeSource).
             val badgeCounts = NotificationBadgeFeed.counts.collectAsStateWithLifecycle()
@@ -163,8 +162,8 @@ class MainActivity : ComponentActivity(), LauncherActions {
                 settings.badges.takeIf { it != BadgeStyle.Off }?.let { BadgeSource(badgeCounts, it) }
             }
             // Like iOS27L, the status bar makes room for the Edit/Done bar in edit mode.
-            LaunchedEffect(editMode, statusBarPrefs.hideSystemStatusBar) {
-                applyStatusBarVisibility(hidden = editMode || statusBarPrefs.hideSystemStatusBar)
+            LaunchedEffect(editMode) {
+                applyStatusBarVisibility(hidden = editMode)
             }
             CompositionLocalProvider(
                 LocalSettingsState provides settings,
@@ -217,7 +216,7 @@ class MainActivity : ComponentActivity(), LauncherActions {
 
     override fun onResume() {
         super.onResume()
-        applyStatusBarVisibility(hidden = vm.editMode.value || StatusBarStore.state.value.hideSystemStatusBar)
+        applyStatusBarVisibility(hidden = vm.editMode.value)
         // Android 12: the language was changed in settings while the home screen was paused.
         if (AppLanguage.isStale(this)) {
             recreate()
@@ -317,7 +316,7 @@ class MainActivity : ComponentActivity(), LauncherActions {
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus && !isFinishing) {
-            applyStatusBarVisibility(hidden = vm.editMode.value || StatusBarStore.state.value.hideSystemStatusBar)
+            applyStatusBarVisibility(hidden = vm.editMode.value)
         }
     }
 
