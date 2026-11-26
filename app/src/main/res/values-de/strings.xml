@@ -1,3 +1,4 @@
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="search">Suchen</string>
     <string name="glass_prompt_title">Glaseffekt aktivieren</string>
@@ -217,7 +218,7 @@
     <string name="onboarding_get_started">Loslegen</string>
     <string name="finish_setup_title">Einrichtung abschließen</string>
 
-    <!-- Settings: screen grid, icon sizes by area, layout lock -->
+    
     <string name="grid_columns">Spalten</string>
     <string name="grid_rows">Zeilen</string>
     <string name="grid_section_margins">Ränder</string>
@@ -245,7 +246,7 @@
     <string name="layout_lock">Startbildschirm-Anordnung sperren</string>
     <string name="import_locked">Die Anordnung des Startbildschirms ist gesperrt. Entsperre sie, um zu importieren.</string>
 
-    <!-- App Library customization -->
+    
     <string name="library_pinned">Angeheftet</string>
     <string name="library_all_apps">Alle Apps</string>
     <string name="library_view_switch">Ansicht: %1$s</string>
@@ -351,7 +352,7 @@
     <string name="island_top_offset">Vertikaler Versatz</string>
     <string name="island_blur_footer">Unschärfe funktioniert, wo Android sie erlaubt: nicht im Energiesparmodus und nicht bei deaktivierter Fensterunschärfe.</string>
     <string name="island_access_unavailable">Diese Zugriffsseite ist nicht verfügbar</string>
-    <!-- Settings: folders -->
+    
     <string name="folders_panel">Ordnerfenster</string>
     <string name="folders_width">Breite</string>
     <string name="folders_height">Höhe</string>
@@ -373,7 +374,7 @@
         <item quantity="other">%1$s, %2$d Mitteilungen</item>
     </plurals>
 
-    <!-- English fallback entries; localize these strings when translations are available. -->
+    
     <string name="control_center_title">Control Center</string>
         
     <string name="notification_center_title">Notification Center</string>
@@ -564,4 +565,4 @@
     <string name="manage_widget_remove">Widget entfernen</string>
     <string name="manage_widgets_description">Entferne Widgets hier, auch wenn die Startbildschirmseite leer ist.</string>
     <string name="manage_widgets_empty">Auf deinem Startbildschirm befinden sich derzeit keine Widgets.</string>
-</resources>
+<string name="edit_remove_empty_pages">Leere Seiten entfernen</string><string name="widget_variant_bold_clock">Bold Clock</string><string name="widget_bold_clock">Bold-Clock-Widget</string><string name="widget_bold_clock_description">Große Uhr mit fünf fetten Schriftstilen.</string></resources>

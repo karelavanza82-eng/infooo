@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="search">Претрага</string>
     <string name="glass_prompt_title">Укључи ефекат стакла</string>
@@ -219,7 +219,7 @@
     <string name="onboarding_get_started">Почни</string>
     <string name="finish_setup_title">Доврши подешавање</string>
 
-    <!-- Settings: screen grid, icon sizes by area, layout lock -->
+    
     <string name="grid_columns">Колоне</string>
     <string name="grid_rows">Редови</string>
     <string name="grid_section_margins">Маргине</string>
@@ -247,7 +247,7 @@
     <string name="layout_lock">Закључај распоред почетног екрана</string>
     <string name="import_locked">Распоред почетног екрана је закључан. Откључајте га да бисте увезли.</string>
 
-    <!-- App Library customization -->
+    
     <string name="library_pinned">Закачене</string>
     <string name="library_all_apps">Све апликације</string>
     <string name="library_view_switch">Приказ: %1$s</string>
@@ -354,7 +354,7 @@
     <string name="island_top_offset">Вертикални помак</string>
     <string name="island_blur_footer">Замућење ради где га Android дозвољава: не у уштеди батерије нити са искљученим замућењем прозора.</string>
     <string name="island_access_unavailable">Овај екран приступа није доступан</string>
-    <!-- Settings: folders -->
+    
     <string name="folders_panel">Панел фасцикле</string>
     <string name="folders_width">Ширина</string>
     <string name="folders_height">Висина</string>
@@ -377,7 +377,7 @@
         <item quantity="other">%1$s, %2$d обавештења</item>
     </plurals>
 
-    <!-- English fallback entries; localize these strings when translations are available. -->
+    
     <string name="control_center_title">Control Center</string>
         
     <string name="notification_center_title">Notification Center</string>
@@ -569,4 +569,4 @@
     <string name="manage_widget_remove">Уклони виџет</string>
     <string name="manage_widgets_description">Овде уклоните виџете, чак и када је страница почетног екрана празна.</string>
     <string name="manage_widgets_empty">Тренутно нема виџета на почетном екрану.</string>
-</resources>
+<string name="edit_remove_empty_pages">Уклони празне странице</string><string name="widget_variant_bold_clock">Bold Clock</string><string name="widget_bold_clock">Bold Clock виџет</string><string name="widget_bold_clock_description">Велики сат са пет подебљаних стилова фонта.</string></resources>

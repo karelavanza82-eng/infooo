@@ -1,3 +1,4 @@
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="search">Pesquisar</string>
     <string name="glass_prompt_title">Ativar efeito de vidro</string>
@@ -218,7 +219,7 @@
     <string name="onboarding_get_started">Começar</string>
     <string name="finish_setup_title">Concluir configuração</string>
 
-    <!-- Settings: screen grid, icon sizes by area, layout lock -->
+    
     <string name="grid_columns">Colunas</string>
     <string name="grid_rows">Linhas</string>
     <string name="grid_section_margins">Margens</string>
@@ -246,7 +247,7 @@
     <string name="layout_lock">Bloquear disposição do ecrã inicial</string>
     <string name="import_locked">A disposição do ecrã inicial está bloqueada. Desbloqueie-a para importar.</string>
 
-    <!-- App Library customization -->
+    
     <string name="library_pinned">Afixadas</string>
     <string name="library_all_apps">Todas as apps</string>
     <string name="library_view_switch">Vista: %1$s</string>
@@ -353,7 +354,7 @@
     <string name="island_top_offset">Deslocamento vertical</string>
     <string name="island_blur_footer">O desfoque funciona onde o Android o permite: não em poupança de bateria nem com o desfoque de janelas desativado.</string>
     <string name="island_access_unavailable">Este ecrã de acesso está indisponível</string>
-    <!-- Settings: folders -->
+    
     <string name="folders_panel">Painel da pasta</string>
     <string name="folders_width">Largura</string>
     <string name="folders_height">Altura</string>
@@ -376,7 +377,7 @@
         <item quantity="other">%1$s, %2$d notificações</item>
     </plurals>
 
-    <!-- English fallback entries; localize these strings when translations are available. -->
+    
     <string name="control_center_title">Control Center</string>
         
     <string name="notification_center_title">Notification Center</string>
@@ -567,4 +568,4 @@
     <string name="manage_widget_remove">Remover widget</string>
     <string name="manage_widgets_description">Remova widgets aqui, mesmo quando a página inicial estiver vazia.</string>
     <string name="manage_widgets_empty">Não há widgets na tela inicial no momento.</string>
-</resources>
+<string name="edit_remove_empty_pages">Remover páginas vazias</string><string name="widget_variant_bold_clock">Bold Clock</string><string name="widget_bold_clock">Widget Bold Clock</string><string name="widget_bold_clock_description">Relógio grande com cinco estilos de fonte em negrito.</string></resources>

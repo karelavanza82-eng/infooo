@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="search">Іздеу</string>
     <string name="glass_prompt_title">Әйнек әсерін қосу</string>
@@ -518,4 +518,4 @@
     <string name="manage_widget_remove">Виджетті жою</string>
     <string name="manage_widgets_description">Негізгі экран беті бос болса да, виджеттерді осы жерден жоюға болады.</string>
     <string name="manage_widgets_empty">Қазіргі уақытта негізгі экранда виджеттер жоқ.</string>
-</resources>
+<string name="edit_remove_empty_pages">Бос беттерді жою</string><string name="widget_variant_bold_clock">Bold Clock</string><string name="widget_bold_clock">Bold Clock виджеті</string><string name="widget_bold_clock_description">Бес қалың қаріп стилі бар үлкен сағат.</string></resources>

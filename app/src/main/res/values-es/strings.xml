@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="search">Buscar</string>
     <string name="glass_prompt_title">Activar efecto de cristal</string>
@@ -521,4 +521,4 @@
     <string name="manage_widget_remove">Eliminar widget</string>
     <string name="manage_widgets_description">Elimina widgets aquí, incluso cuando la página de inicio esté vacía.</string>
     <string name="manage_widgets_empty">Actualmente no hay widgets en la pantalla de inicio.</string>
-</resources>
+<string name="edit_remove_empty_pages">Eliminar páginas vacías</string><string name="widget_variant_bold_clock">Bold Clock</string><string name="widget_bold_clock">Widget Bold Clock</string><string name="widget_bold_clock_description">Reloj grande con cinco estilos de fuente en negrita.</string></resources>
