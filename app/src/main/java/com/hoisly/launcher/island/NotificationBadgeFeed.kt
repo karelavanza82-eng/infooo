@@ -67,7 +67,9 @@ internal class BadgeTracker(private val service: NotificationListenerService) {
             countedActiveKeys += sbn.key
             val item = sbn.badgeNotification()
             val currentRanking = runCatching { service.currentRanking }.getOrNull()
-            val canBadge = currentRanking == null || !currentRanking.getRanking(item.key, ranking) || ranking.canShowBadge()
+            val ranking = NotificationListenerService.Ranking()
+            val canBadge = currentRanking == null ||
+                !currentRanking.getRanking(item.key, ranking) || ranking.canShowBadge()
             val groupSummary = item.flags and android.app.Notification.FLAG_GROUP_SUMMARY != 0
             val eligible = item.packageName != service.packageName && canBadge && !item.media &&
                 item.flags and (android.app.Notification.FLAG_ONGOING_EVENT or android.app.Notification.FLAG_FOREGROUND_SERVICE) == 0 &&

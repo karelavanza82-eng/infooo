@@ -80,7 +80,7 @@ fun groupBadgeModifier(apps: List<AppInfo>, name: String, badge: IconBadge): Mod
     val keys = remember(apps) { apps.map { it.badgeKey } }
     val count = if (badge == IconBadge.Shown) badgeCount(badges, keys) else 0
     val drawn = Modifier.notificationBadge(count, badges.style == BadgeStyle.Dot)
-    if (count == 0) return drawn
+    if (count == 0L) return drawn
     val description = pluralStringResource(R.plurals.icon_badge_description, count.coerceAtMost(Int.MAX_VALUE.toLong()).toInt(), name, count)
     return drawn.semantics { contentDescription = description }
 }
