@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.hoisly.launcher"
-        minSdk = 28
+        minSdk = 31
         targetSdk = 37
         versionCode = 20101
         versionName = "2.1.1"
@@ -79,7 +79,6 @@ kotlin {
 }
 
 dependencies {
-    implementation(project(":Prismal"))
     val composeBom = platform("androidx.compose:compose-bom:2026.09.00")
     implementation(composeBom)
     implementation("androidx.compose.ui:ui")

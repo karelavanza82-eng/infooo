@@ -152,6 +152,9 @@
     <string name="stack_reorder">Reorder</string>
     <string name="widget_choose_photo">Choose Photo</string>
     <string name="widget_clock">Clock</string>
+    <string name="widget_bold_clock">Bold Clock</string>
+    <string name="widget_bold_clock_description">A bold digital clock. Pinch to resize and choose a heavy number style.</string>
+    <string name="widget_variant_bold_clock">Bold Digital</string>
     <string name="widget_calendar">Calendar</string>
     <string name="widget_weather">Weather</string>
     <string name="widget_photo">Photo</string>
@@ -520,4 +523,5 @@
     <string name="manage_widgets_description">Remove widgets here, even when the home screen page is empty.</string>
     <string name="manage_widgets_empty">No widgets are currently placed on your home screen.</string>
     <string name="manage_widget_remove">Remove widget</string>
+    <string name="edit_remove_empty_pages">Remove Empty Pages</string>
 </resources>

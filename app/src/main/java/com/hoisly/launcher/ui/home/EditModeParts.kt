@@ -60,6 +60,7 @@ fun EditTopBar(
     onCustomize: () -> Unit,
     onWallpapers: () -> Unit,
     onManageWidgets: () -> Unit,
+    onRemoveEmptyPages: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var menuOpen by remember { mutableStateOf(false) }
@@ -82,6 +83,7 @@ fun EditTopBar(
                         onCustomize = { menuOpen = false; onCustomize() },
                         onWallpapers = { menuOpen = false; onWallpapers() },
                         onManageWidgets = { menuOpen = false; onManageWidgets() },
+                        onRemoveEmptyPages = { menuOpen = false; onRemoveEmptyPages() },
                     )
                 }
             }
@@ -112,7 +114,7 @@ private fun GlassPill(text: String, onClick: () -> Unit) {
 }
 
 @Composable
-private fun EditMenu(onAddWidget: () -> Unit, onCustomize: () -> Unit, onWallpapers: () -> Unit, onManageWidgets: () -> Unit) {
+private fun EditMenu(onAddWidget: () -> Unit, onCustomize: () -> Unit, onWallpapers: () -> Unit, onManageWidgets: () -> Unit, onRemoveEmptyPages: () -> Unit) {
     val shape = ContinuousRoundedShape(Tokens.MenuRadius)
     Column(
         Modifier
@@ -126,6 +128,7 @@ private fun EditMenu(onAddWidget: () -> Unit, onCustomize: () -> Unit, onWallpap
         EditMenuRow(Icons.Rounded.Tune, stringResource(R.string.edit_customize), onCustomize)
         EditMenuRow(Icons.Rounded.Wallpaper, stringResource(R.string.edit_wallpapers), onWallpapers)
         EditMenuRow(Icons.Rounded.DeleteSweep, stringResource(R.string.edit_manage_widgets), onManageWidgets)
+        EditMenuRow(Icons.Rounded.DeleteSweep, stringResource(R.string.edit_remove_empty_pages), onRemoveEmptyPages)
     }
 }
 

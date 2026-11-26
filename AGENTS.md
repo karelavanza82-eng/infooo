@@ -23,7 +23,7 @@ These instructions apply to the entire repository. Nested AGENTS.md files refine
 
 ## Project structure
 
-Hoisly Launcher is a single-module Android app (`:app`) in Kotlin + Jetpack Compose, not an AOSP Launcher3 fork. minSdk 28 (Android 9), target/compileSdk 37, JDK 17. See `app/build.gradle.kts` for current dependencies.
+Hoisly Launcher is a single-module Android app (`:app`) in Kotlin + Jetpack Compose, not an AOSP Launcher3 fork. minSdk 31, target/compileSdk 37, JDK 17. See `app/build.gradle.kts` for current dependencies.
 
 - `app/src/main/java/com/hoisly/launcher/`: `MainActivity` (HOME activity), `SettingsActivity`, `LauncherViewModel`.
 - `data/`: app list (`LauncherApps`), persisted layout (`layout.json`), pure layout operations, Launcher3 import.
@@ -46,7 +46,7 @@ Hoisly Launcher is a single-module Android app (`:app`) in Kotlin + Jetpack Comp
 - A feature is ready when it works on the device in the real launcher, not when it appears in a `@Preview`.
 - Every interactive element must perform its stated action and change real, persisted state. Do not present empty handlers, fake values, decorative functional-looking buttons, or settings toggles that change nothing as completed features. Unimplemented settings are omitted, not shown as working.
 - Layout changes go through the pure operations in `data/LayoutModel` and are persisted via `LayoutRepository`; one user action produces one change and one save. Do not mutate layout state from several places.
-- Check applicable behavior: tap, long-press, drag, edit mode, back gesture/Home press, opening/closing overlays, app install/uninstall/update while the screen is open, configuration and wallpaper changes, process death and restore, font scale, RTL, display density, light and dark wallpapers, and Android 9/10/11/12 vs 13+ (permissions, blur, and API-gated system features).
+- Check applicable behavior: tap, long-press, drag, edit mode, back gesture/Home press, opening/closing overlays, app install/uninstall/update while the screen is open, configuration and wallpaper changes, process death and restore, font scale, RTL, display density, light and dark wallpapers, and Android 12 vs 13+ (permissions, blur).
 - Use stable keys in lazy lists and pagers (package + user, item id). Collect flows lifecycle-aware. Keep heavy work (package queries, icon loading, blur, file I/O) off the main thread.
 - Use Compose animation APIs and respect the system animator duration scale. Settled or invisible animations must not keep recomposing or invalidating draw.
 - Avoid allocations and state reads that trigger recomposition per frame; read fast-changing values (scroll, drag offset) in layout/draw phases.

@@ -89,6 +89,7 @@ private val SheetShape = RoundedCornerShape(topStart = 34.dp, topEnd = 34.dp)
 /** Widgets shown as big previews at the top of the gallery, like iOS27L. */
 private val Featured = listOf(
     WidgetKind.Clock to WidgetSize.Small,
+    WidgetKind.BoldClock to WidgetSize.Small,
     WidgetKind.Calendar to WidgetSize.Small,
     WidgetKind.Weather to WidgetSize.Small,
     WidgetKind.Photo to WidgetSize.Small,

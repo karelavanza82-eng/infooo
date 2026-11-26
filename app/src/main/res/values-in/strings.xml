@@ -479,4 +479,5 @@
     <string name="manage_widgets_description">Hapus widget dari sini, termasuk saat halaman utama kosong.</string>
     <string name="manage_widgets_empty">Belum ada widget yang terpasang di layar utama.</string>
     <string name="manage_widget_remove">Hapus widget</string>
+    <string name="edit_remove_empty_pages">Hapus Halaman Kosong</string>
 </resources>

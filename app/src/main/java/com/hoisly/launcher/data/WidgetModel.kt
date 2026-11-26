@@ -16,6 +16,7 @@ enum class WidgetVisualStyle { Light, Dark, LiquidGlass }
 /** Built-in widgets, each available in a few [sizes] (the order of the gallery pages). */
 enum class WidgetKind(val sizes: List<WidgetSize>) {
     Clock(listOf(WidgetSize.Small, WidgetSize.Medium)),
+    BoldClock(listOf(WidgetSize.Small, WidgetSize.Medium)),
     Calendar(listOf(WidgetSize.Small, WidgetSize.Medium)),
     Weather(listOf(WidgetSize.Small, WidgetSize.Medium, WidgetSize.Large)),
     Photo(listOf(WidgetSize.Small, WidgetSize.Medium, WidgetSize.Large)),

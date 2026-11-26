@@ -85,6 +85,7 @@ internal fun HomeOverlays(
             onCustomize = actions::openSettings,
             onWallpapers = actions::openWallpaperPicker,
             onManageWidgets = vm::openWidgetManager,
+            onRemoveEmptyPages = vm::removeEmptyPages,
         )
     }
 

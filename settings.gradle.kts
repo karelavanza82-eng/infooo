@@ -14,5 +14,3 @@ dependencyResolutionManagement {
 }
 rootProject.name = "Hoisly Launcher"
 include(":app")
-
-include(":Prismal")

@@ -118,6 +118,7 @@ fun WidgetBody(entry: WidgetEntry, modifier: Modifier = Modifier) {
 private fun WidgetContent(entry: WidgetEntry) {
     when (entry.kind) {
         WidgetKind.Clock -> if (entry.size == WidgetSize.Small) AnalogClockWidget() else WorldClockWidget()
+        WidgetKind.BoldClock -> BoldClockWidget(entry)
         WidgetKind.Calendar -> if (entry.size == WidgetSize.Small) MonthWidget() else UpNextWidget()
         WidgetKind.Weather -> WeatherWidget(entry.size)
         WidgetKind.Photo -> PhotoWidget(entry)
@@ -177,6 +178,7 @@ fun WidgetSize.suggestionCount(): Int = if (this == WidgetSize.Small) 4 else 8
 val WidgetKind.titleRes: Int
     get() = when (this) {
         WidgetKind.Clock -> R.string.widget_clock
+        WidgetKind.BoldClock -> R.string.widget_bold_clock
         WidgetKind.Calendar -> R.string.widget_calendar
         WidgetKind.Weather -> R.string.widget_weather
         WidgetKind.Photo -> R.string.widget_photo
@@ -201,6 +203,7 @@ val WidgetKind.titleRes: Int
 val WidgetKind.descriptionRes: Int
     get() = when (this) {
         WidgetKind.Clock -> R.string.widget_clock_description
+        WidgetKind.BoldClock -> R.string.widget_bold_clock_description
         WidgetKind.Calendar -> R.string.widget_calendar_description
         WidgetKind.Weather -> R.string.widget_weather_description
         WidgetKind.Photo -> R.string.widget_photo_description
@@ -225,6 +228,7 @@ val WidgetKind.descriptionRes: Int
 /** Name of one size variant, e.g. "World Clock" or "Hourly Outlook". */
 fun variantTitleRes(kind: WidgetKind, size: WidgetSize): Int = when (kind) {
     WidgetKind.Clock -> if (size == WidgetSize.Small) R.string.widget_variant_clock else R.string.widget_variant_world_clock
+    WidgetKind.BoldClock -> R.string.widget_variant_bold_clock
     WidgetKind.Calendar -> if (size == WidgetSize.Small) R.string.widget_variant_month else R.string.widget_variant_up_next
     WidgetKind.Weather -> when (size) {
         WidgetSize.Small -> R.string.widget_variant_weather_snapshot

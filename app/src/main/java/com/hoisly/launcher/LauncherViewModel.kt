@@ -325,6 +325,14 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
         writer.arrange { it.removeFromHome(app.key, dockCapacity) }
     }
 
+    /** Removes every truly empty Home Screen page while always keeping at least one page. */
+    fun removeEmptyPages() {
+        writer.arrange { layout ->
+            val remaining = layout.pages.filter { page -> page.isNotEmpty() }
+            layout.copy(pages = remaining.ifEmpty { listOf(emptyList()) })
+        }
+    }
+
     /**
      * "Hide App": hidden everywhere until shown again in Settings → Hidden Apps. It takes the
      * app off the Home Screen, so the home menu doesn't offer it while the layout is locked.
