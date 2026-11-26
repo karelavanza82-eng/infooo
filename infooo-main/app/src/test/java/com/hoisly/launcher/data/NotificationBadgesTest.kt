@@ -22,13 +22,13 @@ class NotificationBadgesTest {
     @Test
     fun countsOnePerNotification() {
         val counts = countBadges(listOf(note("a"), note("b")), OWN)
-        assertEquals(mapOf(telegram to 2), counts)
+        assertEquals(mapOf(telegram to 2L), counts)
     }
 
     @Test
     fun numberReplacesOne() {
         val counts = countBadges(listOf(note("a", number = 5), note("b")), OWN)
-        assertEquals(6, counts[telegram])
+        assertEquals(6L, counts[telegram])
     }
 
     @Test
@@ -38,13 +38,13 @@ class NotificationBadgesTest {
             note("chat1", groupKey = "g"),
             note("chat2", groupKey = "g"),
         ), OWN)
-        assertEquals(2, counts[telegram])
+        assertEquals(2L, counts[telegram])
     }
 
     @Test
     fun loneSummaryCountsLikeTheShadeShowsIt() {
         val counts = countBadges(listOf(note("summary", flags = Notification.FLAG_GROUP_SUMMARY, groupKey = "g")), OWN)
-        assertEquals(1, counts[telegram])
+        assertEquals(1L, counts[telegram])
     }
 
     @Test
@@ -69,7 +69,7 @@ class NotificationBadgesTest {
     @Test
     fun channelWithoutBadgesIsNotCounted() {
         val counts = countBadges(listOf(note("a", canShowBadge = false), note("b")), OWN)
-        assertEquals(1, counts[telegram])
+        assertEquals(1L, counts[telegram])
     }
 
     @Test
@@ -80,36 +80,38 @@ class NotificationBadgesTest {
     @Test
     fun sameKeyCountsOnceWithItsLatestState() {
         val counts = countBadges(listOf(note("a", number = 3), note("a", number = 4)), OWN)
-        assertEquals(4, counts[telegram])
+        assertEquals(4L, counts[telegram])
     }
 
     @Test
     fun profilesStayApart() {
         val counts = countBadges(listOf(note("a", profile = "0"), note("b", profile = "10"), note("c", profile = "10")), OWN)
-        assertEquals(1, counts[telegram])
-        assertEquals(2, counts[badgeKey("org.telegram", "10")])
+        assertEquals(1L, counts[telegram])
+        assertEquals(2L, counts[badgeKey("org.telegram", "10")])
     }
 
     @Test
     fun folderSumsEachAppOnce() {
-        val counts = mapOf(telegram to 3, badgeKey("com.mail", "0") to 2, badgeKey("org.telegram", "10") to 7)
+        val counts = mapOf(telegram to 3L, badgeKey("com.mail", "0") to 2L, badgeKey("org.telegram", "10") to 7L)
         // Two launcher activities of Telegram share one count; the work profile app is not in the folder.
-        assertEquals(5, badgeSum(listOf(telegram, telegram, badgeKey("com.mail", "0"), badgeKey("com.none", "0")), counts))
-        assertEquals(0, badgeSum(listOf(telegram), emptyMap()))
+        assertEquals(5L, badgeSum(listOf(telegram, telegram, badgeKey("com.mail", "0"), badgeKey("com.none", "0")), counts))
+        assertEquals(0L, badgeSum(listOf(telegram), emptyMap()))
     }
 
     @Test
     fun hugeNumbersDoNotOverflow() {
         val counts = countBadges((1..10).map { note("n$it", number = Int.MAX_VALUE) }, OWN)
-        assertEquals(9_990, counts[telegram])
-        assertEquals("999+", badgeText(counts.getValue(telegram)))
+        assertEquals(21_474_836_470L, counts[telegram])
+        assertEquals("21.474.836.470", badgeText(counts.getValue(telegram)))
     }
 
     @Test
-    fun textOverflowsAfterNineHundredNinetyNine() {
+    fun textUsesIndonesianGroupingWithoutCapping() {
         assertEquals("1", badgeText(1))
         assertEquals("999", badgeText(999))
-        assertEquals("999+", badgeText(1000))
+        assertEquals("1.000", badgeText(1000))
+        assertEquals("10.000", badgeText(10_000))
+        assertEquals("100.000", badgeText(100_000))
     }
 
     private companion object {

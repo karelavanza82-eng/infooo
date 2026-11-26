@@ -11,17 +11,27 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Accessibility
 import androidx.compose.material.icons.rounded.RestartAlt
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import rikka.shizuku.Shizuku
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -31,6 +41,7 @@ import com.hoisly.launcher.statusbar.StatusBarColorMode
 import com.hoisly.launcher.statusbar.StatusBarPreferences
 import com.hoisly.launcher.statusbar.StatusBarState
 import com.hoisly.launcher.statusbar.StatusBarStore
+import com.hoisly.launcher.statusbar.CleanBarController
 import com.hoisly.launcher.statusbar.StatusBarView
 import com.hoisly.launcher.statusbar.SystemIconHider
 import kotlin.math.roundToInt
@@ -44,14 +55,57 @@ fun StatusBarSettingsScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     remember { StatusBarStore.init(context) }
     val prefs by StatusBarStore.state.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
+    var shizukuRevision by remember { mutableIntStateOf(0) }
+    var cleanBarMessage by remember { mutableStateOf<String?>(null) }
+    var cleanBarBusy by remember { mutableStateOf(false) }
     var accessibility by remember { mutableStateOf(Perms.accessibility(context)) }
     var secureGranted by remember { mutableStateOf(SystemIconHider.canWrite(context)) }
     LifecycleResumeEffect(Unit) {
         accessibility = Perms.accessibility(context)
         secureGranted = SystemIconHider.canWrite(context)
+        shizukuRevision++
         onPauseOrDispose { }
     }
+    androidx.compose.runtime.DisposableEffect(Unit) {
+        val received = Shizuku.OnBinderReceivedListener { shizukuRevision++ }
+        val dead = Shizuku.OnBinderDeadListener { shizukuRevision++ }
+        val permission = Shizuku.OnRequestPermissionResultListener { _, _ -> shizukuRevision++ }
+        Shizuku.addBinderReceivedListenerSticky(received)
+        Shizuku.addBinderDeadListener(dead)
+        Shizuku.addRequestPermissionResultListener(permission)
+        onDispose {
+            Shizuku.removeBinderReceivedListener(received)
+            Shizuku.removeBinderDeadListener(dead)
+            Shizuku.removeRequestPermissionResultListener(permission)
+        }
+    }
+    val shizukuRunning = remember(shizukuRevision) { CleanBarController.shizukuRunning() }
+    val shizukuAllowed = remember(shizukuRevision) { CleanBarController.hasPermission() }
     fun save(change: (StatusBarPreferences) -> StatusBarPreferences) = StatusBarStore.update(change)
+    fun setGlobalStatusBarHidden(hidden: Boolean) {
+        if (cleanBarBusy) return
+        if (!shizukuRunning) {
+            cleanBarMessage = "Jalankan Shizuku terlebih dahulu."
+            return
+        }
+        if (!shizukuAllowed) {
+            cleanBarMessage = "Berikan izin Shizuku untuk Hoisly."
+            return
+        }
+        cleanBarBusy = true
+        cleanBarMessage = null
+        scope.launch {
+            val result = withContext(Dispatchers.IO) { CleanBarController.apply(context, hidden) }
+            cleanBarBusy = false
+            if (result.isSuccess) {
+                save { it.copy(hideSystemStatusBar = hidden) }
+                cleanBarMessage = if (hidden) "Status bar sistem disembunyikan secara global." else "Status bar sistem dipulihkan."
+            } else {
+                cleanBarMessage = "Gagal: ${result.exceptionOrNull()?.message ?: "perintah Shizuku gagal"}"
+            }
+        }
+    }
 
     // Sliders keep the dragged value locally and save once released.
     var scale by remember(prefs.scale) { mutableFloatStateOf(prefs.scale) }
@@ -201,17 +255,37 @@ fun StatusBarSettingsScreen(onBack: () -> Unit) {
         item {
             SettingsCard {
                 SwitchRow(
-                    stringResource(R.string.statusbar_hide_android_bar),
+                    "Hide System Status Bar",
                     prefs.hideSystemStatusBar,
-                    { v -> save { it.copy(hideSystemStatusBar = v) } },
+                    ::setGlobalStatusBarHidden,
                 )
+                Text(
+                    when {
+                        !shizukuRunning -> "Shizuku: tidak aktif. Jalankan Shizuku terlebih dahulu."
+                        !shizukuAllowed -> "Shizuku aktif, tetapi izin Hoisly belum diberikan."
+                        else -> "Shizuku terhubung dan izin telah diberikan."
+                    },
+                    modifier = Modifier.padding(horizontal = SettingsStyle.RowPadding, vertical = 6.dp),
+                )
+                if (!shizukuRunning || !shizukuAllowed) {
+                    TextButton(onClick = {
+                        if (shizukuRunning) CleanBarController.requestPermission()
+                        else runCatching {
+                            val launch = context.packageManager.getLaunchIntentForPackage("moe.shizuku.privileged.api")
+                            if (launch != null) context.startActivity(launch)
+                            else context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://shizuku.rikka.app/guide/setup/")))
+                        }
+                        shizukuRevision++
+                    }) { Text(if (shizukuRunning) "Berikan izin Shizuku" else "Buka Shizuku") }
+                }
+                cleanBarMessage?.let { Text(it, modifier = Modifier.padding(horizontal = SettingsStyle.RowPadding, vertical = 4.dp)) }
                 SwitchRow(
                     stringResource(R.string.statusbar_hide_system),
                     prefs.hideSystemIcons && secureGranted,
                     { v -> if (secureGranted) save { it.copy(hideSystemIcons = v) } },
                 )
             }
-            SectionFooter(stringResource(R.string.statusbar_hide_android_bar_footer))
+            SectionFooter("Memerlukan Shizuku. Pengaturan ini menggunakan kebijakan immersive Android global, bukan hanya menyembunyikan status bar di jendela Hoisly.")
             SectionFooter(
                 if (secureGranted) stringResource(R.string.statusbar_hide_system_footer)
                 else stringResource(R.string.statusbar_hide_system_grant, GRANT_COMMAND),

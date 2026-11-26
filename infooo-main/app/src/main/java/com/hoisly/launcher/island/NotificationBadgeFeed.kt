@@ -6,36 +6,38 @@ import android.os.Looper
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
+import android.content.Context
 import com.hoisly.launcher.data.BadgeNotification
-import com.hoisly.launcher.data.countBadges
 import com.hoisly.launcher.data.profileId
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 /**
- * Notification badge counts by [com.hoisly.launcher.data.badgeKey], published by the connected
- * [IslandListenerService]. Lives in process memory only: empty while badges are off, the listener
- * is not connected or access was revoked, and rebuilt from the active notifications on connect.
+ * Cumulative per-app notification totals by [com.hoisly.launcher.data.badgeKey], published by the
+ * connected [IslandListenerService]. Totals persist locally; the published feed is empty while
+ * badges are off or the listener is disconnected.
  */
 object NotificationBadgeFeed {
-    private val mutable = MutableStateFlow<Map<String, Int>>(emptyMap())
-    val counts: StateFlow<Map<String, Int>> = mutable
+    private val mutable = MutableStateFlow<Map<String, Long>>(emptyMap())
+    val counts: StateFlow<Map<String, Long>> = mutable
 
-    internal fun publish(value: Map<String, Int>): Unit {
+    internal fun publish(value: Map<String, Long>): Unit {
         mutable.value = value
     }
 }
 
 /**
  * The listener's badge bookkeeping, independent of the Island window. Keeps the minimal
- * [BadgeNotification] of each posted notification by key (no text or extras are copied) and
- * recounts at most once per [COALESCE_MS], so a burst of notifications is one UI update.
+ * [BadgeNotification] of each active notification by key (no text or extras are copied), adds
+ * one to the persistent app total only for a new notification key, and coalesces UI updates.
  * Called on the main thread, like every listener callback.
  */
 internal class BadgeTracker(private val service: NotificationListenerService) {
     private val main = Handler(Looper.getMainLooper())
     private val entries = LinkedHashMap<String, BadgeNotification>()
-    private val ranking = NotificationListenerService.Ranking()
+    private val totals = LinkedHashMap<String, Long>()
+    private val countedActiveKeys = LinkedHashSet<String>()
+    private val prefs by lazy { service.getSharedPreferences("notification_badge_totals", Context.MODE_PRIVATE) }
     private var enabled = false
     private var connected = false
     private val flush = Runnable { publish() }
@@ -59,13 +61,34 @@ internal class BadgeTracker(private val service: NotificationListenerService) {
 
     fun posted(sbn: StatusBarNotification): Unit {
         if (!enabled || !connected) return
+        val fresh = sbn.key !in countedActiveKeys
         entries[sbn.key] = sbn.badgeNotification()
+        if (fresh) {
+            countedActiveKeys += sbn.key
+            val item = sbn.badgeNotification()
+            val currentRanking = runCatching { service.currentRanking }.getOrNull()
+            val canBadge = currentRanking == null || !currentRanking.getRanking(item.key, ranking) || ranking.canShowBadge()
+            val groupSummary = item.flags and android.app.Notification.FLAG_GROUP_SUMMARY != 0
+            val eligible = item.packageName != service.packageName && canBadge && !item.media &&
+                item.flags and (android.app.Notification.FLAG_ONGOING_EVENT or android.app.Notification.FLAG_FOREGROUND_SERVICE) == 0 &&
+                !groupSummary
+            if (eligible) {
+                val key = com.hoisly.launcher.data.badgeKey(sbn.packageName, com.hoisly.launcher.data.profileId(sbn.user))
+                val n = 1L
+                totals[key] = addSaturated(totals[key] ?: 0L, n)
+                persist()
+            }
+        }
         schedule()
     }
 
     fun removed(sbn: StatusBarNotification): Unit {
         if (!enabled || !connected) return
-        if (entries.remove(sbn.key) != null) schedule()
+        if (entries.remove(sbn.key) != null) {
+            countedActiveKeys.remove(sbn.key)
+            prefs.edit().putStringSet(ACTIVE_KEYS, countedActiveKeys.toSet()).apply()
+            schedule()
+        }
     }
 
     /** A channel's badge setting may have changed: [publish] reads the current ranking. */
@@ -75,7 +98,13 @@ internal class BadgeTracker(private val service: NotificationListenerService) {
 
     private fun reset(active: Array<StatusBarNotification>?) {
         entries.clear()
-        active?.forEach { entries[it.key] = it.badgeNotification() }
+        loadTotals()
+        countedActiveKeys.clear()
+        active?.forEach {
+            entries[it.key] = it.badgeNotification()
+            countedActiveKeys += it.key
+        }
+        prefs.edit().putStringSet(ACTIVE_KEYS, countedActiveKeys.toSet()).apply()
         Log.d(TAG, "rebuilt from ${entries.size} active notifications")
         main.removeCallbacks(flush)
         publish()
@@ -93,13 +122,26 @@ internal class BadgeTracker(private val service: NotificationListenerService) {
     }
 
     private fun publish() {
-        val rankings = runCatching { service.currentRanking }.getOrNull()
-        val snapshot = entries.values.map { notification ->
-            val badged = rankings == null || !rankings.getRanking(notification.key, ranking) || ranking.canShowBadge()
-            if (badged) notification else notification.copy(canShowBadge = false)
-        }
-        NotificationBadgeFeed.publish(countBadges(snapshot, service.packageName))
+        // Keep every accumulated app total visible even after its notifications are dismissed.
+        NotificationBadgeFeed.publish(totals.toMap())
     }
+
+    private fun loadTotals() {
+        totals.clear()
+        prefs.all.forEach { (key, value) ->
+            if (value is Long && value > 0L) totals[key] = value
+        }
+    }
+
+    private fun persist() {
+        val editor = prefs.edit().clear()
+        totals.forEach { (key, value) -> editor.putLong(key, value) }
+        editor.putStringSet(ACTIVE_KEYS, countedActiveKeys.toSet())
+        editor.apply()
+    }
+
+    private fun addSaturated(a: Long, b: Long): Long =
+        if (b > 0L && Long.MAX_VALUE - a < b) Long.MAX_VALUE else a + b
 
     private fun StatusBarNotification.badgeNotification(): BadgeNotification {
         val extras = notification.extras
@@ -116,6 +158,7 @@ internal class BadgeTracker(private val service: NotificationListenerService) {
 
     private companion object {
         const val TAG = "HoislyBadges"
+        const val ACTIVE_KEYS = "__active_notification_keys"
         const val COALESCE_MS = 250L
         val MEDIA_TEMPLATES = setOf(
             "android.app.Notification\$MediaStyle",

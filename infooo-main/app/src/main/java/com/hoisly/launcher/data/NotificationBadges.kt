@@ -33,18 +33,18 @@ fun badgeKey(packageName: String, profile: String): String = "$packageName#$prof
  * (the summary only stands for them; alone, the shade shows it as a notification of its own).
  * The same key is counted once.
  */
-fun countBadges(notifications: Collection<BadgeNotification>, ownPackage: String): Map<String, Int> {
+fun countBadges(notifications: Collection<BadgeNotification>, ownPackage: String): Map<String, Long> {
     val unique = LinkedHashMap<String, BadgeNotification>(notifications.size)
     notifications.forEach { unique[it.key] = it }
     val groupsWithMembers = unique.values
         .filter { it.groupKey != null && it.flags and Notification.FLAG_GROUP_SUMMARY == 0 }
         .mapTo(HashSet()) { it.groupKey }
-    val counts = HashMap<String, Int>()
+    val counts = HashMap<String, Long>()
     for (notification in unique.values) {
         if (!notification.badged(ownPackage, groupsWithMembers)) continue
-        val amount = if (notification.number > 0) notification.number.coerceAtMost(MAX_NOTIFICATION_NUMBER) else 1
+        val amount = if (notification.number > 0) notification.number.toLong() else 1L
         counts.merge(badgeKey(notification.packageName, notification.profile), amount) { a, b ->
-            (a + b).coerceAtMost(MAX_BADGE_COUNT)
+            if (Long.MAX_VALUE - a < b) Long.MAX_VALUE else a + b
         }
     }
     return counts
@@ -58,17 +58,12 @@ private fun BadgeNotification.badged(ownPackage: String, groupsWithMembers: Set<
 }
 
 /** A folder's badge: the sum over its apps, each package + profile once (two activities of one app don't double it). */
-fun badgeSum(keys: Iterable<String>, counts: Map<String, Int>): Int {
-    if (counts.isEmpty()) return 0
-    var sum = 0
-    keys.toSet().forEach { key -> sum = (sum + (counts[key] ?: 0)).coerceAtMost(MAX_BADGE_COUNT) }
+fun badgeSum(keys: Iterable<String>, counts: Map<String, Long>): Long {
+    if (counts.isEmpty()) return 0L
+    var sum = 0L
+    keys.toSet().forEach { key -> val value = counts[key] ?: 0L; sum = if (Long.MAX_VALUE - sum < value) Long.MAX_VALUE else sum + value }
     return sum
 }
 
-/** What the badge shows: the count up to [MAX_SHOWN_COUNT], then "999+". */
-fun badgeText(count: Int): String = if (count > MAX_SHOWN_COUNT) "$MAX_SHOWN_COUNT+" else count.toString()
-
-const val MAX_SHOWN_COUNT: Int = 999
-/** Caps one notification's number and a total, so a bogus [Notification.number] can't overflow a sum. */
-private const val MAX_NOTIFICATION_NUMBER = 999
-private const val MAX_BADGE_COUNT = 99_999
+/** Full cumulative count using Indonesian thousands separators; the stored value remains numeric. */
+fun badgeText(count: Long): String = java.text.NumberFormat.getIntegerInstance(java.util.Locale("id", "ID")).format(count)

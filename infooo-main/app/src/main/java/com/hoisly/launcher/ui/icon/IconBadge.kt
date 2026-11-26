@@ -46,20 +46,20 @@ enum class IconBadge { None, Shown, Hidden }
  * one app's change recomposes that icon alone. Null in [LocalBadges] while badges are off.
  */
 @Stable
-class BadgeSource(val counts: State<Map<String, Int>>, val style: BadgeStyle)
+class BadgeSource(val counts: State<Map<String, Long>>, val style: BadgeStyle)
 
 val LocalBadges = staticCompositionLocalOf<BadgeSource?> { null }
 
 /** Count for [key] ([com.hoisly.launcher.data.AppInfo.badgeKey]); the caller recomposes only when it changes. */
 @Composable
-fun badgeCount(source: BadgeSource, key: String): Int {
-    val count by remember(source, key) { derivedStateOf { source.counts.value[key] ?: 0 } }
+fun badgeCount(source: BadgeSource, key: String): Long {
+    val count by remember(source, key) { derivedStateOf { source.counts.value[key] ?: 0L } }
     return count
 }
 
 /** A folder's count: the sum over [keys], recomposing only when the sum changes. */
 @Composable
-fun badgeCount(source: BadgeSource, keys: List<String>): Int {
+fun badgeCount(source: BadgeSource, keys: List<String>): Long {
     val count by remember(source, keys) { derivedStateOf { badgeSum(keys, source.counts.value) } }
     return count
 }
@@ -81,7 +81,7 @@ fun groupBadgeModifier(apps: List<AppInfo>, name: String, badge: IconBadge): Mod
     val count = if (badge == IconBadge.Shown) badgeCount(badges, keys) else 0
     val drawn = Modifier.notificationBadge(count, badges.style == BadgeStyle.Dot)
     if (count == 0) return drawn
-    val description = pluralStringResource(R.plurals.icon_badge_description, count, name, count)
+    val description = pluralStringResource(R.plurals.icon_badge_description, count.coerceAtMost(Int.MAX_VALUE.toLong()).toInt(), name, count)
     return drawn.semantics { contentDescription = description }
 }
 
@@ -91,9 +91,9 @@ fun groupBadgeModifier(apps: List<AppInfo>, name: String, badge: IconBadge): Mod
  * buffer, nothing added to the cached icon bitmap. Appears and disappears with a short scale
  * animation (system animator duration scale applies); costs nothing before the first count.
  */
-fun Modifier.notificationBadge(count: Int, dot: Boolean): Modifier = this then BadgeElement(count, dot)
+fun Modifier.notificationBadge(count: Long, dot: Boolean): Modifier = this then BadgeElement(count, dot)
 
-private data class BadgeElement(val count: Int, val dot: Boolean) : ModifierNodeElement<BadgeNode>() {
+private data class BadgeElement(val count: Long, val dot: Boolean) : ModifierNodeElement<BadgeNode>() {
     override fun create(): BadgeNode = BadgeNode(count, dot)
     override fun update(node: BadgeNode): Unit = node.update(count, dot)
     override fun InspectorInfo.inspectableProperties() {
@@ -103,13 +103,13 @@ private data class BadgeElement(val count: Int, val dot: Boolean) : ModifierNode
     }
 }
 
-private class BadgeNode(private var count: Int, private var dot: Boolean) : Modifier.Node(), DrawModifierNode {
+private class BadgeNode(private var count: Long, private var dot: Boolean) : Modifier.Node(), DrawModifierNode {
     /** Last count above zero, still drawn while the badge shrinks away. */
     private var shown = count
     /** Created with the first count; a badge already there when the icon appears doesn't animate. */
     private var scale: Animatable<Float, AnimationVector1D>? = if (count > 0) Animatable(1f) else null
 
-    fun update(count: Int, dot: Boolean) {
+    fun update(count: Long, dot: Boolean) {
         if (count > 0) shown = count
         val changed = this.count != count || this.dot != dot
         this.count = count
@@ -125,7 +125,7 @@ private class BadgeNode(private var count: Int, private var dot: Boolean) : Modi
     override fun ContentDrawScope.draw() {
         drawContent()
         val progress = scale?.value ?: return
-        if (progress <= 0f || shown <= 0) return
+        if (progress <= 0f || shown <= 0L) return
         val icon = size.minDimension
         val height = icon * if (dot) Tokens.BadgeDotRatio else Tokens.BadgeSizeRatio
         val text = if (dot) null else badgeText(shown)

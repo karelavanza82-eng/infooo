@@ -77,7 +77,7 @@ fun AppIconImage(
     }
     val badges = LocalBadges.current.takeIf { badge != IconBadge.None }
     val count = if (badges != null && badge == IconBadge.Shown) badgeCount(badges, app.badgeKey) else 0
-    val label = if (count > 0) pluralStringResource(R.plurals.icon_badge_description, count, app.label, count) else app.label
+    val label = if (count > 0) pluralStringResource(R.plurals.icon_badge_description, count.coerceAtMost(Int.MAX_VALUE.toLong()).toInt(), app.label, count) else app.label
     Spacer(
         modifier
             .size(size)

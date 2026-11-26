@@ -23,7 +23,7 @@ data class StatusBarPreferences(
     val hideInLandscape: Boolean = true,
     /** Experimental: asks SystemUI to hide its own clock/signal/battery slots (needs WRITE_SECURE_SETTINGS). */
     val hideSystemIcons: Boolean = false,
-    /** Hides the Android status bar in the launcher window using immersive mode; no special permission required. */
+    /** User's global Hide System Status Bar setting; applied through Shizuku by CleanBarController. */
     val hideSystemStatusBar: Boolean = false,
     val scale: Float = DEFAULT_SCALE,
     val sidePadding: Float = DEFAULT_SIDE_PADDING,
