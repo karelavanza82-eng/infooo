@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="search">Cerca</string>
     <string name="glass_prompt_title">Attiva effetto vetro</string>
@@ -219,7 +219,7 @@
     <string name="onboarding_get_started">Inizia</string>
     <string name="finish_setup_title">Completa configurazione</string>
 
-    
+    <!-- Settings: screen grid, icon sizes by area, layout lock -->
     <string name="grid_columns">Colonne</string>
     <string name="grid_rows">Righe</string>
     <string name="grid_section_margins">Margini</string>
@@ -247,7 +247,7 @@
     <string name="layout_lock">Blocca la disposizione della Home</string>
     <string name="import_locked">La disposizione della schermata Home è bloccata. Sbloccala per importare.</string>
 
-    
+    <!-- App Library customization -->
     <string name="library_pinned">Fissate</string>
     <string name="library_all_apps">Tutte le app</string>
     <string name="library_view_switch">Vista: %1$s</string>
@@ -354,7 +354,7 @@
     <string name="island_top_offset">Spostamento verticale</string>
     <string name="island_blur_footer">La sfocatura funziona dove Android la consente: non con il risparmio energetico né con la sfocatura delle finestre disattivata.</string>
     <string name="island_access_unavailable">Questa schermata di accesso non è disponibile</string>
-    
+    <!-- Settings: folders -->
     <string name="folders_panel">Pannello cartella</string>
     <string name="folders_width">Larghezza</string>
     <string name="folders_height">Altezza</string>
@@ -377,7 +377,7 @@
         <item quantity="other">%1$s, %2$d notifiche</item>
     </plurals>
 
-    
+    <!-- English fallback entries; localize these strings when translations are available. -->
     <string name="control_center_title">Control Center</string>
         
     <string name="notification_center_title">Notification Center</string>
@@ -568,4 +568,4 @@
     <string name="manage_widget_remove">Rimuovi widget</string>
     <string name="manage_widgets_description">Rimuovi qui i widget, anche quando la pagina della schermata Home è vuota.</string>
     <string name="manage_widgets_empty">Al momento non ci sono widget nella schermata Home.</string>
-<string name="edit_remove_empty_pages">Rimuovi pagine vuote</string><string name="widget_variant_bold_clock">Bold Clock</string><string name="widget_bold_clock">Widget Bold Clock</string><string name="widget_bold_clock_description">Orologio grande con cinque stili di carattere in grassetto.</string></resources>
+</resources>

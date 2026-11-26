@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="search">Пошук</string>
     <string name="glass_prompt_title">Увімкнути ефект скла</string>
@@ -220,7 +220,7 @@
     <string name="onboarding_get_started">Почати</string>
     <string name="finish_setup_title">Завершити налаштування</string>
 
-    
+    <!-- Settings: screen grid, icon sizes by area, layout lock -->
     <string name="grid_columns">Стовпці</string>
     <string name="grid_rows">Рядки</string>
     <string name="grid_section_margins">Поля</string>
@@ -248,7 +248,7 @@
     <string name="layout_lock">Заблокувати розкладку головного екрана</string>
     <string name="import_locked">Розкладку головного екрана заблоковано. Розблокуйте її, щоб імпортувати.</string>
 
-    
+    <!-- App Library customization -->
     <string name="library_pinned">Закріплені</string>
     <string name="library_all_apps">Усі застосунки</string>
     <string name="library_view_switch">Вигляд: %1$s</string>
@@ -356,7 +356,7 @@
     <string name="island_top_offset">Зсув по вертикалі</string>
     <string name="island_blur_footer">Розмиття працює, де Android його дозволяє: не в режимі енергозбереження і не з вимкненим розмиттям вікон.</string>
     <string name="island_access_unavailable">Екран доступу недоступний</string>
-    
+    <!-- Settings: folders -->
     <string name="folders_panel">Панель теки</string>
     <string name="folders_width">Ширина</string>
     <string name="folders_height">Висота</string>
@@ -380,7 +380,7 @@
         <item quantity="other">%1$s, %2$d сповіщення</item>
     </plurals>
 
-    
+    <!-- English fallback entries; localize these strings when translations are available. -->
     <string name="control_center_title">Control Center</string>
         
     <string name="notification_center_title">Notification Center</string>
@@ -573,4 +573,4 @@
     <string name="manage_widget_remove">Видалити віджет</string>
     <string name="manage_widgets_description">Видаляйте віджети тут, навіть якщо сторінка головного екрана порожня.</string>
     <string name="manage_widgets_empty">На головному екрані наразі немає віджетів.</string>
-<string name="edit_remove_empty_pages">Видалити порожні сторінки</string><string name="widget_variant_bold_clock">Bold Clock</string><string name="widget_bold_clock">Віджет Bold Clock</string><string name="widget_bold_clock_description">Великий годинник із п’ятьма жирними стилями шрифту.</string></resources>
+</resources>

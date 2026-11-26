@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="search">Пошук</string>
     <string name="glass_prompt_title">Уключыць эфект шкла</string>
@@ -220,7 +220,7 @@
     <string name="onboarding_get_started">Пачаць</string>
     <string name="finish_setup_title">Завяршыць наладжванне</string>
 
-    
+    <!-- Settings: screen grid, icon sizes by area, layout lock -->
     <string name="grid_columns">Слупкі</string>
     <string name="grid_rows">Радкі</string>
     <string name="grid_section_margins">Палі</string>
@@ -248,7 +248,7 @@
     <string name="layout_lock">Заблакіраваць раскладку галоўнага экрана</string>
     <string name="import_locked">Раскладка галоўнага экрана заблакіравана. Разблакіруйце яе, каб імпартаваць.</string>
 
-    
+    <!-- App Library customization -->
     <string name="library_pinned">Замацаваныя</string>
     <string name="library_all_apps">Усе праграмы</string>
     <string name="library_view_switch">Выгляд: %1$s</string>
@@ -356,7 +356,7 @@
     <string name="island_top_offset">Зрух па вертыкалі</string>
     <string name="island_blur_footer">Размыццё працуе, дзе Android яго дазваляе: не ў рэжыме эканоміі зараду і не з адключаным размыццём вокнаў.</string>
     <string name="island_access_unavailable">Экран доступу недаступны</string>
-    
+    <!-- Settings: folders -->
     <string name="folders_panel">Панэль папкі</string>
     <string name="folders_width">Шырыня</string>
     <string name="folders_height">Вышыня</string>
@@ -380,7 +380,7 @@
         <item quantity="other">%1$s, %2$d апавяшчэння</item>
     </plurals>
 
-    
+    <!-- English fallback entries; localize these strings when translations are available. -->
     <string name="control_center_title">Control Center</string>
         
     <string name="notification_center_title">Notification Center</string>
@@ -573,4 +573,4 @@
     <string name="manage_widget_remove">Выдаліць віджэт</string>
     <string name="manage_widgets_description">Выдаляйце тут віджэты, нават калі старонка галоўнага экрана пустая.</string>
     <string name="manage_widgets_empty">На галоўным экране зараз няма віджэтаў.</string>
-<string name="edit_remove_empty_pages">Выдаліць пустыя старонкі</string><string name="widget_variant_bold_clock">Bold Clock</string><string name="widget_bold_clock">Віджэт Bold Clock</string><string name="widget_bold_clock_description">Вялікі гадзіннік з пяццю тлустымі стылямі шрыфту.</string></resources>
+</resources>

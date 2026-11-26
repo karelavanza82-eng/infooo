@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="search">Rechercher</string>
     <string name="glass_prompt_title">Activer l’effet de verre</string>
@@ -521,4 +521,4 @@
     <string name="manage_widget_remove">Supprimer le widget</string>
     <string name="manage_widgets_description">Supprimez les widgets ici, même lorsque la page d’accueil est vide.</string>
     <string name="manage_widgets_empty">Aucun widget n’est actuellement placé sur votre écran d’accueil.</string>
-<string name="edit_remove_empty_pages">Supprimer les pages vides</string><string name="widget_variant_bold_clock">Bold Clock</string><string name="widget_bold_clock">Widget Bold Clock</string><string name="widget_bold_clock_description">Grande horloge avec cinq styles de police gras.</string></resources>
+</resources>

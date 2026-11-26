@@ -5,14 +5,17 @@ import android.os.Handler
 import android.os.Looper
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import android.util.Log
+import android.content.Context
 import com.hoisly.launcher.data.BadgeNotification
 import com.hoisly.launcher.data.profileId
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 /**
- * Per-app counts of currently active notifications, published by the connected
- * [IslandListenerService]. Dismissed notifications stop contributing to the badge.
+ * Cumulative per-app notification totals by [com.hoisly.launcher.data.badgeKey], published by the
+ * connected [IslandListenerService]. Totals persist locally; the published feed is empty while
+ * badges are off or the listener is disconnected.
  */
 object NotificationBadgeFeed {
     private val mutable = MutableStateFlow<Map<String, Long>>(emptyMap())
@@ -32,48 +35,84 @@ object NotificationBadgeFeed {
 internal class BadgeTracker(private val service: NotificationListenerService) {
     private val main = Handler(Looper.getMainLooper())
     private val entries = LinkedHashMap<String, BadgeNotification>()
+    private val totals = LinkedHashMap<String, Long>()
+    private val countedActiveKeys = LinkedHashSet<String>()
+    private val prefs by lazy { service.getSharedPreferences("notification_badge_totals", Context.MODE_PRIVATE) }
     private var enabled = false
     private var connected = false
     private val flush = Runnable { publish() }
 
-    fun enabled(value: Boolean, active: () -> Array<StatusBarNotification>?) {
+    /** Badges turned on or off in settings. Off drops everything and ignores events. */
+    fun enabled(value: Boolean, active: () -> Array<StatusBarNotification>?): Unit {
         if (enabled == value) return
         enabled = value
         if (value && connected) reset(active()) else clear()
     }
 
-    fun connected(active: Array<StatusBarNotification>?) {
+    fun connected(active: Array<StatusBarNotification>?): Unit {
         connected = true
         if (enabled) reset(active)
     }
 
-    fun disconnected() {
+    fun disconnected(): Unit {
         connected = false
         clear()
     }
 
-    fun posted(sbn: StatusBarNotification) {
+    fun posted(sbn: StatusBarNotification): Unit {
         if (!enabled || !connected) return
+        val fresh = sbn.key !in countedActiveKeys
         entries[sbn.key] = sbn.badgeNotification()
+        if (fresh) {
+            countedActiveKeys += sbn.key
+            val item = sbn.badgeNotification()
+            val currentRanking = runCatching { service.currentRanking }.getOrNull()
+            val ranking = NotificationListenerService.Ranking()
+            val canBadge = currentRanking == null ||
+                !currentRanking.getRanking(item.key, ranking) || ranking.canShowBadge()
+            val groupSummary = item.flags and android.app.Notification.FLAG_GROUP_SUMMARY != 0
+            val eligible = item.packageName != service.packageName && canBadge && !item.media &&
+                item.flags and (android.app.Notification.FLAG_ONGOING_EVENT or android.app.Notification.FLAG_FOREGROUND_SERVICE) == 0 &&
+                !groupSummary
+            if (eligible) {
+                val key = com.hoisly.launcher.data.badgeKey(sbn.packageName, com.hoisly.launcher.data.profileId(sbn.user))
+                val n = 1L
+                totals[key] = addSaturated(totals[key] ?: 0L, n)
+                persist()
+            }
+        }
         schedule()
     }
 
-    fun removed(sbn: StatusBarNotification) {
+    fun removed(sbn: StatusBarNotification): Unit {
         if (!enabled || !connected) return
-        if (entries.remove(sbn.key) != null) schedule()
+        if (entries.remove(sbn.key) != null) {
+            countedActiveKeys.remove(sbn.key)
+            prefs.edit().putStringSet(ACTIVE_KEYS, countedActiveKeys.toSet()).apply()
+            schedule()
+        }
     }
 
-    fun rankingChanged() {
+    /** A channel's badge setting may have changed: [publish] reads the current ranking. */
+    fun rankingChanged(): Unit {
         if (enabled && connected && entries.isNotEmpty()) schedule()
     }
 
     private fun reset(active: Array<StatusBarNotification>?) {
         entries.clear()
-        active?.forEach { sbn -> entries[sbn.key] = sbn.badgeNotification() }
+        loadTotals()
+        countedActiveKeys.clear()
+        active?.forEach {
+            entries[it.key] = it.badgeNotification()
+            countedActiveKeys += it.key
+        }
+        prefs.edit().putStringSet(ACTIVE_KEYS, countedActiveKeys.toSet()).apply()
+        Log.d(TAG, "rebuilt from ${entries.size} active notifications")
         main.removeCallbacks(flush)
         publish()
     }
 
+    /** Badges disappear at once rather than freezing with old numbers. */
     private fun clear() {
         entries.clear()
         main.removeCallbacks(flush)
@@ -84,39 +123,44 @@ internal class BadgeTracker(private val service: NotificationListenerService) {
         if (!main.hasCallbacks(flush)) main.postDelayed(flush, COALESCE_MS)
     }
 
-    /**
-     * Badges reflect notifications that are currently active in Android's notification shade.
-     * Dismissed notifications are removed from the count; no lifetime/cumulative total is kept.
-     * Notification.number is honored when the app supplies a grouped unread count.
-     */
     private fun publish() {
-        val rankingMap = runCatching { service.currentRanking }.getOrNull()
-        val ranked = entries.values.map { item ->
-            val ranking = NotificationListenerService.Ranking()
-            val canBadge = rankingMap == null ||
-                !rankingMap.getRanking(item.key, ranking) || ranking.canShowBadge()
-            item.copy(canShowBadge = canBadge)
-        }
-        NotificationBadgeFeed.publish(
-            com.hoisly.launcher.data.countBadges(ranked, service.packageName)
-        )
+        // Keep every accumulated app total visible even after its notifications are dismissed.
+        NotificationBadgeFeed.publish(totals.toMap())
     }
+
+    private fun loadTotals() {
+        totals.clear()
+        prefs.all.forEach { (key, value) ->
+            if (value is Long && value > 0L) totals[key] = value
+        }
+    }
+
+    private fun persist() {
+        val editor = prefs.edit().clear()
+        totals.forEach { (key, value) -> editor.putLong(key, value) }
+        editor.putStringSet(ACTIVE_KEYS, countedActiveKeys.toSet())
+        editor.apply()
+    }
+
+    private fun addSaturated(a: Long, b: Long): Long =
+        if (b > 0L && Long.MAX_VALUE - a < b) Long.MAX_VALUE else a + b
 
     private fun StatusBarNotification.badgeNotification(): BadgeNotification {
         val extras = notification.extras
         return BadgeNotification(
             key = key,
             packageName = packageName,
-            profile = com.hoisly.launcher.data.profileId(user),
+            profile = profileId(user),
             number = notification.number,
             flags = notification.flags,
-            media = extras.containsKey(Notification.EXTRA_MEDIA_SESSION) ||
-                extras.getString(Notification.EXTRA_TEMPLATE) in MEDIA_TEMPLATES,
+            media = extras.containsKey(Notification.EXTRA_MEDIA_SESSION) || extras.getString(Notification.EXTRA_TEMPLATE) in MEDIA_TEMPLATES,
             groupKey = groupKey,
         )
     }
 
     private companion object {
+        const val TAG = "HoislyBadges"
+        const val ACTIVE_KEYS = "__active_notification_keys"
         const val COALESCE_MS = 250L
         val MEDIA_TEMPLATES = setOf(
             "android.app.Notification\$MediaStyle",

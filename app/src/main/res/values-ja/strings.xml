@@ -1,4 +1,3 @@
-<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="search">検索</string>
     <string name="glass_prompt_title">ガラス効果を有効にする</string>
@@ -217,7 +216,7 @@
     <string name="onboarding_get_started">始める</string>
     <string name="finish_setup_title">設定を完了する</string>
 
-    
+    <!-- Settings: screen grid, icon sizes by area, layout lock -->
     <string name="grid_columns">列</string>
     <string name="grid_rows">行</string>
     <string name="grid_section_margins">余白</string>
@@ -245,7 +244,7 @@
     <string name="layout_lock">ホーム画面のレイアウトをロック</string>
     <string name="import_locked">ホーム画面のレイアウトはロックされています。読み込むにはロックを解除してください。</string>
 
-    
+    <!-- App Library customization -->
     <string name="library_pinned">ピン留め</string>
     <string name="library_all_apps">すべてのアプリ</string>
     <string name="library_view_switch">表示: %1$s</string>
@@ -350,7 +349,7 @@
     <string name="island_top_offset">縦方向の位置</string>
     <string name="island_blur_footer">ぼかしは Android が許可する場合に有効です（バッテリーセーバー中やウィンドウのぼかしがオフの場合は無効）。</string>
     <string name="island_access_unavailable">このアクセス設定画面を利用できません</string>
-    
+    <!-- Settings: folders -->
     <string name="folders_panel">フォルダパネル</string>
     <string name="folders_width">幅</string>
     <string name="folders_height">高さ</string>
@@ -371,7 +370,7 @@
         <item quantity="other">%1$s、通知%2$d件</item>
     </plurals>
 
-    
+    <!-- English fallback entries; localize these strings when translations are available. -->
     <string name="control_center_title">Control Center</string>
         
     <string name="notification_center_title">Notification Center</string>
@@ -562,4 +561,4 @@
     <string name="manage_widget_remove">ウィジェットを削除</string>
     <string name="manage_widgets_description">ホーム画面のページが空の場合でも、ここからウィジェットを削除できます。</string>
     <string name="manage_widgets_empty">ホーム画面には現在ウィジェットがありません。</string>
-<string name="edit_remove_empty_pages">空白ページを削除</string><string name="widget_variant_bold_clock">Bold Clock</string><string name="widget_bold_clock">Bold Clock ウィジェット</string><string name="widget_bold_clock_description">5種類の太字フォントスタイルを備えた大きな時計。</string></resources>
+</resources>

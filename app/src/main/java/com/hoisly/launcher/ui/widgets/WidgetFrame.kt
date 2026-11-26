@@ -100,8 +100,7 @@ fun WidgetBody(entry: WidgetEntry, modifier: Modifier = Modifier) {
             Box(
                 Modifier
                     .fillMaxSize()
-                    .widgetBackground(entry, shape)
-                    .clip(shape),
+                    .then(if (entry.kind == WidgetKind.BoldClock) Modifier else Modifier.widgetBackground(entry, shape).clip(shape)),
                 contentAlignment = Alignment.Center,
             ) {
                 Box(
@@ -130,7 +129,9 @@ private fun WidgetContent(entry: WidgetEntry) {
 }
 
 @Composable
-private fun Modifier.widgetBackground(entry: WidgetEntry, shape: ContinuousRoundedShape): Modifier = when (entry.visualStyle) {
+private fun Modifier.widgetBackground(entry: WidgetEntry, shape: ContinuousRoundedShape): Modifier = when {
+    entry.kind == WidgetKind.BoldClock -> this
+    else -> when (entry.visualStyle) {
     WidgetVisualStyle.LiquidGlass -> glass(shape, tint = Color.White.copy(alpha = 0.018f))
     WidgetVisualStyle.Light -> background(Color(0xFFF4F5F8), shape).shapeBorder(1.dp, Color.White.copy(alpha = 0.9f), shape)
     WidgetVisualStyle.Dark -> when (entry.kind) {
@@ -141,6 +142,7 @@ private fun Modifier.widgetBackground(entry: WidgetEntry, shape: ContinuousRound
                 .shapeBorder(1.dp, WidgetStroke, shape)
         }
         else -> background(Tokens.WidgetBackground, shape).shapeBorder(1.dp, WidgetStroke, shape)
+    }
     }
 }
 

@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="search">Szukaj</string>
     <string name="glass_prompt_title">Włącz efekt szkła</string>
@@ -220,7 +220,7 @@
     <string name="onboarding_get_started">Rozpocznij</string>
     <string name="finish_setup_title">Dokończ konfigurację</string>
 
-    
+    <!-- Settings: screen grid, icon sizes by area, layout lock -->
     <string name="grid_columns">Kolumny</string>
     <string name="grid_rows">Wiersze</string>
     <string name="grid_section_margins">Marginesy</string>
@@ -248,7 +248,7 @@
     <string name="layout_lock">Zablokuj układ ekranu głównego</string>
     <string name="import_locked">Układ ekranu głównego jest zablokowany. Odblokuj go, aby zaimportować.</string>
 
-    
+    <!-- App Library customization -->
     <string name="library_pinned">Przypięte</string>
     <string name="library_all_apps">Wszystkie aplikacje</string>
     <string name="library_view_switch">Widok: %1$s</string>
@@ -356,7 +356,7 @@
     <string name="island_top_offset">Przesunięcie w pionie</string>
     <string name="island_blur_footer">Rozmycie działa tam, gdzie pozwala Android: nie w oszczędzaniu baterii ani przy wyłączonym rozmyciu okien.</string>
     <string name="island_access_unavailable">Ten ekran dostępu jest niedostępny</string>
-    
+    <!-- Settings: folders -->
     <string name="folders_panel">Panel folderu</string>
     <string name="folders_width">Szerokość</string>
     <string name="folders_height">Wysokość</string>
@@ -380,7 +380,7 @@
         <item quantity="other">%1$s, %2$d powiadomienia</item>
     </plurals>
 
-    
+    <!-- English fallback entries; localize these strings when translations are available. -->
     <string name="control_center_title">Control Center</string>
         
     <string name="notification_center_title">Notification Center</string>
@@ -573,4 +573,4 @@
     <string name="manage_widget_remove">Usuń widżet</string>
     <string name="manage_widgets_description">Usuwaj tutaj widżety, nawet gdy strona ekranu głównego jest pusta.</string>
     <string name="manage_widgets_empty">Na ekranie głównym nie ma obecnie żadnych widżetów.</string>
-<string name="edit_remove_empty_pages">Usuń puste strony</string><string name="widget_variant_bold_clock">Bold Clock</string><string name="widget_bold_clock">Widget Bold Clock</string><string name="widget_bold_clock_description">Duży zegar z pięcioma pogrubionymi stylami czcionek.</string></resources>
+</resources>

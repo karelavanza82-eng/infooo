@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="search">Ara</string>
     <string name="glass_prompt_title">Cam efektini etkinleştir</string>
@@ -218,7 +218,7 @@
     <string name="onboarding_get_started">Başla</string>
     <string name="finish_setup_title">Kurulumu tamamla</string>
 
-    
+    <!-- Settings: screen grid, icon sizes by area, layout lock -->
     <string name="grid_columns">Sütunlar</string>
     <string name="grid_rows">Satırlar</string>
     <string name="grid_section_margins">Kenar boşlukları</string>
@@ -246,7 +246,7 @@
     <string name="layout_lock">Ana ekran düzenini kilitle</string>
     <string name="import_locked">Ana ekran düzeni kilitli. İçe aktarmak için kilidi açın.</string>
 
-    
+    <!-- App Library customization -->
     <string name="library_pinned">Sabitlenenler</string>
     <string name="library_all_apps">Tüm uygulamalar</string>
     <string name="library_view_switch">Görünüm: %1$s</string>
@@ -352,7 +352,7 @@
     <string name="island_top_offset">Dikey kaydırma</string>
     <string name="island_blur_footer">Bulanıklık, Android\'in izin verdiği yerde çalışır: pil tasarrufunda veya pencere bulanıklığı kapalıyken çalışmaz.</string>
     <string name="island_access_unavailable">Bu erişim ekranı kullanılamıyor</string>
-    
+    <!-- Settings: folders -->
     <string name="folders_panel">Klasör paneli</string>
     <string name="folders_width">Genişlik</string>
     <string name="folders_height">Yükseklik</string>
@@ -374,7 +374,7 @@
         <item quantity="other">%1$s, %2$d bildirim</item>
     </plurals>
 
-    
+    <!-- English fallback entries; localize these strings when translations are available. -->
     <string name="control_center_title">Control Center</string>
         
     <string name="notification_center_title">Notification Center</string>
@@ -565,4 +565,4 @@
     <string name="manage_widget_remove">Araç takımını kaldır</string>
     <string name="manage_widgets_description">Ana ekran sayfası boş olsa bile araç takımlarını buradan kaldırabilirsiniz.</string>
     <string name="manage_widgets_empty">Ana ekranınızda şu anda herhangi bir araç takımı yok.</string>
-<string name="edit_remove_empty_pages">Boş sayfaları sil</string><string name="widget_variant_bold_clock">Bold Clock</string><string name="widget_bold_clock">Bold Clock bileşeni</string><string name="widget_bold_clock_description">Beş kalın yazı tipi stiline sahip büyük saat.</string></resources>
+</resources>
