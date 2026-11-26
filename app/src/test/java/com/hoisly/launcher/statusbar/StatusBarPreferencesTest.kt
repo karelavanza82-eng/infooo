@@ -15,7 +15,7 @@ class StatusBarPreferencesTest {
     fun roundTripsEveryValue() {
         val custom = StatusBarPreferences(
             enabled = true, colorMode = StatusBarColorMode.White, showSilent = false, showSignal = false,
-            showNetworkLabel = false, showWifi = false, showBattery = false, hideInLandscape = false, hideSystemIcons = true, hideSystemStatusBar = true,
+            showNetworkLabel = false, showWifi = false, showBattery = false, hideInLandscape = false, hideSystemIcons = true,
             scale = 1.2f, sidePadding = 30f, verticalOffset = -4f, clockWeight = 700,
             batteryTheme = 4, wifiTheme = 3, signalTheme = 1, clockTheme = 0, airplaneTheme = 4,
         )
