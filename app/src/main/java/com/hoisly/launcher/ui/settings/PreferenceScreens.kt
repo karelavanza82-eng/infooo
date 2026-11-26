@@ -4,6 +4,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -32,6 +33,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -42,10 +47,13 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hoisly.launcher.R
 import com.hoisly.launcher.data.AppInfo
+import com.hoisly.launcher.data.AppEntry
 import com.hoisly.launcher.settings.LocalSettingsState
 import com.hoisly.launcher.settings.PageTransition
 import com.hoisly.launcher.settings.SettingsState
 import com.hoisly.launcher.ui.home.pageTransition
+import com.hoisly.launcher.ui.home.HomePreview
+import com.hoisly.launcher.ui.home.drawAppTransitionVisual
 import com.hoisly.launcher.ui.icon.AppIconImage
 import com.hoisly.launcher.ui.icon.IconLabel
 import com.hoisly.launcher.ui.shape.ContinuousRoundedShape
@@ -211,6 +219,13 @@ private fun MiniPage(apps: List<AppInfo>, modifier: Modifier = Modifier) {
 @Composable
 fun AnimationSettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
     val settings by vm.settings.state.collectAsStateWithLifecycle()
+    val apps by vm.repository.apps.collectAsStateWithLifecycle()
+    val wallpaper by vm.wallpaper.collectAsStateWithLifecycle()
+    val selfPackage = LocalContext.current.packageName
+    val previewState = remember(apps, settings) { vm.homePreview(apps, settings) }
+    val previewApp = previewState.dock.filterIsInstance<AppEntry>().firstOrNull()?.app
+        ?: apps.firstOrNull { it.packageName != selfPackage }
+
     SettingsPage(title = stringResource(R.string.row_animations), onBack = onBack) {
         item {
             SettingsCard {
@@ -238,13 +253,64 @@ fun AnimationSettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
                     onValueChangeCancelled = { speedDraft = settings.animationSpeedPercent.toFloat() },
                     valueRange = 0f..100f,
                 )
-                Text(
-                    text = "Animation style",
-                    fontSize = 16.sp,
-                    color = Color.White,
-                    modifier = Modifier.padding(top = 18.dp, bottom = 8.dp),
+            }
+        }
+        item {
+            Text(
+                text = "Contoh animasi",
+                fontSize = 16.sp,
+                color = Color.White,
+                modifier = Modifier.padding(top = 18.dp, bottom = 8.dp),
+            )
+            Text(
+                text = "Pratinjau bergerak memakai wallpaper dan susunan ikon Home Hoisly kamu.",
+                fontSize = 12.sp,
+                color = Color.White.copy(alpha = 0.65f),
+                modifier = Modifier.padding(bottom = 8.dp),
+            )
+            val previewName = when (settings.appAnimationStyle) {
+                "IOS27" -> "iOS 27"
+                "AURA" -> "Aura"
+                "SHUTTER" -> "Shutter"
+                "ORBIT" -> "Orbit"
+                "ANTICIPATE" -> "Anticipate"
+                "SCAN" -> "Scan"
+                "MIST" -> "Mist"
+                else -> "Default Hoisly"
+            }
+            Text(
+                text = "Preview: $previewName",
+                fontSize = 14.sp,
+                color = Color(0xFF8BC1FF),
+                modifier = Modifier.padding(bottom = 10.dp),
+            )
+            AppAnimationStylePreview(
+                style = settings.appAnimationStyle,
+                state = previewState,
+                wallpaper = wallpaper,
+                prefs = settings,
+                sampleApp = previewApp,
+            )
+        }
+        item {
+            Text(
+                text = "Animation style",
+                fontSize = 16.sp,
+                color = Color.White,
+                modifier = Modifier.padding(top = 18.dp, bottom = 8.dp),
+            )
+            SettingsCard {
+                val styles = listOf(
+                    "HOISLY" to ("Default Hoisly" to "Animasi bawaan Hoisly seperti sebelumnya"),
+                    "IOS27" to ("iOS 27" to "Zoom spring dari ikon ke layar, lalu kembali ke ikon"),
+                    "AURA" to ("Aura" to "Cahaya warna aplikasi tumbuh dari ikon, wallpaper meredup"),
+                    "SHUTTER" to ("Shutter" to "Lapisan horizontal terbuka bertahap dari posisi ikon"),
+                    "ORBIT" to ("Orbit" to "Enam cahaya berputar mengelilingi titik asal ikon"),
+                    "ANTICIPATE" to ("Anticipate" to "Layar mundur sedikit lalu melesat ke depan"),
+                    "SCAN" to ("Scan" to "Dua garis cahaya membelah layar dengan efek frosted"),
+                    "MIST" to ("Mist" to "Kabut cahaya lembut bergerak dari tepi layar"),
                 )
-                listOf("HOISLY" to "Default Hoisly", "IOS27" to "iOS 27").forEach { (style, title) ->
+                styles.forEach { (style, details) ->
                     val selected = settings.appAnimationStyle == style
                     Row(
                         modifier = Modifier
@@ -252,33 +318,111 @@ fun AnimationSettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
                             .padding(vertical = 5.dp)
                             .clip(RoundedCornerShape(18.dp))
                             .background(if (selected) Color.White.copy(alpha = 0.12f) else Color.White.copy(alpha = 0.045f))
-                            .border(if (selected) 1.5.dp else 1.dp, if (selected) Color(0xFF55A7FF) else Color.White.copy(alpha = 0.12f), RoundedCornerShape(18.dp))
+                            .border(
+                                if (selected) 1.5.dp else 1.dp,
+                                if (selected) Color(0xFF55A7FF) else Color.White.copy(alpha = 0.12f),
+                                RoundedCornerShape(18.dp),
+                            )
                             .clickable { vm.settings.setAppAnimationStyle(style) }
-                            .padding(12.dp),
+                            .padding(14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(14.dp),
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(width = 76.dp, height = 92.dp)
-                                .clip(RoundedCornerShape(14.dp))
-                                .background(Color(0xFF17294C)),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Box(Modifier.fillMaxWidth().padding(horizontal = 10.dp).height(68.dp).clip(RoundedCornerShape(if (style == "IOS27") 24.dp else 12.dp)).background(if (style == "IOS27") Color(0xFFEEF3FF) else Color(0xFF416CB0)), contentAlignment = Alignment.Center) {
-                                Box(Modifier.size(24.dp).clip(RoundedCornerShape(8.dp)).background(if (style == "IOS27") Color(0xFF397CE8) else Color(0xFF8EB7F2)))
-                            }
-                        }
-                        Column(Modifier.weight(1f)) {
-                            Text(title, fontSize = 15.sp, color = Color.White)
-                            Text(
-                                if (style == "IOS27") "Zoom lembut dengan efek blur" else "Animasi bawaan Hoisly",
-                                fontSize = 12.sp,
-                                color = Color.White.copy(alpha = 0.65f),
-                            )
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                            Text(details.first, fontSize = 15.sp, color = Color.White)
+                            Text(details.second, fontSize = 12.sp, color = Color.White.copy(alpha = 0.65f))
                         }
                         if (selected) Text("✓", color = Color(0xFF55A7FF), fontSize = 22.sp)
                     }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * An animated, phone-shaped preview built from Hoisly's own HomePreview. It uses the user's
+ * saved Hoisly layout, installed app icons and the wallpaper loaded by SettingsViewModel;
+ * no Launchii screenshot, wallpaper, icon grid or launcher UI is bundled into this preview.
+ */
+@Composable
+private fun AppAnimationStylePreview(
+    style: String,
+    state: com.hoisly.launcher.data.HomeState,
+    wallpaper: androidx.compose.ui.graphics.ImageBitmap?,
+    prefs: SettingsState,
+    sampleApp: AppInfo?,
+) {
+    val progress = remember { Animatable(0f) }
+    val previewColor = remember(sampleApp?.packageName) {
+        when (sampleApp?.packageName?.hashCode()?.and(3)) {
+            0 -> Color(0xFF2878E8)
+            1 -> Color(0xFF9C4DCE)
+            2 -> Color(0xFF19A77A)
+            else -> Color(0xFFE46A42)
+        }
+    }
+    LaunchedEffect(style, prefs.animationSpeedPercent) {
+        val speedFactor = (1.35f - prefs.animationSpeedPercent.coerceIn(0, 100) / 100f * 0.7f).coerceIn(0.55f, 1.35f)
+        val duration = when (style) {
+            "IOS27" -> 650
+            "AURA" -> 520
+            "SHUTTER" -> 500
+            "ORBIT" -> 620
+            "ANTICIPATE" -> 480
+            "SCAN" -> 520
+            "MIST" -> 580
+            else -> 420
+        }
+        val easing = when (style) {
+            "IOS27", "ANTICIPATE" -> com.hoisly.launcher.ui.home.LaunchiiAppMotion.spring((duration * speedFactor).toLong())
+            "SHUTTER" -> androidx.compose.animation.core.LinearOutSlowInEasing
+            "ORBIT" -> androidx.compose.animation.core.FastOutSlowInEasing
+            "AURA", "SCAN", "MIST" -> androidx.compose.animation.core.CubicBezierEasing(0.2f, 0f, 0f, 1f)
+            else -> FastOutSlowInEasing
+        }
+        while (true) {
+            progress.snapTo(0f)
+            delay(350)
+            progress.animateTo(1f, tween((duration * speedFactor).roundToInt().coerceAtLeast(1), easing = easing))
+            delay(420)
+            progress.animateTo(0f, tween((duration * 0.82f * speedFactor).roundToInt().coerceAtLeast(1), easing = easing))
+            delay(550)
+        }
+    }
+
+    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+        Box(
+            Modifier
+                .width(196.dp)
+                .clip(ContinuousRoundedShape(30.dp))
+                .border(1.dp, Color.White.copy(alpha = 0.22f), ContinuousRoundedShape(30.dp)),
+        ) {
+            HomePreview(
+                state = state,
+                wallpaper = wallpaper,
+                modifier = Modifier.fillMaxWidth(),
+                prefs = prefs,
+            )
+            Canvas(Modifier.matchParentSize()) {
+                val iconW = size.width * 0.17f
+                val iconH = iconW
+                val dockIndex = state.dock.indexOfFirst { it is AppEntry }.coerceAtLeast(0)
+                val dockSlots = prefs.dockSlots.coerceAtLeast(1)
+                val iconCenterX = size.width * ((dockIndex + 0.5f) / dockSlots).coerceIn(0.05f, 0.95f)
+                val iconCenterY = size.height * 0.91f
+                val iconLeft = iconCenterX - iconW / 2f
+                val iconTop = iconCenterY - iconH / 2f
+                val bounds = Rect(iconLeft, iconTop, iconLeft + iconW, iconTop + iconH)
+                drawAppTransitionVisual(style, bounds, null, previewColor, progress.value)
+            }
+            if (progress.value > 0.78f) {
+                Box(
+                    Modifier
+                        .align(Alignment.Center)
+                        .graphicsLayer { alpha = ((progress.value - 0.78f) / 0.22f).coerceIn(0f, 1f) },
+                ) {
+                    if (sampleApp != null) AppIconImage(sampleApp, size = 48.dp, badge = com.hoisly.launcher.ui.icon.IconBadge.None)
                 }
             }
         }

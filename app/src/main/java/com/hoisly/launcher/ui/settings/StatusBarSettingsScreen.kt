@@ -201,11 +201,17 @@ fun StatusBarSettingsScreen(onBack: () -> Unit) {
         item {
             SettingsCard {
                 SwitchRow(
+                    stringResource(R.string.statusbar_hide_android_bar),
+                    prefs.hideSystemStatusBar,
+                    { v -> save { it.copy(hideSystemStatusBar = v) } },
+                )
+                SwitchRow(
                     stringResource(R.string.statusbar_hide_system),
                     prefs.hideSystemIcons && secureGranted,
                     { v -> if (secureGranted) save { it.copy(hideSystemIcons = v) } },
                 )
             }
+            SectionFooter(stringResource(R.string.statusbar_hide_android_bar_footer))
             SectionFooter(
                 if (secureGranted) stringResource(R.string.statusbar_hide_system_footer)
                 else stringResource(R.string.statusbar_hide_system_grant, GRANT_COMMAND),
@@ -217,7 +223,7 @@ fun StatusBarSettingsScreen(onBack: () -> Unit) {
                 NavRow(
                     Icons.Rounded.RestartAlt,
                     stringResource(R.string.statusbar_reset),
-                    onClick = { save { StatusBarPreferences(enabled = it.enabled, hideSystemIcons = it.hideSystemIcons) } },
+                    onClick = { save { StatusBarPreferences(enabled = it.enabled, hideSystemIcons = it.hideSystemIcons, hideSystemStatusBar = it.hideSystemStatusBar) } },
                     tileColor = SettingsStyle.Tile.Red,
                     showChevron = false,
                 )

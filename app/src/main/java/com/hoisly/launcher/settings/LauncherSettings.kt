@@ -126,7 +126,10 @@ class LauncherSettings private constructor(context: Context) {
     fun setOpenCloseAnimation(value: Boolean): Unit = update { it.copy(openCloseAnimation = value) }
     fun setResumeAnimation(value: Boolean): Unit = update { it.copy(resumeAnimation = value) }
     fun setAnimationSpeedPercent(value: Int): Unit = update { it.copy(animationSpeedPercent = value.coerceIn(0, 100)) }
-    fun setAppAnimationStyle(value: String): Unit = update { it.copy(appAnimationStyle = if (value == "IOS27") "IOS27" else "HOISLY") }
+    fun setAppAnimationStyle(value: String): Unit = update {
+        val supported = setOf("HOISLY", "IOS27", "AURA", "SHUTTER", "ORBIT", "ANTICIPATE", "SCAN", "MIST")
+        it.copy(appAnimationStyle = value.takeIf { key -> key in supported } ?: "HOISLY")
+    }
     fun setPageTransition(value: PageTransition): Unit = update { it.copy(pageTransition = value) }
     fun setTextScale(value: Float): Unit = update { it.copy(textScale = value) }
     fun setLayoutLocked(value: Boolean): Unit = update { it.copy(layoutLocked = value) }
@@ -197,7 +200,9 @@ class LauncherSettings private constructor(context: Context) {
         openCloseAnimation = prefs.getBoolean(KEY_OPEN_ANIM, true),
         resumeAnimation = prefs.getBoolean(KEY_RESUME_ANIM, true),
         animationSpeedPercent = prefs.getInt(KEY_ANIMATION_SPEED, 30).coerceIn(0, 100).also { com.hoisly.launcher.ui.theme.Motion.setSpeedPercent(it) },
-        appAnimationStyle = prefs.getString(KEY_APP_ANIMATION_STYLE, "HOISLY")?.takeIf { it == "IOS27" } ?: "HOISLY",
+        appAnimationStyle = prefs.getString(KEY_APP_ANIMATION_STYLE, "HOISLY")
+            ?.takeIf { it in setOf("HOISLY", "IOS27", "AURA", "SHUTTER", "ORBIT", "ANTICIPATE", "SCAN", "MIST") }
+            ?: "HOISLY",
         showLockScreenAfterSleep = prefs.getBoolean(KEY_LOCK_AFTER_SLEEP, true),
         glassTint = prefs.getFloat(KEY_GLASS_TINT, Defaults.glassTint),
         glassEdge = prefs.getBoolean(KEY_GLASS_EDGE, Defaults.glassEdge),

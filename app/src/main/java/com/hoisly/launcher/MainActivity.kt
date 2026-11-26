@@ -57,6 +57,7 @@ import com.hoisly.launcher.data.AppInfo
 import com.hoisly.launcher.island.NotificationBadgeFeed
 import com.hoisly.launcher.settings.AppLanguage
 import com.hoisly.launcher.settings.BadgeStyle
+import com.hoisly.launcher.statusbar.StatusBarStore
 import com.hoisly.launcher.settings.LocalSettingsState
 import com.hoisly.launcher.ui.glass.GlassLight
 import com.hoisly.launcher.ui.glass.GlassMode
@@ -143,6 +144,7 @@ class MainActivity : ComponentActivity(), LauncherActions {
         )
         super.onCreate(savedInstanceState)
         pendingPhotoWidget = savedInstanceState?.getString(KEY_PENDING_PHOTO)
+        StatusBarStore.init(this)
         pendingWidget = savedInstanceState?.let(PendingAppWidget::restore)
 
         val iconSizePx = (Tokens.IconSize.value * resources.displayMetrics.density).roundToInt()
@@ -153,6 +155,7 @@ class MainActivity : ComponentActivity(), LauncherActions {
         setContent {
             val glass by vm.glass.collectAsStateWithLifecycle()
             val settings by vm.settings.state.collectAsStateWithLifecycle()
+            val statusBarPrefs by StatusBarStore.state.collectAsStateWithLifecycle()
             val editMode by vm.editMode.collectAsStateWithLifecycle()
             // Not read here: each icon reads its own count from it (see BadgeSource).
             val badgeCounts = NotificationBadgeFeed.counts.collectAsStateWithLifecycle()
@@ -160,7 +163,9 @@ class MainActivity : ComponentActivity(), LauncherActions {
                 settings.badges.takeIf { it != BadgeStyle.Off }?.let { BadgeSource(badgeCounts, it) }
             }
             // Like iOS27L, the status bar makes room for the Edit/Done bar in edit mode.
-            LaunchedEffect(editMode) { applyStatusBarVisibility(hidden = editMode) }
+            LaunchedEffect(editMode, statusBarPrefs.hideSystemStatusBar) {
+                applyStatusBarVisibility(hidden = editMode || statusBarPrefs.hideSystemStatusBar)
+            }
             CompositionLocalProvider(
                 LocalSettingsState provides settings,
                 LocalGlassSource provides glass.takeIf { settings.blurEffect },
@@ -212,6 +217,7 @@ class MainActivity : ComponentActivity(), LauncherActions {
 
     override fun onResume() {
         super.onResume()
+        applyStatusBarVisibility(hidden = vm.editMode.value || StatusBarStore.state.value.hideSystemStatusBar)
         // Android 12: the language was changed in settings while the home screen was paused.
         if (AppLanguage.isStale(this)) {
             recreate()
@@ -302,9 +308,18 @@ class MainActivity : ComponentActivity(), LauncherActions {
 
     private fun applyStatusBarVisibility(hidden: Boolean) {
         val controller = WindowCompat.getInsetsController(window, window.decorView)
-        if (hidden) controller.hide(WindowInsetsCompat.Type.statusBars()) else controller.show(WindowInsetsCompat.Type.statusBars())
+        controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        if (hidden) controller.hide(WindowInsetsCompat.Type.statusBars())
+        else controller.show(WindowInsetsCompat.Type.statusBars())
     }
 
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus && !isFinishing) {
+            applyStatusBarVisibility(hidden = vm.editMode.value || StatusBarStore.state.value.hideSystemStatusBar)
+        }
+    }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)

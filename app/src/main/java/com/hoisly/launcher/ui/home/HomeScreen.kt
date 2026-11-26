@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import com.hoisly.launcher.ui.theme.Tokens
@@ -229,8 +230,9 @@ fun HomeScreen(vm: LauncherViewModel, actions: LauncherActions) {
     // 0 = sharp, 1 = fully blurred. Read only in layer blocks: it never recomposes the screen.
     val overlayOpen = appTransition?.phase == AppTransitionPhase.Opening || panels.panel != null || menu != null || openFolder != null || search != null || openGroupId != null || chooserApp != null || gallery
     val ios27Launch = appTransition != null && settings.appAnimationStyle == "IOS27"
+    val styledLaunch = appTransition != null && settings.appAnimationStyle != "HOISLY"
     val blur = animateFloatAsState(
-        if (overlayOpen && (settings.homeBlur || ios27Launch)) 1f else 0f,
+        if (overlayOpen && (settings.homeBlur || styledLaunch)) 1f else 0f,
         Motion.fade(),
         label = "blur",
     )
@@ -258,10 +260,29 @@ fun HomeScreen(vm: LauncherViewModel, actions: LauncherActions) {
                 .fillMaxSize()
                 .graphicsLayer {
                     val p = resume.value
-                    val scale = (1.15f - 0.15f * p) * (1f - Motion.APP_HOME_SHRINK * appProgress.value)
-                    scaleX = scale
-                    scaleY = scale
-                    alpha = p.coerceIn(0f, 1f)
+                    if (ios27Launch && appTransition != null) {
+                        // Launchii Zoom In enlarges Hoisly Home around the tapped icon as the app card grows.
+                        val scale = 1f + (LaunchiiAppMotion.HOME_ZOOM - 1f) * appProgress.value
+                        scaleX = scale
+                        scaleY = scale
+                        transformOrigin = TransformOrigin(
+                            (appTransition.bounds.center.x / size.width).coerceIn(0f, 1f),
+                            (appTransition.bounds.center.y / size.height).coerceIn(0f, 1f),
+                        )
+                        alpha = 1f
+                    } else if (appTransition != null && settings.appAnimationStyle == "ANTICIPATE") {
+                        val p = appProgress.value.coerceIn(0f, 1f)
+                        val scale = if (p < 0.24f) 1f - 0.035f * (p / 0.24f) else 0.965f + 0.10f * ((p - 0.24f) / 0.76f)
+                        scaleX = scale
+                        scaleY = scale
+                        transformOrigin = TransformOrigin(0.5f, 0.5f)
+                        alpha = 1f
+                    } else {
+                        val scale = (1.15f - 0.15f * p) * (1f - Motion.APP_HOME_SHRINK * appProgress.value)
+                        scaleX = scale
+                        scaleY = scale
+                        alpha = p.coerceIn(0f, 1f)
+                    }
                 },
         ) {
             Box(

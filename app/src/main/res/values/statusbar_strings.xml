@@ -31,6 +31,8 @@
     <string name="statusbar_side_padding">Side margin</string>
     <string name="statusbar_vertical_offset">Vertical position</string>
     <string name="statusbar_section_system">System status bar</string>
+    <string name="statusbar_hide_android_bar">Hide Android status bar</string>
+    <string name="statusbar_hide_android_bar_footer">Hides the built-in status bar while the Hoisly Home screen is visible. Swipe from the top edge to reveal it temporarily. No root or ADB permission required.</string>
     <string name="statusbar_hide_system">Hide system icons</string>
     <string name="statusbar_hide_system_footer">Asks the system to hide its own clock, signal, battery and sound icons. Some manufacturers ignore this.</string>
     <string name="statusbar_hide_system_grant">Needs a one-time permission. Connect the phone to a computer and run: %1$s</string>
