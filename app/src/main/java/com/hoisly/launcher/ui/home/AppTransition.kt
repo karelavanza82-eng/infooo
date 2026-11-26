@@ -80,7 +80,7 @@ fun AppTransitionOverlay(vm: LauncherViewModel, progress: Animatable<Float, Anim
     Canvas(Modifier.fillMaxSize()) { drawSurface(transition, progress.value, ios27) }
 }
 
-private fun DrawScope.drawSurface(t: AppTransition, p: Float) {
+private fun DrawScope.drawSurface(t: AppTransition, p: Float, ios27: Boolean) {
     val rect = lerpRect(t.bounds, Rect(Offset.Zero, size), p)
     val iconCorner = t.bounds.width * ICON_CORNER_RATIO
     val corner = lerp(iconCorner, Motion.APP_WINDOW_CORNER_DP * density, p)
