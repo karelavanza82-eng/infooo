@@ -56,7 +56,7 @@ class StatusBarView(context: Context) : View(context) {
     private val batteryTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         textAlign = Paint.Align.CENTER
         color = Color.BLACK
-        xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_OUT)
+        typeface = Typeface.create("sans-serif", Typeface.BOLD)
     }
     private val slashPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
@@ -87,11 +87,17 @@ class StatusBarView(context: Context) : View(context) {
     fun applyPrefs(value: StatusBarPreferences) {
         prefs = value
         clockPaint.textSize = dp(Metrics.CLOCK_TEXT)
-        clockPaint.typeface = font(value.clockWeight)
-        clockPaint.letterSpacing = -0.01f
+        clockPaint.typeface = when (value.clockTheme) {
+            0 -> Typeface.create("sans-serif", Typeface.NORMAL)
+            1 -> Typeface.create("sans-serif-medium", Typeface.NORMAL)
+            2 -> Typeface.create("sans-serif", Typeface.BOLD)
+            3 -> Typeface.create("sans-serif-condensed", Typeface.BOLD)
+            else -> Typeface.create("sans-serif", Typeface.NORMAL)
+        }
+        clockPaint.letterSpacing = when (value.clockTheme) { 3 -> -0.035f; 4 -> 0.005f; else -> -0.015f }
         netPaint.textSize = dp(Metrics.NET_TEXT)
         netPaint.typeface = font(500)
-        batteryTextPaint.typeface = font(700)
+        batteryTextPaint.typeface = Typeface.create("sans-serif", Typeface.BOLD)
         invalidate()
     }
 
@@ -139,6 +145,8 @@ class StatusBarView(context: Context) : View(context) {
 
     private fun drawLeft(canvas: Canvas, x: Float, cy: Float) {
         clockPaint.color = color
+        if (prefs.clockTheme == 4) clockPaint.textSize = dp(Metrics.CLOCK_TEXT * 0.94f)
+        else clockPaint.textSize = dp(Metrics.CLOCK_TEXT)
         clockPaint.getTextBounds("0", 0, 1, bounds)
         canvas.drawText(state.time, x, cy + bounds.height() / 2f, clockPaint)
         if (!prefs.showSilent || !state.silent) return
@@ -189,7 +197,7 @@ class StatusBarView(context: Context) : View(context) {
             canvas.drawRoundRect(nubLeft, cy - nubH / 2f, nubLeft + nubW, cy + nubH / 2f,
                 nubW / 2f, nubW / 2f, shapePaint)
 
-            drawBattery27(canvas, body, st.batteryPercent)
+            drawBatteryTheme(canvas, body, st.batteryPercent, prefs.batteryTheme)
             cursor = body.left - dp(Metrics.GAP)
 
             if (st.charging) {
@@ -210,8 +218,8 @@ class StatusBarView(context: Context) : View(context) {
         // --- iOS 27 WiFi (wider fan, bolder arcs) ---
         val showWifi = prefs.showWifi && st.wifiConnected
         if (showWifi) {
-            val w = dp(Metrics.WIFI_W27)
-            drawWifi27(canvas, cursor - w, cy, w, st.wifiLevel)
+            val w = dp(if (prefs.wifiTheme == 3) 15.5f else if (prefs.wifiTheme == 4) 16.5f else Metrics.WIFI_W27)
+            drawWifiTheme(canvas, cursor - w, cy, w, st.wifiLevel, prefs.wifiTheme)
             cursor -= w + dp(Metrics.GAP)
         } else if (prefs.showNetworkLabel && st.cellularData && !st.airplane && st.networkLabel.isNotEmpty()) {
             netPaint.color = color
@@ -223,13 +231,85 @@ class StatusBarView(context: Context) : View(context) {
 
         // --- iOS 27 Airplane (bold, same as iOS Settings style) ---
         if (st.airplane) {
-            val size = dp(Metrics.PLANE27)
+            val size = dp(Metrics.PLANE27 * when (prefs.airplaneTheme) { 0 -> 0.90f; 1 -> 0.96f; 3 -> 1.06f; 4 -> 0.84f; else -> 1f })
             drawAirplane27(canvas, cursor - size, cy, size)
         } else if (prefs.showSignal) {
             val barW = dp(Metrics.BAR_W)
             val gap = dp(Metrics.BAR_GAP)
-            drawSignal(canvas, cursor - (4 * barW + 3 * gap), cy, barW, gap, st.signalLevel)
+            drawSignalTheme(canvas, cursor - (4 * barW + 3 * gap), cy, barW, gap, st.signalLevel, prefs.signalTheme)
         }
+    }
+
+    private fun drawSignalTheme(canvas: Canvas, left: Float, cy: Float, barW: Float, gap: Float, level: Int, theme: Int) {
+        val minH = if (theme == 3) dp(2.8f) else dp(Metrics.BAR_MIN_H)
+        val maxH = if (theme == 1) dp(10f) else if (theme == 4) dp(12.5f) else dp(Metrics.BAR_MAX_H)
+        val width = if (theme == 4) barW * 1.18f else barW
+        val spacing = if (theme == 3) gap * 0.72f else gap
+        val bottom = cy + maxH / 2f
+        for (i in 0 until 4) {
+            val h = minH + (maxH - minH) * i / 3f
+            val x = left + i * (width + spacing)
+            shapePaint.style = Paint.Style.FILL
+            shapePaint.color = if (i < level) color else ColorUtils.setAlphaComponent(color, Metrics.INACTIVE_ALPHA)
+            val radius = if (theme == 1) dp(0.55f) else width / 2f
+            canvas.drawRoundRect(x, bottom - h, x + width, bottom, radius, radius, shapePaint)
+        }
+    }
+
+    private fun drawWifiTheme(canvas: Canvas, left: Float, cy: Float, width: Float, level: Int, theme: Int) {
+        val outer = width / if (theme == 1) 1.42f else if (theme == 4) 1.48f else 1.3f
+        val cx = left + width / 2f
+        val base = cy + outer * (if (theme == 3) 0.53f else 0.48f)
+        val ring = outer * when (theme) { 0 -> 0.22f; 3 -> 0.19f; 4 -> 0.24f; else -> 0.26f }
+        val gap = outer * if (theme == 1) 0.09f else 0.07f
+        val dim = ColorUtils.setAlphaComponent(color, Metrics.INACTIVE_ALPHA)
+        val sweep = when (theme) { 0 -> 90f; 1 -> 94f; 3 -> 86f; 4 -> 98f; else -> 100f }
+        val start = (270f - sweep / 2f)
+        val innerR = (outer - 2 * ring - 2 * gap).coerceAtLeast(1f)
+        shapePaint.style = Paint.Style.FILL
+        shapePaint.color = if (level >= 1) color else dim
+        wifiRect.set(cx - innerR, base - innerR, cx + innerR, base + innerR)
+        canvas.drawArc(wifiRect, start, sweep, true, shapePaint)
+        shapePaint.style = Paint.Style.STROKE
+        shapePaint.strokeCap = if (theme == 1) Paint.Cap.BUTT else Paint.Cap.ROUND
+        shapePaint.strokeWidth = ring
+        for (i in 1..2) {
+            val mid = innerR + gap + ring * (i - 0.5f) + (i - 1) * gap
+            shapePaint.color = if (level >= i + 1) color else dim
+            wifiRect.set(cx - mid, base - mid, cx + mid, base + mid)
+            canvas.drawArc(wifiRect, start, sweep, false, shapePaint)
+        }
+        shapePaint.style = Paint.Style.FILL
+        shapePaint.strokeCap = Paint.Cap.BUTT
+    }
+
+    private fun drawBatteryTheme(canvas: Canvas, rect: RectF, percent: Int, theme: Int) {
+        val radius = dp(when (theme) { 0 -> 3f; 1 -> 2.8f; 3 -> 5.5f; 4 -> 3.8f; else -> Metrics.BATTERY_RADIUS27 })
+        val stroke = dp(if (theme == 1) 1.15f else if (theme == 4) 1.8f else Metrics.BATTERY_STROKE27)
+        val layer = canvas.saveLayer(rect.left - 1f, rect.top - 1f, rect.right + 1f, rect.bottom + 1f, null)
+        shapePaint.style = Paint.Style.STROKE
+        shapePaint.strokeWidth = stroke
+        shapePaint.color = ColorUtils.setAlphaComponent(color, if (theme == 4) 220 else 190)
+        canvas.drawRoundRect(rect, radius, radius, shapePaint)
+        shapePaint.style = Paint.Style.FILL
+        val inset = stroke / 2f + dp(0.45f)
+        val inner = RectF(rect.left + inset, rect.top + inset, rect.right - inset, rect.bottom - inset)
+        val innerRadius = (radius - inset).coerceAtLeast(1f)
+        clip.reset()
+        clip.addRoundRect(inner, innerRadius, innerRadius, Path.Direction.CW)
+        canvas.save()
+        canvas.clipPath(clip)
+        val fill = percent.coerceIn(0, 100) / 100f
+        shapePaint.color = color
+        canvas.drawRect(inner.left, inner.top, inner.left + inner.width() * fill, inner.bottom, shapePaint)
+        canvas.restore()
+        // The percentage is opaque and high-contrast, never punched transparent through the icon.
+        val text = percent.coerceIn(0, 100).toString()
+        batteryTextPaint.textSize = dp(if (text.length >= 3) 8.2f else if (theme == 3) 10.2f else Metrics.BATTERY_TEXT)
+        batteryTextPaint.color = if (color == Color.WHITE) Color.BLACK else Color.WHITE
+        batteryTextPaint.getTextBounds(text, 0, text.length, bounds)
+        canvas.drawText(text, rect.centerX(), rect.centerY() + bounds.height() / 2f, batteryTextPaint)
+        canvas.restoreToCount(layer)
     }
 
     private fun drawSignal(canvas: Canvas, left: Float, cy: Float, barW: Float, gap: Float, level: Int) {
@@ -287,8 +367,8 @@ class StatusBarView(context: Context) : View(context) {
     private fun drawAirplane27(canvas: Canvas, left: Float, cy: Float, size: Float) {
         shapePaint.color = color
         planeMatrix.reset()
-        // Keep the airplane level and pointing left, matching the supplied reference.
-        planeMatrix.postRotate(-90f, 12f, 12f)
+        // Point right, toward the battery at the far-right edge of the status bar.
+        planeMatrix.postRotate(90f, 12f, 12f)
         planeMatrix.postScale(size / 24f, size / 24f)
         planeMatrix.postTranslate(left, cy - size / 2f)
         planeWork.set(planePath)

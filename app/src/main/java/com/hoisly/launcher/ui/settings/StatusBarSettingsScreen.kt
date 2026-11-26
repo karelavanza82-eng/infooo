@@ -35,7 +35,7 @@ import com.hoisly.launcher.statusbar.StatusBarView
 import com.hoisly.launcher.statusbar.SystemIconHider
 import kotlin.math.roundToInt
 
-private val PreviewState = StatusBarState(time = "1:55", silent = true, signalLevel = 3, networkLabel = "5G", cellularData = true, wifiConnected = false, batteryPercent = 69)
+private val PreviewState = StatusBarState(time = "1:55", silent = true, signalLevel = 3, networkLabel = "", cellularData = true, wifiConnected = true, wifiLevel = 3, batteryPercent = 69, charging = true)
 private const val GRANT_COMMAND = "adb shell pm grant com.hoisly.launcher android.permission.WRITE_SECURE_SETTINGS"
 
 /** Status bar settings: switch, live preview, colour mode, visible elements, size and spacing. */
@@ -149,6 +149,53 @@ fun StatusBarSettingsScreen(onBack: () -> Unit) {
                     valueRange = StatusBarPreferences.VERTICAL_OFFSET_RANGE,
                 )
             }
+        }
+        item { SectionHeader(stringResource(R.string.statusbar_icon_styles)) }
+        item {
+            SettingsCard {
+                Column(Modifier.padding(horizontal = SettingsStyle.RowPadding, vertical = 12.dp)) {
+                    RowTitle(stringResource(R.string.statusbar_battery_style))
+                    Box(Modifier.height(8.dp))
+                    SegmentedControl(
+                        options = listOf("iOS 16", "iOS 17", "iOS 18", "iOS 26", "Compact"),
+                        selectedIndex = prefs.batteryTheme,
+                        onSelect = { index -> save { it.copy(batteryTheme = index) } },
+                    )
+                    Box(Modifier.height(14.dp))
+                    RowTitle(stringResource(R.string.statusbar_wifi_style))
+                    Box(Modifier.height(8.dp))
+                    SegmentedControl(
+                        options = listOf("iOS 16", "iOS 17", "iOS 18", "iOS 26", "Compact"),
+                        selectedIndex = prefs.wifiTheme,
+                        onSelect = { index -> save { it.copy(wifiTheme = index) } },
+                    )
+                    Box(Modifier.height(14.dp))
+                    RowTitle(stringResource(R.string.statusbar_signal_style))
+                    Box(Modifier.height(8.dp))
+                    SegmentedControl(
+                        options = listOf("iOS 16", "iOS 17", "iOS 18", "iOS 26", "Compact"),
+                        selectedIndex = prefs.signalTheme,
+                        onSelect = { index -> save { it.copy(signalTheme = index) } },
+                    )
+                    Box(Modifier.height(14.dp))
+                    RowTitle(stringResource(R.string.statusbar_clock_style))
+                    Box(Modifier.height(8.dp))
+                    SegmentedControl(
+                        options = listOf("iOS 16", "iOS 17", "iOS 18", "iOS 26", "Compact"),
+                        selectedIndex = prefs.clockTheme,
+                        onSelect = { index -> save { it.copy(clockTheme = index) } },
+                    )
+                    Box(Modifier.height(14.dp))
+                    RowTitle(stringResource(R.string.statusbar_airplane_style))
+                    Box(Modifier.height(8.dp))
+                    SegmentedControl(
+                        options = listOf("iOS 16", "iOS 17", "iOS 18", "iOS 26", "Compact"),
+                        selectedIndex = prefs.airplaneTheme,
+                        onSelect = { index -> save { it.copy(airplaneTheme = index) } },
+                    )
+                }
+            }
+            SectionFooter(stringResource(R.string.statusbar_mix_styles_footer))
         }
         item { SectionHeader(stringResource(R.string.statusbar_section_system)) }
         item {

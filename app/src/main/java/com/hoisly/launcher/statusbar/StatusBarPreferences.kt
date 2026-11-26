@@ -28,12 +28,19 @@ data class StatusBarPreferences(
     val verticalOffset: Float = 0f,
     /** 400 regular, 500 medium, 600 semibold, 700 bold. */
     val clockWeight: Int = DEFAULT_CLOCK_WEIGHT,
+    /** Independently selectable iPhone-inspired glyph families (0..4). */
+    val batteryTheme: Int = 2,
+    val wifiTheme: Int = 2,
+    val signalTheme: Int = 2,
+    val clockTheme: Int = 2,
+    val airplaneTheme: Int = 2,
 ) {
     fun storedValues(): Map<String, Any> = mapOf(
         ENABLED to enabled, COLOR_MODE to colorMode.name, SHOW_SILENT to showSilent,
         SHOW_SIGNAL to showSignal, SHOW_NETWORK to showNetworkLabel, SHOW_WIFI to showWifi, SHOW_BATTERY to showBattery,
         HIDE_LANDSCAPE to hideInLandscape, HIDE_SYSTEM to hideSystemIcons, SCALE to scale,
         SIDE_PADDING to sidePadding, VERTICAL_OFFSET to verticalOffset, CLOCK_WEIGHT to clockWeight,
+        BATTERY_THEME to batteryTheme, WIFI_THEME to wifiTheme, SIGNAL_THEME to signalTheme, CLOCK_THEME to clockTheme, AIRPLANE_THEME to airplaneTheme,
     )
 
     companion object {
@@ -58,6 +65,12 @@ data class StatusBarPreferences(
         private const val SIDE_PADDING = "sb_side_padding"
         private const val VERTICAL_OFFSET = "sb_vertical_offset"
         private const val CLOCK_WEIGHT = "sb_clock_weight"
+        private const val BATTERY_THEME = "sb_battery_theme"
+        private const val WIFI_THEME = "sb_wifi_theme"
+        private const val SIGNAL_THEME = "sb_signal_theme"
+        private const val CLOCK_THEME = "sb_clock_theme"
+        private const val AIRPLANE_THEME = "sb_airplane_theme"
+        val ICON_THEMES: List<Int> = (0..4).toList()
 
         /** Missing, legacy or wrongly typed values fall back to defaults; the overlay is never on by accident. */
         fun fromStored(values: Map<String, *>): StatusBarPreferences {
@@ -80,6 +93,11 @@ data class StatusBarPreferences(
                 sidePadding = number(SIDE_PADDING, d.sidePadding, SIDE_PADDING_RANGE),
                 verticalOffset = number(VERTICAL_OFFSET, d.verticalOffset, VERTICAL_OFFSET_RANGE),
                 clockWeight = (values[CLOCK_WEIGHT] as? Int)?.takeIf { it in CLOCK_WEIGHTS } ?: d.clockWeight,
+                batteryTheme = (values[BATTERY_THEME] as? Int)?.takeIf { it in ICON_THEMES } ?: d.batteryTheme,
+                wifiTheme = (values[WIFI_THEME] as? Int)?.takeIf { it in ICON_THEMES } ?: d.wifiTheme,
+                signalTheme = (values[SIGNAL_THEME] as? Int)?.takeIf { it in ICON_THEMES } ?: d.signalTheme,
+                clockTheme = (values[CLOCK_THEME] as? Int)?.takeIf { it in ICON_THEMES } ?: d.clockTheme,
+                airplaneTheme = (values[AIRPLANE_THEME] as? Int)?.takeIf { it in ICON_THEMES } ?: d.airplaneTheme,
             )
         }
     }

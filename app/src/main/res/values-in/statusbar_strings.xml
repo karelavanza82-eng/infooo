@@ -34,4 +34,11 @@
     <string name="statusbar_hide_system_footer">Meminta sistem menyembunyikan jam, sinyal, baterai, dan ikon suara bawaannya. Sebagian merek mengabaikan ini.</string>
     <string name="statusbar_hide_system_grant">Butuh izin sekali saja. Sambungkan HP ke komputer lalu jalankan: %1$s</string>
     <string name="statusbar_reset">Reset tampilan</string>
+    <string name="statusbar_icon_styles">Gaya ikon iPhone</string>
+    <string name="statusbar_battery_style">Desain baterai</string>
+    <string name="statusbar_wifi_style">Desain Wi-Fi</string>
+    <string name="statusbar_signal_style">Desain sinyal</string>
+    <string name="statusbar_clock_style">Desain jam</string>
+    <string name="statusbar_mix_styles_footer">Setiap komponen berdiri sendiri. Campur gaya baterai, Wi-Fi, sinyal, dan jam sesuka hati.</string>
+    <string name="statusbar_airplane_style">Ikon mode pesawat</string>
 </resources>

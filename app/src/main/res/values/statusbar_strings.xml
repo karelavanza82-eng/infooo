@@ -35,4 +35,11 @@
     <string name="statusbar_hide_system_footer">Asks the system to hide its own clock, signal, battery and sound icons. Some manufacturers ignore this.</string>
     <string name="statusbar_hide_system_grant">Needs a one-time permission. Connect the phone to a computer and run: %1$s</string>
     <string name="statusbar_reset">Reset look</string>
+    <string name="statusbar_icon_styles">iPhone icon styles</string>
+    <string name="statusbar_battery_style">Battery design</string>
+    <string name="statusbar_wifi_style">Wi-Fi design</string>
+    <string name="statusbar_signal_style">Signal design</string>
+    <string name="statusbar_clock_style">Clock design</string>
+    <string name="statusbar_mix_styles_footer">Each component is independent. Mix battery, Wi-Fi, signal and clock styles freely.</string>
+    <string name="statusbar_airplane_style">Airplane icon</string>
 </resources>
