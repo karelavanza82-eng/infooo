@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.hoisly.launcher"
-        minSdk = 31
+        minSdk = 28
         targetSdk = 37
         versionCode = 20101
         versionName = "2.1.1"

@@ -227,7 +227,7 @@ does not use the network. Overlay access is used only for the Island window.
 
 ## Try it
 
-Hoisly runs on **Android 12 or newer**. To build it, use JDK 17 and the Android SDK,
+Hoisly is configured to install on **Android 9 (API 28) or newer**. Some newer visual effects and system integrations remain limited to supported Android versions. To build it, use JDK 17 and the Android SDK,
 or open the project in Android Studio. With your Android device connected, run:
 
 ```bash
