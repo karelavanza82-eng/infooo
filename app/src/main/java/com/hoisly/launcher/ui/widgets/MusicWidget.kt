@@ -30,7 +30,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
@@ -136,9 +135,6 @@ private fun rememberPlayerIcon(packageName: String?): ImageBitmap? {
     return icon
 }
 
-private val CardTop = Color(0xFF111A4A)
-private val CardBottom = Color(0xFF070B22)
-
 /**
  * Small "Now Playing" widget, like the Spotify widget of iOS: album art top-left, the player's
  * logo top-right, the song in bold and its artist under it, and a round play/pause button.
@@ -149,19 +145,21 @@ internal fun MusicWidget() {
     val music = rememberMusicState()
     val playing = music.playing
     val player = rememberPlayerIcon(playing?.packageName)
-    Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(CardTop, CardBottom)))) {
+    // Keep the widget surface transparent: WidgetFrame draws the selected Dark, Light, or
+    // Liquid Glass surface behind this content.
+    Box(Modifier.fillMaxSize()) {
         val art = playing?.artwork
         Box(
             Modifier
                 .padding(start = 14.dp, top = 14.dp)
                 .size(58.dp)
                 .clip(RoundedCornerShape(10.dp))
-                .background(Color.White.copy(alpha = 0.10f))
+                .background(LocalWidgetForeground.current.copy(alpha = 0.10f))
                 .align(Alignment.TopStart),
             contentAlignment = Alignment.Center,
         ) {
             if (art != null) Image(art, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
-            else Icon(Icons.Rounded.MusicNote, null, tint = Color.White.copy(alpha = 0.55f), modifier = Modifier.size(26.dp))
+            else Icon(Icons.Rounded.MusicNote, null, tint = LocalWidgetForeground.current.copy(alpha = 0.55f), modifier = Modifier.size(26.dp))
         }
         Box(
             Modifier
@@ -172,7 +170,7 @@ internal fun MusicWidget() {
             contentAlignment = Alignment.Center,
         ) {
             if (player != null) Image(player, null, Modifier.fillMaxSize())
-            else Icon(Icons.Rounded.MusicNote, null, tint = Color.White.copy(alpha = 0.7f), modifier = Modifier.size(20.dp))
+            else Icon(Icons.Rounded.MusicNote, null, tint = LocalWidgetForeground.current.copy(alpha = 0.7f), modifier = Modifier.size(20.dp))
         }
         Row(
             Modifier.align(Alignment.BottomStart).padding(start = 14.dp, end = 12.dp, bottom = 14.dp),
@@ -194,8 +192,8 @@ internal fun MusicWidget() {
                     .padding(start = 6.dp)
                     .size(44.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFF1A2257))
-                    .border(1.5.dp, Color.White.copy(alpha = 0.85f), CircleShape),
+                    .background(LocalWidgetForeground.current.copy(alpha = 0.12f))
+                    .border(1.5.dp, LocalWidgetForeground.current.copy(alpha = 0.35f), CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
