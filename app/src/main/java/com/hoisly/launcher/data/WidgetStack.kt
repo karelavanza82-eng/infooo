@@ -96,7 +96,7 @@ fun smartStackKinds(size: WidgetSize): List<WidgetKind> =
     WidgetKind.entries.filter { size in it.sizes && it != WidgetKind.Photo }
 
 /** Sizes for which the gallery offers a Smart Stack (at least two widgets fit). */
-val SMART_STACK_SIZES: List<WidgetSize> = WidgetSize.entries.filter { smartStackKinds(it).size >= 2 }
+val SMART_STACK_SIZES: List<WidgetSize> = listOf(WidgetSize.Small, WidgetSize.Medium)
 
 /** A new Smart Stack of every built-in widget of [size] from [smartStackKinds]; ids are derived from [id]. */
 fun smartStack(id: String, size: WidgetSize): WidgetStack =
