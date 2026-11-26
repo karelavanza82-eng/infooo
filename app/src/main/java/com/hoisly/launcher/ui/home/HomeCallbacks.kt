@@ -81,6 +81,7 @@ internal fun widgetCallbacks(
             WidgetKind.Battery -> actions.openBatterySettings()
             WidgetKind.Music -> MediaWidgetBridge.onTap(position.x, position.y)
             WidgetKind.Suggestions -> suggestionAt(entry, environment.suggestions, position)?.let { actions.launch(it, bounds) }
+            else -> Unit
         }
     }
 
