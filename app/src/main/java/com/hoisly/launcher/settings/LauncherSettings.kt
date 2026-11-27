@@ -101,8 +101,84 @@ class LauncherSettings private constructor(context: Context) {
             putIsland(next.island)
             putPanels(next.panels)
             putBoolean(KEY_ONBOARDING_DONE, next.onboardingDone)
+            putFloat(KEY_WALLPAPER_DIM, next.wallpaperDim)
+            putBoolean(KEY_KEEP_SCREEN_ON, next.keepScreenOn)
+            putString(KEY_ORIENTATION, next.orientationLock.name)
+            putBoolean(KEY_HIDE_NAV_BAR, next.hideNavigationBar)
+            putFloat(KEY_SETTINGS_TEXT_SCALE, next.settingsTextScale)
+            putFloat(KEY_SETTINGS_DIM, next.settingsDim)
+            putBoolean(KEY_SHOW_FPS, next.showFps)
         }
     }
+
+    // region UI Lab: look presets
+
+    /**
+     * The current look (glass, icons, animation, dock, grid margins, UI Lab sliders) as one line of text
+     * that can be pasted into another Hoisly ([importLookCode]). Layout, hidden apps, names, icon packs
+     * and the like are not part of it. Values keep their type ("f:", "i:", "b:", "s:" prefix).
+     */
+    fun exportLookCode(): String {
+        val json = JSONObject()
+        prefs.all.forEach { (key, value) ->
+            if (!isLookKey(key)) return@forEach
+            val encoded = when (value) {
+                is Boolean -> "b:$value"
+                is Int -> "i:$value"
+                is Long -> "l:$value"
+                is Float -> "f:$value"
+                is String -> "s:$value"
+                else -> null
+            }
+            if (encoded != null) json.put(key, encoded)
+        }
+        val payload = android.util.Base64.encodeToString(json.toString().toByteArray(Charsets.UTF_8), android.util.Base64.NO_WRAP or android.util.Base64.URL_SAFE)
+        return LOOK_PREFIX + payload
+    }
+
+    /** Applies a code made by [exportLookCode]. Returns how many values were applied, or -1 when [code] is not a valid code. */
+    fun importLookCode(code: String): Int {
+        val trimmed = code.trim()
+        if (!trimmed.startsWith(LOOK_PREFIX)) return -1
+        val values = runCatching {
+            val text = String(android.util.Base64.decode(trimmed.removePrefix(LOOK_PREFIX), android.util.Base64.URL_SAFE), Charsets.UTF_8)
+            val json = JSONObject(text)
+            json.keys().asSequence().filter { isLookKey(it) }.mapNotNull { key ->
+                val raw = json.getString(key)
+                if (raw.length < 2 || raw[1] != ':') return@mapNotNull null
+                val body = raw.substring(2)
+                val typed: Any? = when (raw[0]) {
+                    'b' -> body.toBooleanStrictOrNull()
+                    'i' -> body.toIntOrNull()
+                    'l' -> body.toLongOrNull()
+                    'f' -> body.toFloatOrNull()
+                    's' -> body
+                    else -> null
+                }
+                typed?.let { key to it }
+            }.toList()
+        }.getOrNull() ?: return -1
+        if (values.isEmpty()) return -1
+        write {
+            values.forEach { (key, value) ->
+                when (value) {
+                    is Boolean -> putBoolean(key, value)
+                    is Int -> putInt(key, value)
+                    is Long -> putLong(key, value)
+                    is Float -> putFloat(key, value)
+                    is String -> putString(key, value)
+                }
+            }
+        }
+        return values.size
+    }
+
+    /** Puts every look value back to its default; layout, hidden apps, names and custom icons stay. */
+    fun resetLook() {
+        write { prefs.all.keys.filter { isLookKey(it) }.forEach { remove(it) } }
+    }
+
+    // endregion
 
     /** "Get Started" on the last onboarding step: the setup is never shown again. */
     fun completeOnboarding(): Unit = update { it.copy(onboardingDone = true) }
@@ -243,6 +319,13 @@ class LauncherSettings private constructor(context: Context) {
         island = IslandPreferences.fromStored(prefs.all),
         panels = PanelPreferences.fromStored(prefs.all),
         onboardingDone = prefs.getBoolean(KEY_ONBOARDING_DONE, Defaults.onboardingDone),
+        wallpaperDim = prefs.getFloat(KEY_WALLPAPER_DIM, Defaults.wallpaperDim),
+        keepScreenOn = prefs.getBoolean(KEY_KEEP_SCREEN_ON, Defaults.keepScreenOn),
+        orientationLock = OrientationLock.fromStored(prefs.getString(KEY_ORIENTATION, null)),
+        hideNavigationBar = prefs.getBoolean(KEY_HIDE_NAV_BAR, Defaults.hideNavigationBar),
+        settingsTextScale = prefs.getFloat(KEY_SETTINGS_TEXT_SCALE, Defaults.settingsTextScale),
+        settingsDim = prefs.getFloat(KEY_SETTINGS_DIM, Defaults.settingsDim),
+        showFps = prefs.getBoolean(KEY_SHOW_FPS, Defaults.showFps),
     )
 
     /** An inherited value is stored as a missing key. */
@@ -346,6 +429,30 @@ class LauncherSettings private constructor(context: Context) {
         private const val KEY_HIDDEN_MENU = "hidden_menu_actions"
         private const val KEY_ONBOARDING_DONE = "onboarding_done"
         private const val KEY_DYNAMIC_COLOR = "dynamic_color"
+        private const val KEY_WALLPAPER_DIM = "lab_wallpaper_dim"
+        private const val KEY_KEEP_SCREEN_ON = "lab_keep_screen_on"
+        private const val KEY_ORIENTATION = "lab_orientation"
+        private const val KEY_HIDE_NAV_BAR = "lab_hide_nav_bar"
+        private const val KEY_SETTINGS_TEXT_SCALE = "lab_settings_text_scale"
+        private const val KEY_SETTINGS_DIM = "lab_settings_dim"
+        private const val KEY_SHOW_FPS = "lab_show_fps"
+
+        private const val LOOK_PREFIX = "HOISLY-LOOK:"
+
+        /** Preference keys that belong to the look of the launcher (shared by look codes and the look reset). */
+        private val LOOK_KEYS: Set<String> = setOf(
+            KEY_BLUR, KEY_CUSTOM_TEXT, KEY_TEXT_SCALE, KEY_LABEL_SPACING,
+            KEY_GRID_SIDE, KEY_GRID_TOP, KEY_GRID_BOTTOM, KEY_GRID_ALIGNMENT,
+            KEY_TRANSITION, KEY_OPEN_ANIM, KEY_RESUME_ANIM, KEY_ANIMATION_SPEED, KEY_APP_ANIMATION_STYLE,
+            KEY_GLASS_TINT, KEY_GLASS_EDGE, KEY_GLASS_MODE, KEY_GLASS_REFRACTION, KEY_GLASS_TILT,
+            KEY_HOME_BLUR, KEY_HOME_BLUR_RADIUS, KEY_MENU_DIM,
+            KEY_ICON_SCALE, KEY_ICON_CORNER, KEY_SHOW_LABELS, KEY_ICON_APPEARANCE,
+            KEY_ICON_TINT_WALLPAPER, KEY_ICON_TINT_COLOR, KEY_ICON_TINT_SATURATION, KEY_TINT_CUSTOM_ICONS, KEY_ICON_EDGE,
+            KEY_BADGES, KEY_SHOW_DOCK, KEY_DOCK_SLOTS, KEY_DOCK_BACKGROUND, KEY_SHOW_PILL, KEY_DYNAMIC_COLOR,
+            KEY_WALLPAPER_DIM, KEY_SETTINGS_TEXT_SCALE, KEY_SETTINGS_DIM,
+        )
+
+        private fun isLookKey(key: String): Boolean = key in LOOK_KEYS || key.startsWith("area_")
 
         @Volatile
         private var instance: LauncherSettings? = null

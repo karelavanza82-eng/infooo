@@ -22,6 +22,15 @@ enum class MenuAction {
     LibraryCategory,
 }
 
+/** Orientation the home screen is allowed to rotate to. */
+enum class OrientationLock {
+    Portrait, Auto, Landscape;
+
+    companion object {
+        fun fromStored(name: String?): OrientationLock = entries.firstOrNull { it.name == name } ?: Portrait
+    }
+}
+
 /** Notification counts on app icons: off, the number in a red circle, or just a red dot. */
 enum class BadgeStyle {
     Off, Number, Dot;
@@ -129,6 +138,21 @@ data class SettingsState(
     /** Accent color of buttons, switches and sliders taken from the wallpaper (Dynamic Color). */
     val dynamicColor: Boolean = false,
 
+    /** UI Lab: how much the wallpaper is darkened behind the home screen (0..[MAX_WALLPAPER_DIM]). */
+    val wallpaperDim: Float = 0f,
+    /** UI Lab: the screen stays on while the home screen is in front. */
+    val keepScreenOn: Boolean = false,
+    /** UI Lab: portrait (as before), sensor-controlled or landscape home screen. */
+    val orientationLock: OrientationLock = OrientationLock.Portrait,
+    /** UI Lab: the navigation bar is hidden on the home screen (swipe from the edge to peek). */
+    val hideNavigationBar: Boolean = false,
+    /** UI Lab: text size multiplier of the settings app only, see [MIN_SETTINGS_TEXT]..[MAX_SETTINGS_TEXT]. */
+    val settingsTextScale: Float = 1f,
+    /** UI Lab: darkness of the blurred wallpaper behind settings pages. */
+    val settingsDim: Float = DEFAULT_SETTINGS_DIM,
+    /** UI Lab: live frame-rate readout over the home screen. */
+    val showFps: Boolean = false,
+
     /** Optional music/charging window; access is checked separately at runtime. */
     val island: IslandPreferences = IslandPreferences(),
 
@@ -211,6 +235,9 @@ data class SettingsState(
         iconTintSaturation = if (iconTintSaturation.isNaN()) DEFAULT_TINT_SATURATION else iconTintSaturation.coerceIn(0f, 1f),
         dockSlots = dockSlots.coerceIn(DOCK_CAPACITY_OPTIONS.first(), DOCK_CAPACITY_OPTIONS.last()),
         homeBehavior = homeBehavior.sanitized(),
+        wallpaperDim = if (wallpaperDim.isNaN()) 0f else wallpaperDim.coerceIn(0f, MAX_WALLPAPER_DIM),
+        settingsTextScale = if (settingsTextScale.isNaN()) 1f else settingsTextScale.coerceIn(MIN_SETTINGS_TEXT, MAX_SETTINGS_TEXT),
+        settingsDim = if (settingsDim.isNaN()) DEFAULT_SETTINGS_DIM else settingsDim.coerceIn(MIN_SETTINGS_DIM, MAX_SETTINGS_DIM),
     )
 
     companion object {
@@ -233,6 +260,12 @@ data class SettingsState(
         const val DEFAULT_ICON_CORNER = 0.225f
         const val MAX_ICON_CORNER = 0.5f
         const val DEFAULT_TINT_SATURATION = 0.7f
+        const val MAX_WALLPAPER_DIM = 0.7f
+        const val MIN_SETTINGS_TEXT = 1f
+        const val MAX_SETTINGS_TEXT = 1.4f
+        const val DEFAULT_SETTINGS_DIM = 0.35f
+        const val MIN_SETTINGS_DIM = 0.05f
+        const val MAX_SETTINGS_DIM = 0.85f
         private const val OPAQUE = 0xFF000000.toInt()
 
         /** Vertical margin above and below the page pill. */

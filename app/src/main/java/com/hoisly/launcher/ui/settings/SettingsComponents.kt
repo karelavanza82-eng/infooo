@@ -65,25 +65,25 @@ object SettingsStyle {
     /** Card on a solid black page (onboarding). */
     val SolidCard = Color(0xFF1C1C1E)
     /** Tint of the glass cards, dark like the launcher's sheets so white text stays legible. */
-    val CardTint = Color.Black.copy(alpha = 0.28f)
+    val CardTint = Color.Black.copy(alpha = 0.16f)
     /** Flat translucent fill for small capsules drawn over the page. */
     val GlassCard = Color.White.copy(alpha = 0.08f)
     val CardStroke = Color.White.copy(alpha = 0.10f)
     val Separator = Color.White.copy(alpha = 0.13f)
-    val SectionLabel = Color.White.copy(alpha = 0.6f)
-    val SecondaryText = Color.White.copy(alpha = 0.55f)
+    val SectionLabel = Color.White.copy(alpha = 0.72f)
+    val SecondaryText = Color.White.copy(alpha = 0.62f)
     val Chevron = Color.White.copy(alpha = 0.35f)
     val Pressed = Color.White.copy(alpha = 0.10f)
     val Destructive = Tokens.Destructive
 
-    val CardShape = ContinuousRoundedShape(26.dp)
-    val RowHeight = 52.dp
-    val RowPadding = 16.dp
-    val IconTileSize = 30.dp
-    val IconTileGap = 14.dp
-    val TitleSize = 17.sp
-    val ValueSize = 17.sp
-    val SubtitleSize = 13.sp
+    val CardShape = ContinuousRoundedShape(32.dp)
+    val RowHeight = 66.dp
+    val RowPadding = 20.dp
+    val IconTileSize = 42.dp
+    val IconTileGap = 16.dp
+    val TitleSize = 19.sp
+    val ValueSize = 18.sp
+    val SubtitleSize = 15.sp
 
     /** iOS system colors (dark appearance) for the icon tiles in front of rows. */
     object Tile {
@@ -123,15 +123,15 @@ fun SettingsCard(modifier: Modifier = Modifier, content: @Composable () -> Unit)
     var separators by remember { mutableStateOf(emptyList<Pair<Int, Int>>()) }
     val glassStyle = LocalGlassStyle.current
     val background = if (surface == SettingsSurface.Glass) {
-        // Frosted even when the launcher uses Liquid glass: rows of text need the blurred
-        // body, a sharp refracted wallpaper behind them would hurt legibility.
+        // Follows the glass style chosen for the launcher (Liquid or Frosted): the settings are
+        // transparent panes of the same glass. The darkness of the page behind (UI Lab) keeps text legible.
         Modifier.glass(SettingsStyle.CardShape, tint = SettingsStyle.CardTint)
     } else {
         Modifier
             .background(SettingsStyle.SolidCard, SettingsStyle.CardShape)
             .shapeBorder(1.dp, SettingsStyle.CardStroke, SettingsStyle.CardShape)
     }
-    CompositionLocalProvider(LocalGlassStyle provides glassStyle.copy(mode = GlassMode.Frosted)) {
+    CompositionLocalProvider(LocalGlassStyle provides glassStyle) {
         Layout(
             content = content,
             modifier = modifier
@@ -174,9 +174,9 @@ fun SectionHeader(text: String) {
     Text(
         text = text,
         color = SettingsStyle.SectionLabel,
-        fontSize = 15.sp,
+        fontSize = 17.sp,
         fontWeight = FontWeight.SemiBold,
-        modifier = Modifier.padding(start = SettingsStyle.RowPadding, end = SettingsStyle.RowPadding, top = 28.dp, bottom = 8.dp),
+        modifier = Modifier.padding(start = SettingsStyle.RowPadding, end = SettingsStyle.RowPadding, top = 32.dp, bottom = 10.dp),
     )
 }
 
@@ -186,16 +186,16 @@ fun SectionFooter(text: String) {
     Text(
         text = text,
         color = SettingsStyle.SecondaryText,
-        fontSize = 13.sp,
-        lineHeight = 17.sp,
-        modifier = Modifier.padding(start = SettingsStyle.RowPadding, end = SettingsStyle.RowPadding, top = 8.dp),
+        fontSize = 14.5.sp,
+        lineHeight = 20.sp,
+        modifier = Modifier.padding(start = SettingsStyle.RowPadding, end = SettingsStyle.RowPadding, top = 10.dp),
     )
 }
 
 /** Empty space between two cards that need no title, like the groups of the iOS Settings list. */
 @Composable
 fun SectionGap() {
-    Spacer(Modifier.height(28.dp))
+    Spacer(Modifier.height(32.dp))
 }
 
 /** A clickable row that highlights while pressed, like iOS table cells. */
@@ -213,42 +213,29 @@ fun SettingsRow(
             .heightIn(min = SettingsStyle.RowHeight)
             .background(if (pressed) SettingsStyle.Pressed else Color.Transparent)
             .then(if (onClick != null) Modifier.clickable(interaction, indication = null, onClick = onClick) else Modifier)
-            .padding(horizontal = SettingsStyle.RowPadding, vertical = 8.dp),
+            .padding(horizontal = SettingsStyle.RowPadding, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         content = content,
     )
 }
 
 /**
- * Rounded tile with a glyph in front of a row, drawn like the app icons on the home screen:
- * the iOS system [color] with a white glyph for Default icons, the [color] glyph on the dark
- * icon backdrop for Dark ones, and the icons' own tint for Tinted ones, with the same glass edge.
+ * Rounded tile with a glyph in front of a row. It is a pane of translucent glass with a white glyph
+ * and a thin lit edge; [color] is kept so existing call sites compile, but rows are no longer colour coded.
  */
 @Composable
-fun IconTile(icon: ImageVector, color: Color, modifier: Modifier = Modifier) {
+fun IconTile(icon: ImageVector, @Suppress("UNUSED_PARAMETER") color: Color, modifier: Modifier = Modifier) {
     val settings = LocalSettingsState.current
-    val shape = ContinuousRoundedShape(SettingsStyle.IconTileSize * settings.iconCorner)
-    val style = LocalIconLoader.current.iconStyle
-    val plain = style == null || style == IconStyle.Plain
-    val background = if (plain) {
-        Brush.verticalGradient(listOf(lerp(color, Color.White, 0.12f), color))
-    } else {
-        Brush.verticalGradient(listOf(Tokens.IconDarkTop, Tokens.IconDarkBottom))
-    }
-    val glyph = when (style) {
-        is IconStyle.Tinted -> Color(style.color)
-        IconStyle.Dark -> lerp(color, Color.White, 0.15f)
-        else -> Color.White
-    }
+    val shape = ContinuousRoundedShape(SettingsStyle.IconTileSize * settings.iconCorner.coerceAtLeast(0.2f))
     Box(
         modifier
             .size(SettingsStyle.IconTileSize)
             .clip(shape)
-            .background(background)
-            .then(if (settings.iconEdge) Modifier.shapeBorder(Tokens.GlassStrokeWidth, TileEdge, shape) else Modifier),
+            .background(Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.22f), Color.White.copy(alpha = 0.10f))))
+            .shapeBorder(Tokens.GlassStrokeWidth, TileEdge, shape),
         contentAlignment = Alignment.Center,
     ) {
-        Icon(icon, contentDescription = null, tint = glyph, modifier = Modifier.size(19.dp))
+        Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(25.dp))
     }
 }
 
@@ -344,7 +331,7 @@ fun RowValue(text: String) {
 
 @Composable
 fun Chevron() {
-    Icon(Icons.Rounded.ChevronRight, contentDescription = null, tint = SettingsStyle.Chevron, modifier = Modifier.size(24.dp))
+    Icon(Icons.Rounded.ChevronRight, contentDescription = null, tint = SettingsStyle.Chevron, modifier = Modifier.size(28.dp))
 }
 
 /** Row with a title, an optional description and an iOS switch. Tapping anywhere toggles it. */
@@ -356,7 +343,7 @@ fun SwitchRow(title: String, checked: Boolean, onCheckedChange: (Boolean) -> Uni
             RowTitle(title)
             if (description != null) {
                 Spacer(Modifier.height(2.dp))
-                Text(description, color = SettingsStyle.SecondaryText, fontSize = SettingsStyle.SubtitleSize)
+                Text(description, color = SettingsStyle.SecondaryText, fontSize = SettingsStyle.SubtitleSize, lineHeight = 20.sp)
             }
         }
         Spacer(Modifier.width(12.dp))

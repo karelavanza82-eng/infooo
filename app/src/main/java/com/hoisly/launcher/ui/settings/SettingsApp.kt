@@ -8,7 +8,11 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
+import com.hoisly.launcher.settings.LocalSettingsState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -32,7 +36,7 @@ enum class SettingsRoute {
     HiddenApps, AppIcons, AppNames, License, About, Weather, FinishSetup, Language,
     HomeIcons, DockIcons, FolderIcons, Folders,
     AppLibrary, LibraryPinned, LibraryCategories, LibraryCategory, Island, Panels,
-    LockScreen, Backup, StatusBar, HideStatusBar,
+    LockScreen, Backup, StatusBar, HideStatusBar, Lab,
 }
 
 /** Size settings page of each icon area. */
@@ -61,6 +65,10 @@ fun SettingsApp(vm: SettingsViewModel, actions: SettingsActions, initialRoute: S
     val locale = LocalConfiguration.current.locales[0]
     LaunchedEffect(locale) { vm.libraryTitles.value = libraryTitles(context) }
 
+    // UI Lab: the settings app has its own text size, on top of the system font size.
+    val density = LocalDensity.current
+    val textScale = LocalSettingsState.current.settingsTextScale
+    CompositionLocalProvider(LocalDensity provides Density(density.density, density.fontScale * textScale)) {
     AnimatedContent(
         targetState = stack,
         contentKey = { it.last() },
@@ -109,7 +117,9 @@ fun SettingsApp(vm: SettingsViewModel, actions: SettingsActions, initialRoute: S
                 onBack = back,
             )
             SettingsRoute.LibraryCategory -> CategoryEditorScreen(vm, editingCategory, onCreated = { editingCategory = it }, onBack = back)
+            SettingsRoute.Lab -> UiLabScreen(vm, back)
         }
+    }
     }
 }
 

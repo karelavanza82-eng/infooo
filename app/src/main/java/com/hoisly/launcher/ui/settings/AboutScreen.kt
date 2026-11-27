@@ -26,26 +26,26 @@ fun AboutScreen(onBack: () -> Unit) {
         item {
             SettingsCard {
                 Column(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 26.dp, horizontal = 20.dp),
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 40.dp, horizontal = 24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(9.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp),
                 ) {
-                    AppLogo(size = 76.dp)
-                    Text("Hiosly", color = Color.White, fontSize = 27.sp, fontWeight = FontWeight.Bold)
-                    Text(stringResource(R.string.about_description), color = Color.White.copy(alpha = 0.65f), fontSize = 13.sp, textAlign = TextAlign.Center)
-                    Text(stringResource(R.string.about_version), color = Color.White.copy(alpha = 0.55f), fontSize = 12.sp)
+                    AppLogo(size = 120.dp)
+                    Text("Hiosly", color = Color.White, fontSize = 38.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.about_description), color = Color.White.copy(alpha = 0.78f), fontSize = 17.sp, lineHeight = 24.sp, textAlign = TextAlign.Center)
+                    Text(stringResource(R.string.about_version), color = Color.White.copy(alpha = 0.68f), fontSize = 16.sp)
                 }
             }
-            Spacer(Modifier.height(18.dp))
+            Spacer(Modifier.height(24.dp))
         }
         item {
             SettingsCard {
-                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
-                    Text(stringResource(R.string.about_developer), color = Color.White.copy(alpha = 0.58f), fontSize = 12.sp)
-                    Text("Muhammadkarrel", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-                    Spacer(Modifier.height(9.dp))
-                    Text(stringResource(R.string.about_project_location), color = Color.White.copy(alpha = 0.58f), fontSize = 12.sp)
-                    Text(stringResource(R.string.about_project_location_value), color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                Column(Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(stringResource(R.string.about_developer), color = Color.White.copy(alpha = 0.7f), fontSize = 15.sp)
+                    Text("Muhammadkarrel", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+                    Spacer(Modifier.height(14.dp))
+                    Text(stringResource(R.string.about_project_location), color = Color.White.copy(alpha = 0.7f), fontSize = 15.sp)
+                    Text(stringResource(R.string.about_project_location_value), color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
         }

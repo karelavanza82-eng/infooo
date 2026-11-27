@@ -52,8 +52,12 @@ object Motion {
     /** The surface of an app growing out of its icon, and shrinking back into it. */
     val APP_OPEN_MS: Int get() = scaledDuration(430)
     val APP_CLOSE_MS: Int get() = scaledDuration(380)
-    /** The app starts this long after the tap, when the surface has almost filled the screen. */
-    val APP_LEAD_MS: Int get() = scaledDuration(320)
+    /**
+     * The app is started this long after the tap (just enough for the surface's first frame), so the
+     * app's own cold start runs in parallel with the animation instead of after it. Deliberately not
+     * scaled by the animation speed: it is latency, not choreography.
+     */
+    const val APP_LEAD_MS: Long = 40
     /** If no app covers the home screen by then, the surface returns to its icon. */
     const val APP_START_TIMEOUT_MS: Long = 2500
     /** Corner of the full-screen surface. */

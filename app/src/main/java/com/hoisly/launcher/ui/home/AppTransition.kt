@@ -3,7 +3,9 @@ package com.hoisly.launcher.ui.home
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.tween
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -65,6 +67,11 @@ fun AppTransitionOverlay(vm: LauncherViewModel, progress: Animatable<Float, Anim
     val outgoing by vm.appTransitionOut.collectAsStateWithLifecycle()
     // Surface of an app cancelled by tapping another icon: shrinks away while the new one grows.
     val outProgress = remember { Animatable(0f) }
+    // The shrink of a cancelled surface runs in its own scope. Inside the effect below it was
+    // cancelled whenever the transition changed again (a new tap, or the app closing), so
+    // endOutgoing never ran and a half-grown coloured surface stayed on screen.
+    val outScope = rememberCoroutineScope()
+    val outJob = remember { arrayOfNulls<Job>(1) }
     val style = settings.appAnimationStyle
     val speedFactor = (1.35f - settings.animationSpeedPercent.coerceIn(0, 100) / 100f * 0.7f).coerceIn(0.55f, 1.35f)
 
@@ -94,8 +101,9 @@ fun AppTransitionOverlay(vm: LauncherViewModel, progress: Animatable<Float, Anim
                 val out = vm.appTransitionOut.value
                 if (out != null) {
                     // Hand the half-grown surface of the cancelled app over to the outgoing layer.
+                    outJob[0]?.cancel()
                     outProgress.snapTo(progress.value)
-                    launch {
+                    outJob[0] = outScope.launch {
                         outProgress.animateTo(0f, tween((170 * speedFactor).roundToInt().coerceAtLeast(1)))
                         vm.endOutgoing(out.id)
                     }
@@ -142,7 +150,7 @@ private fun DrawScope.drawHoislySurface(bounds: Rect, icon: ImageBitmap?, color:
     val side = lerp(bounds.width, bounds.width * 1.25f, p)
     val center = rect.center
     drawImage(icon, dstOffset = androidx.compose.ui.unit.IntOffset((center.x - side / 2f).roundToInt(), (center.y - side / 2f).roundToInt()),
-        dstSize = androidx.compose.ui.unit.IntSize(side.roundToInt(), side.roundToInt()), alpha = (1f - p * 2.5f).coerceIn(0f, 1f))
+        dstSize = androidx.compose.ui.unit.IntSize(side.roundToInt(), side.roundToInt()), alpha = 1f)
 }
 
 /** Launchii Zoom In adapted to Hoisly's own icon and home-screen coordinates. */
@@ -161,8 +169,9 @@ private fun DrawScope.drawLaunchiiZoom(bounds: Rect, icon: ImageBitmap?, color: 
     val center = rect.center
     val iconRect = Rect(center.x - side / 2f, center.y - side / 2f, center.x + side / 2f, center.y + side / 2f)
     val clip = Path().apply { addRoundRect(RoundRect(iconRect, CornerRadius(lerp(side * 0.30f, side * 0.5f, p)))) }
-    val alpha = (1f - ((p - 0.38f) / 0.52f).coerceIn(0f, 1f)).coerceIn(0f, 1f)
-    if (alpha > 0f && side > 0f) clipPath(clip) {
+    // Keep the icon on the card: while the app is still starting this is the splash, not a blank colour.
+    val alpha = 1f
+    if (side > 0f) clipPath(clip) {
         drawImage(icon, dstOffset = androidx.compose.ui.unit.IntOffset(iconRect.left.roundToInt(), iconRect.top.roundToInt()),
             dstSize = androidx.compose.ui.unit.IntSize(side.roundToInt(), side.roundToInt()), alpha = alpha)
     }

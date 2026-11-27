@@ -69,7 +69,7 @@ fun CheckUpdateTile(modifier: Modifier = Modifier, index: Int = 0) {
         title = t("Cek pembaruan", "Check updates"),
         subtitle = value ?: t("Ketuk untuk cek", "Tap to check"),
         color = SettingsStyle.Tile.Blue,
-        kind = TileKind.Compact,
+        kind = TileKind.Wide,
         index = index,
         modifier = Modifier.fillMaxWidth(),
         onClick = {
@@ -90,23 +90,24 @@ fun CheckUpdateTile(modifier: Modifier = Modifier, index: Int = 0) {
         val running = d as? DownloadState.Running
         AlertDialog(
             onDismissRequest = { showDialog = false },
-            containerColor = Color(0xFF1C1C1E),
+            containerColor = Color(0xFF1C1C1E).copy(alpha = 0.94f),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(32.dp),
             titleContentColor = Color.White,
             textContentColor = Color.White.copy(alpha = 0.75f),
-            title = { Text(t("Versi ${release.version} tersedia", "Version ${release.version} is available")) },
+            title = { Text(t("Versi ${release.version} tersedia", "Version ${release.version} is available"), fontSize = 24.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold) },
             text = {
                 Column(Modifier.fillMaxWidth()) {
                     val size = if (release.sizeBytes > 0) " · %.1f MB".format(release.sizeBytes / 1_048_576.0) else ""
                     Text(
                         t("Terpasang: ${UpdateChecker.currentVersion(context)}$size", "Installed: ${UpdateChecker.currentVersion(context)}$size"),
-                        fontSize = 14.sp,
+                        fontSize = 17.sp,
                     )
                     if (running != null) {
                         Spacer(Modifier.height(12.dp))
-                        LinearProgressIndicator(progress = { running.progress }, modifier = Modifier.fillMaxWidth())
+                        LinearProgressIndicator(progress = { running.progress }, modifier = Modifier.fillMaxWidth().height(8.dp))
                         Text(
                             t("Mengunduh… ${(running.progress * 100).toInt()}%", "Downloading… ${(running.progress * 100).toInt()}%"),
-                            fontSize = 13.sp,
+                            fontSize = 15.5.sp,
                             modifier = Modifier.padding(top = 8.dp),
                         )
                     }
@@ -114,7 +115,7 @@ fun CheckUpdateTile(modifier: Modifier = Modifier, index: Int = 0) {
                         Text(
                             t("Gagal mengunduh. Periksa internet lalu coba lagi.", "Download failed. Check your internet and try again."),
                             color = Color(0xFFFF8A80),
-                            fontSize = 13.sp,
+                            fontSize = 15.5.sp,
                             modifier = Modifier.padding(top = 10.dp),
                         )
                     }
@@ -124,7 +125,7 @@ fun CheckUpdateTile(modifier: Modifier = Modifier, index: Int = 0) {
                                 "Jika layar pemasangan tidak muncul, izinkan Hiosly memasang aplikasi lalu ketuk Pasang lagi.",
                                 "If the installer doesn't open, allow Hiosly to install apps and tap Install again.",
                             ),
-                            fontSize = 13.sp,
+                            fontSize = 15.5.sp,
                             modifier = Modifier.padding(top = 10.dp),
                         )
                     }
@@ -132,15 +133,15 @@ fun CheckUpdateTile(modifier: Modifier = Modifier, index: Int = 0) {
             },
             confirmButton = {
                 when {
-                    running != null -> TextButton(onClick = {}, enabled = false) { Text(t("Mengunduh…", "Downloading…")) }
-                    ready != null -> TextButton(onClick = { UpdateChecker.install(context, ready, release) }) { Text(t("Pasang", "Install")) }
+                    running != null -> TextButton(onClick = {}, enabled = false) { Text(t("Mengunduh…", "Downloading…"), fontSize = 17.sp) }
+                    ready != null -> TextButton(onClick = { UpdateChecker.install(context, ready, release) }) { Text(t("Pasang", "Install"), fontSize = 17.sp) }
                     else -> TextButton(onClick = {
                         IslandBus.scope.launch { UpdateChecker.downloadAndInstall(context.applicationContext, release) }
-                    }) { Text(t("Perbarui", "Update")) }
+                    }) { Text(t("Perbarui", "Update"), fontSize = 17.sp) }
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDialog = false }) { Text(t("Nanti", "Later")) }
+                TextButton(onClick = { showDialog = false }) { Text(t("Nanti", "Later"), fontSize = 17.sp) }
             },
         )
     }

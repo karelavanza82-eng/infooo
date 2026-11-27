@@ -36,6 +36,7 @@ import androidx.compose.material.icons.rounded.Gavel
 import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Palette
+import androidx.compose.material.icons.rounded.Science
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.SignalCellularAlt
 import androidx.compose.material.icons.rounded.Translate
@@ -119,6 +120,20 @@ fun MainSettingsScreen(vm: SettingsViewModel, actions: SettingsActions, navigate
             }
         }
         item {
+            Box(Modifier.padding(bottom = 14.dp)) {
+                BentoTile(
+                    icon = Icons.Rounded.Science,
+                    title = "UI Lab",
+                    subtitle = pick(indo, "10 alat untuk mengulik tampilan: dim, FPS, preset, dll", "10 tools to tinker with the UI: dim, FPS, presets and more"),
+                    color = T.Cyan,
+                    kind = TileKind.Wide,
+                    index = 2,
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { navigate(SettingsRoute.Lab) },
+                )
+            }
+        }
+        item {
             BentoRow {
                 BentoTile(Icons.Rounded.Settings, stringResource(R.string.row_general), T.Gray, { navigate(SettingsRoute.General) }, Modifier.weight(1f), index = 3)
                 BentoTile(Icons.Rounded.SignalCellularAlt, stringResource(R.string.statusbar_title), T.Blue, { navigate(SettingsRoute.StatusBar) }, Modifier.weight(1f), index = 4)
@@ -155,17 +170,17 @@ fun MainSettingsScreen(vm: SettingsViewModel, actions: SettingsActions, navigate
                         Icons.Rounded.Palette, stringResource(R.string.row_dynamic_color),
                         if (settings.dynamicColor) T.Pink else T.Gray,
                         { vm.settings.setDynamicColor(!settings.dynamicColor) },
-                        Modifier.width(150.dp), index = 10,
+                        Modifier.width(172.dp), index = 10,
                         subtitle = if (settings.dynamicColor) pick(indo, "Aktif", "On") else pick(indo, "Mati", "Off"),
                     )
                 }
-                item { BentoTile(Icons.Rounded.BlurOn, stringResource(R.string.row_glass), T.Teal, { navigate(SettingsRoute.Glass) }, Modifier.width(150.dp), index = 11) }
-                item { BentoTile(Icons.Rounded.Apps, stringResource(R.string.row_icons), T.Orange, { navigate(SettingsRoute.Icons) }, Modifier.width(150.dp), index = 12) }
-                item { BentoTile(Icons.Rounded.Folder, stringResource(R.string.area_folders), T.Indigo, { navigate(SettingsRoute.Folders) }, Modifier.width(150.dp), index = 13) }
-                item { BentoTile(Icons.Rounded.Dock, stringResource(R.string.row_home_screen), T.Purple, { navigate(SettingsRoute.HomeScreen) }, Modifier.width(150.dp), index = 14) }
-                item { BentoTile(Icons.Rounded.ViewModule, stringResource(R.string.library_title), T.Blue, { navigate(SettingsRoute.AppLibrary) }, Modifier.width(150.dp), index = 15) }
-                item { BentoTile(Icons.Rounded.Apps, stringResource(R.string.gestures_home), T.Green, { navigate(SettingsRoute.HomeBehavior) }, Modifier.width(150.dp), index = 16) }
-                item { BentoTile(Icons.AutoMirrored.Rounded.ViewList, stringResource(R.string.row_context_menu), T.Gray, { navigate(SettingsRoute.ContextMenu) }, Modifier.width(150.dp), index = 17) }
+                item { BentoTile(Icons.Rounded.BlurOn, stringResource(R.string.row_glass), T.Teal, { navigate(SettingsRoute.Glass) }, Modifier.width(172.dp), index = 11) }
+                item { BentoTile(Icons.Rounded.Apps, stringResource(R.string.row_icons), T.Orange, { navigate(SettingsRoute.Icons) }, Modifier.width(172.dp), index = 12) }
+                item { BentoTile(Icons.Rounded.Folder, stringResource(R.string.area_folders), T.Indigo, { navigate(SettingsRoute.Folders) }, Modifier.width(172.dp), index = 13) }
+                item { BentoTile(Icons.Rounded.Dock, stringResource(R.string.row_home_screen), T.Purple, { navigate(SettingsRoute.HomeScreen) }, Modifier.width(172.dp), index = 14) }
+                item { BentoTile(Icons.Rounded.ViewModule, stringResource(R.string.library_title), T.Blue, { navigate(SettingsRoute.AppLibrary) }, Modifier.width(172.dp), index = 15) }
+                item { BentoTile(Icons.Rounded.Apps, stringResource(R.string.gestures_home), T.Green, { navigate(SettingsRoute.HomeBehavior) }, Modifier.width(172.dp), index = 16) }
+                item { BentoTile(Icons.AutoMirrored.Rounded.ViewList, stringResource(R.string.row_context_menu), T.Gray, { navigate(SettingsRoute.ContextMenu) }, Modifier.width(172.dp), index = 17) }
             }
         }
 
@@ -202,17 +217,31 @@ fun MainSettingsScreen(vm: SettingsViewModel, actions: SettingsActions, navigate
         }
 
         // ── Info ─────────────────────────────────────────────
-        item { BentoHeader(pick(indo, "Info", "Info"), 25) }
+        item { BentoHeader(pick(indo, "Info & pembaruan", "Info & updates"), 25) }
+        item { Box(Modifier.padding(bottom = 14.dp)) { CheckUpdateTile(Modifier.fillMaxWidth(), index = 26) } }
         item {
-            BentoRow {
-                BentoTile(Icons.Rounded.Info, stringResource(R.string.row_about), T.Purple, { navigate(SettingsRoute.About) }, Modifier.weight(1f), index = 26, kind = TileKind.Compact)
-                BentoTile(Icons.Rounded.Info, stringResource(R.string.row_version), T.Gray, {}, Modifier.weight(1f), index = 27, kind = TileKind.Compact, subtitle = actions.versionName)
+            Box(Modifier.padding(bottom = 14.dp)) {
+                BentoTile(
+                    Icons.Rounded.Info, stringResource(R.string.row_about), T.Purple, { navigate(SettingsRoute.About) },
+                    Modifier.fillMaxWidth(), index = 27, kind = TileKind.Wide,
+                    subtitle = pick(indo, "Pengembang, versi, dan kredit", "Developer, version and credits"),
+                )
             }
         }
         item {
-            BentoRow {
-                CheckUpdateTile(Modifier.weight(1f), index = 28)
-                BentoTile(Icons.Rounded.Gavel, stringResource(R.string.row_license), T.Orange, { navigate(SettingsRoute.License) }, Modifier.weight(1f), index = 29, kind = TileKind.Compact, subtitle = "GPL-3.0+")
+            Box(Modifier.padding(bottom = 14.dp)) {
+                BentoTile(
+                    Icons.Rounded.Info, stringResource(R.string.row_version), T.Gray, {}, Modifier.fillMaxWidth(), index = 28,
+                    kind = TileKind.Wide, subtitle = actions.versionName,
+                )
+            }
+        }
+        item {
+            Box(Modifier.padding(bottom = 14.dp)) {
+                BentoTile(
+                    Icons.Rounded.Gavel, stringResource(R.string.row_license), T.Orange, { navigate(SettingsRoute.License) },
+                    Modifier.fillMaxWidth(), index = 29, kind = TileKind.Wide, subtitle = "GPL-3.0+",
+                )
             }
         }
     }
@@ -234,15 +263,16 @@ private fun HeroCard(isDefaultHome: Boolean, onClick: () -> Unit) {
         animationSpec = infiniteRepeatable(tween(2400, easing = FastOutSlowInEasing), RepeatMode.Reverse),
         label = "breathe",
     )
-    val colors = listOf(SettingsStyle.Tile.Indigo, SettingsStyle.Tile.Purple, SettingsStyle.Tile.Pink, SettingsStyle.Tile.Blue)
+    // Colourless: a slow white sheen drifts over the glass, the wallpaper stays the only colour.
+    val colors = listOf(Color.White.copy(alpha = 0.20f), Color.Transparent, Color.White.copy(alpha = 0.10f), Color.Transparent)
     val shape = RoundedCornerShape(34.dp)
     Box(
         Modifier
             .fillMaxWidth()
-            .height(196.dp)
+            .height(228.dp)
             .entrance(0)
             .bouncyClick(onClick)
-            .glass(shape, tint = Color.Black.copy(alpha = 0.18f), profile = GlassProfile.Panel)
+            .glass(shape, tint = Color.Black.copy(alpha = 0.10f), profile = GlassProfile.Panel)
             .clip(shape)
             .drawBehind {
                 val shift = size.width * flow
@@ -254,7 +284,7 @@ private fun HeroCard(isDefaultHome: Boolean, onClick: () -> Unit) {
                         end = Offset(shift + size.width, size.height),
                         tileMode = TileMode.Mirror,
                     ),
-                    alpha = 0.62f,
+                    alpha = 1f,
                 )
                 val a = flow * 2f * PI.toFloat()
                 drawCircle(
@@ -268,25 +298,25 @@ private fun HeroCard(isDefaultHome: Boolean, onClick: () -> Unit) {
                     center = Offset(size.width * (0.12f + 0.07f * cos(a)), size.height * (0.92f + 0.05f * sin(a))),
                 )
             }
-            .border(1.dp, Color.White.copy(alpha = 0.22f), shape),
+            .border(1.dp, Color.White.copy(alpha = 0.28f), shape),
     ) {
         Row(
-            Modifier.align(Alignment.CenterStart).padding(horizontal = 22.dp),
+            Modifier.align(Alignment.CenterStart).padding(horizontal = 26.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(Modifier.graphicsLayer { scaleX = breathe; scaleY = breathe }) { AppLogo(size = 72.dp) }
-            Spacer(Modifier.width(16.dp))
-            Column {
-                Text(stringResource(R.string.app_name), color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+            Box(Modifier.graphicsLayer { scaleX = breathe; scaleY = breathe }) { AppLogo(size = 96.dp) }
+            Spacer(Modifier.width(20.dp))
+            Column(Modifier.weight(1f)) {
+                Text(stringResource(R.string.app_name), color = Color.White, fontSize = 36.sp, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(8.dp))
                 Text(
                     stringResource(if (isDefaultHome) R.string.default_home_active else R.string.default_home_select),
                     color = Color.White,
-                    fontSize = 13.sp,
+                    fontSize = 15.sp,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier
-                        .background(Color.Black.copy(alpha = 0.28f), CircleShape)
-                        .padding(horizontal = 12.dp, vertical = 5.dp),
+                        .background(Color.White.copy(alpha = 0.16f), CircleShape)
+                        .padding(horizontal = 14.dp, vertical = 7.dp),
                 )
             }
         }
@@ -309,10 +339,10 @@ private fun FinishSetupBanner(count: Int, onClick: () -> Unit) {
             .fillMaxWidth()
             .entrance(1)
             .bouncyClick(onClick)
-            .glass(shape, tint = Tokens.Destructive.copy(alpha = 0.32f), profile = GlassProfile.Tile)
+            .glass(shape, tint = Color.Black.copy(alpha = 0.14f), profile = GlassProfile.Tile)
             .clip(shape)
-            .border(1.dp, Tokens.Destructive.copy(alpha = 0.5f), shape)
-            .padding(horizontal = 18.dp, vertical = 16.dp),
+            .border(1.dp, Color.White.copy(alpha = 0.24f), shape)
+            .padding(horizontal = 22.dp, vertical = 22.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
@@ -328,7 +358,7 @@ private fun FinishSetupBanner(count: Int, onClick: () -> Unit) {
         Text(
             stringResource(R.string.finish_setup_title),
             color = Color.White,
-            fontSize = 17.sp,
+            fontSize = 20.sp,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.weight(1f),
         )

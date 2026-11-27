@@ -71,6 +71,7 @@ import com.hoisly.launcher.ui.glass.isLiquidGlassReady
 import com.hoisly.launcher.ui.glass.resolveGlassMode
 import com.hoisly.launcher.ui.glass.LocalGlassStyle
 import com.hoisly.launcher.ui.home.AppTransitionPhase
+import com.hoisly.launcher.settings.OrientationLock
 import com.hoisly.launcher.ui.home.HomeScreen
 import com.hoisly.launcher.ui.lockscreen.HoislyLockScreen
 import com.hoisly.launcher.ui.home.LauncherActions
@@ -168,8 +169,20 @@ class MainActivity : ComponentActivity(), LauncherActions {
                 settings.badges.takeIf { it != BadgeStyle.Off }?.let { BadgeSource(badgeCounts, it) }
             }
             // Like iOS27L, the status bar makes room for the Edit/Done bar in edit mode.
-            LaunchedEffect(editMode) {
+            LaunchedEffect(editMode, settings.hideNavigationBar) {
                 applyStatusBarVisibility(hidden = editMode)
+            }
+            // UI Lab: keep the screen on and the allowed rotation follow the settings live.
+            LaunchedEffect(settings.keepScreenOn) {
+                if (settings.keepScreenOn) window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                else window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
+            LaunchedEffect(settings.orientationLock) {
+                requestedOrientation = when (settings.orientationLock) {
+                    OrientationLock.Portrait -> android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                    OrientationLock.Auto -> android.content.pm.ActivityInfo.SCREEN_ORIENTATION_FULL_USER
+                    OrientationLock.Landscape -> android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+                }
             }
             CompositionLocalProvider(
                 LocalSettingsState provides settings,
@@ -245,7 +258,12 @@ class MainActivity : ComponentActivity(), LauncherActions {
         if (homeIntents.resume()) vm.returnToHome.tryEmit(Unit)
         var closing = false
         var returning = false
-        if (leftHome) {
+        // Back in front after an app was started through the surface. onStop is not guaranteed to
+        // have run (the user went Home while the app was still opening, or the app was a dialog or
+        // translucent), and without this the full-screen surface would stay up as a blank colour
+        // screen until the start timeout.
+        val strandedSurface = appStarted && vm.appTransition.value?.phase == AppTransitionPhase.Opening
+        if (leftHome || strandedSurface) {
             leftHome = false
             returning = true
             closing = vm.beginAppClosing()
@@ -316,6 +334,9 @@ class MainActivity : ComponentActivity(), LauncherActions {
         controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         if (hidden) controller.hide(WindowInsetsCompat.Type.statusBars())
         else controller.show(WindowInsetsCompat.Type.statusBars())
+        // UI Lab: the navigation bar can be tucked away too; a swipe from the edge shows it for a moment.
+        if (vm.settings.state.value.hideNavigationBar) controller.hide(WindowInsetsCompat.Type.navigationBars())
+        else controller.show(WindowInsetsCompat.Type.navigationBars())
     }
 
 
@@ -407,7 +428,7 @@ class MainActivity : ComponentActivity(), LauncherActions {
         val icon = icons.cached(app, iconSizePx)
         if (replace) vm.switchAppTransition(bounds, icon) else vm.beginAppTransition(bounds, icon)
         launchJob = lifecycleScope.launch {
-            delay((Motion.APP_LEAD_MS * animatorScale()).toLong())
+            delay(Motion.APP_LEAD_MS)
             // The icon-origin surface is the only opening animation. Explicitly disable
             // the app-window transition (0, 0) so Android cannot add a second animation on top.
             // The solid-color splash style also prevents a centered app icon from scaling/fading.

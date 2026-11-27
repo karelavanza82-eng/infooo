@@ -7,6 +7,8 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.WindowInsets
@@ -258,6 +260,14 @@ fun HomeScreen(vm: LauncherViewModel, actions: LauncherActions) {
             },
     ) {
         ParallaxWallpaper(parallaxWallpaper, enabled = settings.homeBehavior.wallpaperParallax)
+        // UI Lab: darken the wallpaper behind the icons (icons and glass keep their own look).
+        if (settings.wallpaperDim > 0f) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .drawBehind { drawRect(Color.Black.copy(alpha = settings.wallpaperDim)) },
+            )
+        }
         Box(
             Modifier
                 .fillMaxSize()
@@ -434,6 +444,9 @@ fun HomeScreen(vm: LauncherViewModel, actions: LauncherActions) {
         PanelHost(panels, vm)
 
         DraggedIcon(drag)
+
+        // UI Lab: live frame-rate readout.
+        if (settings.showFps) FpsMeter()
     }
     }
 }

@@ -41,21 +41,22 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hoisly.launcher.R
+import com.hoisly.launcher.settings.LocalSettingsState
 import com.hoisly.launcher.ui.glass.LocalGlassSource
 import com.hoisly.launcher.ui.theme.Motion
 import kotlin.math.roundToInt
 
 /** Sizes of the page frame: the iOS navigation bar over a scrolling grouped list. */
 private object PageStyle {
-    val BarHeight = 56.dp
+    val BarHeight = 64.dp
     /** How far the darkening under the bar reaches below it, so rows fade out under the bar. */
     val ScrollEdge = 28.dp
     val ScrollEdgeColor = Color.Black.copy(alpha = 0.82f)
-    val SidePadding = 16.dp
-    val LargeTitleSize = 34.sp
-    val InlineTitleSize = 17.sp
+    val SidePadding = 18.dp
+    val LargeTitleSize = 42.sp
+    val InlineTitleSize = 19.sp
     /** Scroll of the large title after which its small copy appears in the bar. */
-    val CollapseOffset = 36.dp
+    val CollapseOffset = 44.dp
     val NoWallpaperGradient = listOf(Color(0xFF1A2238), Color(0xFF0B0E18), Color.Black)
 }
 
@@ -108,6 +109,8 @@ private const val LARGE_TITLE_KEY = "settingsLargeTitle"
 @Composable
 private fun Modifier.wallpaperBackground(): Modifier {
     val glass = LocalGlassSource.current
+    // UI Lab: how dark the blurred wallpaper behind every settings page is.
+    val dim = LocalSettingsState.current.settingsDim
     return drawBehind {
         if (glass != null) {
             drawImage(
@@ -115,7 +118,7 @@ private fun Modifier.wallpaperBackground(): Modifier {
                 dstSize = IntSize(size.width.roundToInt(), size.height.roundToInt()),
                 filterQuality = FilterQuality.Medium,
             )
-            drawRect(SettingsStyle.PageScrim)
+            drawRect(Color.Black.copy(alpha = dim))
         } else {
             drawRect(Brush.verticalGradient(PageStyle.NoWallpaperGradient))
         }
@@ -131,7 +134,7 @@ private fun LargeTitle(title: String) {
         fontWeight = FontWeight.Bold,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
-        modifier = Modifier.padding(start = 4.dp, top = 4.dp, bottom = 12.dp),
+        modifier = Modifier.padding(start = 4.dp, top = 6.dp, bottom = 16.dp),
     )
 }
 

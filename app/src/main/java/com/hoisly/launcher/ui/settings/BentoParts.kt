@@ -103,7 +103,7 @@ internal fun Modifier.bouncyClick(onClick: () -> Unit): Modifier {
 }
 
 @Composable
-private fun IconChip(icon: ImageVector, pulse: Boolean, size: Dp = 42.dp) {
+private fun IconChip(icon: ImageVector, pulse: Boolean, size: Dp = 52.dp) {
     val transition = rememberInfiniteTransition(label = "chip")
     val beat by transition.animateFloat(
         initialValue = 1f,
@@ -119,14 +119,15 @@ private fun IconChip(icon: ImageVector, pulse: Boolean, size: Dp = 42.dp) {
                 scaleX = s
                 scaleY = s
             }
-            .background(Color.White.copy(alpha = 0.22f), CircleShape),
+            .background(Color.White.copy(alpha = 0.16f), CircleShape)
+            .border(1.dp, Color.White.copy(alpha = 0.22f), CircleShape),
         contentAlignment = Alignment.Center,
     ) {
         Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(size * 0.54f))
     }
 }
 
-/** One colourful gradient tile of the new settings home. */
+/** One translucent glass tile of the settings home. [color] is no longer used to tint it. */
 @Composable
 internal fun BentoTile(
     icon: ImageVector,
@@ -139,29 +140,29 @@ internal fun BentoTile(
     kind: TileKind = TileKind.Tall,
     pulse: Boolean = false,
 ) {
-    val shape = RoundedCornerShape(if (kind == TileKind.Compact) 22.dp else 28.dp)
+    val shape = RoundedCornerShape(if (kind == TileKind.Compact) 28.dp else 34.dp)
     val height = when (kind) {
-        TileKind.Tall -> 128.dp
-        TileKind.Wide -> 92.dp
-        TileKind.Compact -> 76.dp
+        TileKind.Tall -> 152.dp
+        TileKind.Wide -> 116.dp
+        TileKind.Compact -> 100.dp
     }
-    // Soft sheen on top of the glass so each tile keeps some depth.
-    val sheen = Brush.linearGradient(listOf(Color.White.copy(alpha = 0.16f), Color.Transparent, lerp(color, Color.Black, 0.5f).copy(alpha = 0.22f)))
+    // Soft neutral sheen so the glass keeps some depth without any colour.
+    val sheen = Brush.linearGradient(listOf(Color.White.copy(alpha = 0.12f), Color.Transparent, Color.Black.copy(alpha = 0.10f)))
     Box(
         modifier
             .height(height)
             .entrance(index)
             .bouncyClick(onClick)
-            .glass(shape, tint = color.copy(alpha = 0.42f), profile = GlassProfile.Tile)
+            .glass(shape, tint = Color.Black.copy(alpha = 0.12f), profile = GlassProfile.Tile)
             .clip(shape)
             .background(sheen)
-            .border(1.dp, Color.White.copy(alpha = 0.14f), shape),
+            .border(1.dp, Color.White.copy(alpha = 0.20f), shape),
     ) {
         if (kind != TileKind.Compact) {
             Icon(
                 icon,
                 contentDescription = null,
-                tint = Color.White.copy(alpha = 0.13f),
+                tint = Color.White.copy(alpha = 0.09f),
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .offset(x = 18.dp, y = 18.dp)
@@ -171,7 +172,7 @@ internal fun BentoTile(
         }
         when (kind) {
             TileKind.Tall -> Column(
-                Modifier.fillMaxSize().padding(16.dp),
+                Modifier.fillMaxSize().padding(18.dp),
                 verticalArrangement = Arrangement.SpaceBetween,
             ) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
@@ -181,50 +182,50 @@ internal fun BentoTile(
                         Text(
                             subtitle,
                             color = Color.White,
-                            fontSize = 12.sp,
+                            fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
-                                .background(Color.Black.copy(alpha = 0.26f), CircleShape)
-                                .padding(horizontal = 10.dp, vertical = 4.dp),
+                                .background(Color.White.copy(alpha = 0.14f), CircleShape)
+                                .padding(horizontal = 12.dp, vertical = 5.dp),
                         )
                     }
                 }
                 Text(
                     title,
                     color = Color.White,
-                    fontSize = 17.sp,
-                    lineHeight = 20.sp,
+                    fontSize = 20.sp,
+                    lineHeight = 24.sp,
                     fontWeight = FontWeight.Bold,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
             TileKind.Wide -> Row(
-                Modifier.fillMaxSize().padding(horizontal = 18.dp),
+                Modifier.fillMaxSize().padding(horizontal = 22.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconChip(icon, pulse, size = 48.dp)
-                Spacer(Modifier.width(14.dp))
+                IconChip(icon, pulse, size = 60.dp)
+                Spacer(Modifier.width(18.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(title, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(title, color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     if (subtitle != null) {
-                        Text(subtitle, color = Color.White.copy(alpha = 0.75f), fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(subtitle, color = Color.White.copy(alpha = 0.78f), fontSize = 15.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
                     }
                 }
-                Icon(Icons.Rounded.ChevronRight, contentDescription = null, tint = Color.White.copy(alpha = 0.7f), modifier = Modifier.size(26.dp))
+                Icon(Icons.Rounded.ChevronRight, contentDescription = null, tint = Color.White.copy(alpha = 0.7f), modifier = Modifier.size(30.dp))
             }
             TileKind.Compact -> Row(
-                Modifier.fillMaxSize().padding(horizontal = 14.dp),
+                Modifier.fillMaxSize().padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconChip(icon, pulse, size = 34.dp)
-                Spacer(Modifier.width(10.dp))
+                IconChip(icon, pulse, size = 46.dp)
+                Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(title, color = Color.White, fontSize = 14.sp, lineHeight = 17.sp, fontWeight = FontWeight.SemiBold, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    Text(title, color = Color.White, fontSize = 17.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold, maxLines = 2, overflow = TextOverflow.Ellipsis)
                     if (subtitle != null) {
-                        Text(subtitle, color = Color.White.copy(alpha = 0.75f), fontSize = 11.5.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(subtitle, color = Color.White.copy(alpha = 0.78f), fontSize = 13.5.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                 }
             }
@@ -236,16 +237,16 @@ internal fun BentoTile(
 @Composable
 internal fun BentoHeader(text: String, index: Int) {
     Row(
-        Modifier.entrance(index).padding(start = 4.dp, top = 26.dp, bottom = 12.dp),
+        Modifier.entrance(index).padding(start = 4.dp, top = 30.dp, bottom = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
             Modifier
                 .size(width = 18.dp, height = 5.dp)
-                .background(Brush.horizontalGradient(listOf(SettingsStyle.Tile.Pink, SettingsStyle.Tile.Purple)), CircleShape),
+                .background(Color.White.copy(alpha = 0.55f), CircleShape),
         )
         Spacer(Modifier.width(10.dp))
-        Text(text.uppercase(), color = Color.White.copy(alpha = 0.65f), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 1.6.sp)
+        Text(text.uppercase(), color = Color.White.copy(alpha = 0.78f), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 1.6.sp)
     }
 }
 
@@ -253,8 +254,8 @@ internal fun BentoHeader(text: String, index: Int) {
 @Composable
 internal fun BentoRow(content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit) {
     Row(
-        Modifier.fillMaxWidth().padding(bottom = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        Modifier.fillMaxWidth().padding(bottom = 14.dp),
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
         content = content,
     )
 }
