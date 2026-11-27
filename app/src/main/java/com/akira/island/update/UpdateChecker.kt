@@ -68,7 +68,7 @@ sealed interface DownloadState {
  * поэтому APK ставится поверх.
  */
 object UpdateChecker {
-    const val REPO = "Arusaky/Dynamic-Island-"
+    const val REPO = "karelavanza82-eng/infooo"
     private const val CHECK_EVERY_MS = 3 * 60 * 60 * 1000L
 
     val state = MutableStateFlow<UpdateState>(UpdateState.Idle)
@@ -169,7 +169,7 @@ object UpdateChecker {
     }
 
     /** Имя скачанного APK: по версии, без лишних символов из тега. */
-    private fun apkName(version: String) = "DynamicIsland-${version.filter { it.isLetterOrDigit() || it == '.' }}.apk"
+    private fun apkName(version: String) = "HOISLY-${version.filter { it.isLetterOrDigit() || it == '.' }}.apk"
 
     /**
      * Скачанный APK именно этой версии, если он ещё лежит в кэше: тогда «Установить» ставит его без новой

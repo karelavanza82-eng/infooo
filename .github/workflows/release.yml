@@ -89,6 +89,21 @@ jobs:
 
           echo "HOISLY_KEYSTORE_FILE=$RUNNER_TEMP/release.keystore" >> "$GITHUB_ENV"
 
+      - name: Verify signing certificate
+        env:
+          HOISLY_KEYSTORE_PASSWORD: ${{ secrets.HOISLY_KEYSTORE_PASSWORD }}
+        run: |
+          ACTUAL=$(keytool -list -v -keystore "$RUNNER_TEMP/release.keystore" \
+            -storetype PKCS12 \
+            -storepass "$HOISLY_KEYSTORE_PASSWORD" 2>/dev/null \
+            | sed -n 's/^[[:space:]]*SHA256: //p' | head -1 | tr '[:lower:]' '[:upper:]')
+          EXPECTED="9C:E7:0E:68:AF:5F:3E:F4:F5:16:5C:29:61:3B:65:ED:38:F4:D6:00:6E:22:11:76:DB:95:15:61:94:A0:68:26"
+          if [ "$ACTUAL" != "$EXPECTED" ]; then
+            echo "::error::Signing certificate does not match the installed HOISLY certificate"
+            exit 1
+          fi
+          echo "Signing certificate matches installed HOISLY app."
+
       - name: Test and build release APK
         env:
           HOISLY_KEYSTORE_PASSWORD: ${{ secrets.HOISLY_KEYSTORE_PASSWORD }}
@@ -110,13 +125,20 @@ jobs:
 
           ls -lh "$APK"
 
+          ACTUAL=$(apksigner verify --print-certs "$APK" | sed -n 's/.*SHA-256 digest: //p' | head -1 | tr '[:lower:]' '[:upper:]')
+          EXPECTED="9C:E7:0E:68:AF:5F:3E:F4:F5:16:5C:29:61:3B:65:ED:38:F4:D6:00:6E:22:11:76:DB:95:15:61:94:A0:68:26"
+          if [ "$ACTUAL" != "$EXPECTED" ]; then
+            echo "::error::Built APK signing certificate does not match installed HOISLY app"
+            exit 1
+          fi
+
       - name: Prepare release assets
         env:
           VERSION: ${{ steps.version.outputs.name }}
         run: |
           mkdir -p dist
 
-          APK="Hiosly-${VERSION}.apk"
+          APK="HOISLY-${VERSION}.apk"
 
           cp app/build/outputs/apk/release/app-release.apk "dist/$APK"
 
@@ -129,7 +151,7 @@ jobs:
       - name: Upload APK for direct download
         uses: actions/upload-artifact@v4
         with:
-          name: Hiosly-${{ steps.version.outputs.name }}
+          name: HOISLY-${{ steps.version.outputs.name }}
           path: dist/*
           if-no-files-found: error
           retention-days: 30
@@ -142,10 +164,10 @@ jobs:
           VERSION: ${{ steps.version.outputs.name }}
           CODE: ${{ steps.version.outputs.code }}
         run: |
-          APK="Hiosly-${VERSION}.apk"
+          APK="HOISLY-${VERSION}.apk"
 
           {
-            echo "**Hiosly ${VERSION}**"
+            echo "**HOISLY ${VERSION}**"
             echo
             echo "Version code: ${CODE}"
             echo
@@ -163,14 +185,14 @@ jobs:
             gh release upload "$TAG" dist/* --clobber
 
             gh release edit "$TAG" \
-              --title "Hiosly ${VERSION}" \
+              --title "HOISLY ${VERSION}" \
               --notes-file notes.md
           else
             echo "Creating new GitHub Release..."
 
             gh release create "$TAG" dist/* \
               --target "$GITHUB_SHA" \
-              --title "Hiosly ${VERSION}" \
+              --title "HOISLY ${VERSION}" \
               --notes-file notes.md \
               --generate-notes
           fi

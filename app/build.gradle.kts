@@ -13,22 +13,21 @@ android {
         applicationId = "com.hoisly.launcher"
         minSdk = 31
         targetSdk = 37
-        versionCode = 20101
-        versionName = "2.1.1"
+        versionCode = 20102
+        versionName = "2.1.2"
     }
 
     // CI signs releases with the project keystore passed through the environment.
     val releaseKeystore = providers.environmentVariable("HOISLY_KEYSTORE_FILE").orNull
+        ?: error("HOISLY_KEYSTORE_FILE is required to build a signed release APK")
 
     signingConfigs {
-        if (releaseKeystore != null) {
-            create("release") {
-                storeFile = file(releaseKeystore)
-                storeType = "PKCS12"
-                storePassword = providers.environmentVariable("HOISLY_KEYSTORE_PASSWORD").get()
-                keyAlias = providers.environmentVariable("HOISLY_KEY_ALIAS").get()
-                keyPassword = providers.environmentVariable("HOISLY_KEY_PASSWORD").get()
-            }
+        create("release") {
+            storeFile = file(releaseKeystore)
+            storeType = "PKCS12"
+            storePassword = providers.environmentVariable("HOISLY_KEYSTORE_PASSWORD").get()
+            keyAlias = providers.environmentVariable("HOISLY_KEY_ALIAS").get()
+            keyPassword = providers.environmentVariable("HOISLY_KEY_PASSWORD").get()
         }
     }
 
@@ -49,9 +48,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName(
-                if (releaseKeystore != null) "release" else "debug"
-            )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
