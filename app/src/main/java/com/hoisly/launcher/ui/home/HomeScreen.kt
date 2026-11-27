@@ -233,7 +233,7 @@ fun HomeScreen(vm: LauncherViewModel, actions: LauncherActions) {
     // 0 = sharp, 1 = fully blurred. Read only in layer blocks: it never recomposes the screen.
     val overlayOpen = appTransition?.phase == AppTransitionPhase.Opening || panels.panel != null || menu != null || openFolder != null || search != null || openGroupId != null || chooserApp != null || gallery
     val ios27Launch = appTransition != null && settings.appAnimationStyle == "IOS27"
-    val styledLaunch = appTransition != null && settings.appAnimationStyle != "HOISLY"
+    val styledLaunch = appTransition != null && settings.appAnimationStyle != "HOISLY" && settings.appAnimationStyle != "PARALLEL"
     val blur = animateFloatAsState(
         if (overlayOpen && (settings.homeBlur || styledLaunch)) 1f else 0f,
         Motion.fade(),

@@ -310,7 +310,7 @@ fun AnimationSettingsScreen(vm: SettingsViewModel, onBack: () -> Unit) {
                     "ANTICIPATE" to ("Anticipate" to "Layar mundur sedikit lalu melesat ke depan"),
                     "SCAN" to ("Scan" to "Dua garis cahaya membelah layar dengan efek frosted"),
                     "MIST" to ("Mist" to "Kabut cahaya lembut bergerak dari tepi layar"),
-                    "PARALLEL" to ("Parallel" to "Ketuk banyak ikon cepat: tiap ikon membuka kartunya sendiri bersamaan, app terakhir yang terbuka"),
+                    "PARALLEL" to ("Parallel" to "Animasi sama seperti Default Hoisly, tapi bisa ketuk banyak app cepat tanpa batas"),
                 )
                 styles.forEach { (style, details) ->
                     val selected = settings.appAnimationStyle == style
@@ -374,7 +374,6 @@ private fun AppAnimationStylePreview(
             "ANTICIPATE" -> 480
             "SCAN" -> 520
             "MIST" -> 580
-            "PARALLEL" -> 900
             else -> 420
         }
         val easing = when (style) {

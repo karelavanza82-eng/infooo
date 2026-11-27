@@ -69,6 +69,7 @@ import com.hoisly.launcher.ui.glass.isLiquidGlassReady
 import com.hoisly.launcher.ui.glass.resolveGlassMode
 import com.hoisly.launcher.ui.glass.LocalGlassStyle
 import com.hoisly.launcher.ui.home.HomeScreen
+import com.hoisly.launcher.ui.home.PARALLEL_GAP_MS
 import com.hoisly.launcher.ui.home.PARALLEL_IDLE_MS
 import com.hoisly.launcher.ui.lockscreen.HoislyLockScreen
 import com.hoisly.launcher.ui.home.LauncherActions
@@ -358,9 +359,12 @@ class MainActivity : ComponentActivity(), LauncherActions {
     }
 
     override fun launch(app: AppInfo, bounds: Rect) {
-        // Parallel animation: every tap gets its own card; only the last tap opens its app.
+        // Parallel style: every tap plays the default surface animation on its own and is never
+        // ignored. The apps open only once the tapping stops, in the order they were tapped.
         val launchSettings = vm.settings.state.value
-        if (launchSettings.appAnimationStyle == "PARALLEL" && launchSettings.openCloseAnimation && !bounds.isEmpty && animatorScale() > 0f) {
+        if (launchSettings.appAnimationStyle == "PARALLEL" &&
+            launchSettings.openCloseAnimation && !bounds.isEmpty && animatorScale() > 0f
+        ) {
             launchParallel(app, bounds)
             return
         }
@@ -382,18 +386,33 @@ class MainActivity : ComponentActivity(), LauncherActions {
         startApp(app, source, options)
     }
 
+    private val pendingParallel = ArrayList<Pair<AppInfo, Rect>>()
     private var parallelJob: kotlinx.coroutines.Job? = null
+    private var parallelFlushing = false
 
     private fun launchParallel(app: AppInfo, bounds: Rect) {
         vm.spawnParallelCard(bounds, icons.cached(app, iconSizePx))
+        pendingParallel.add(app to bounds)
+        // Already opening the queue: the running loop picks this tap up by itself.
+        if (parallelFlushing) return
         parallelJob?.cancel()
         parallelJob = lifecycleScope.launch {
             delay(PARALLEL_IDLE_MS)
-            vm.launchStats.recordLaunch(app.key)
-            val options = ActivityOptions.makeCustomAnimation(this@MainActivity, 0, 0)
-                .withoutSplashAnimation()
-                .toBundle()
-            startApp(app, bounds.toAndroidRect(), options)
+            parallelFlushing = true
+            try {
+                while (pendingParallel.isNotEmpty()) {
+                    val (next, nextBounds) = pendingParallel.removeAt(0)
+                    vm.launchStats.recordLaunch(next.key)
+                    // A short fade-in instead of the system animation, so the app does not just pop up.
+                    val options = ActivityOptions.makeCustomAnimation(this@MainActivity, android.R.anim.fade_in, 0)
+                        .withoutSplashAnimation()
+                        .toBundle()
+                    startApp(next, nextBounds.toAndroidRect(), options)
+                    if (pendingParallel.isNotEmpty()) delay(PARALLEL_GAP_MS)
+                }
+            } finally {
+                parallelFlushing = false
+            }
         }
     }
 
