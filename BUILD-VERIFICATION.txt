@@ -1,0 +1,53 @@
+HOISLY SOURCE UPDATE — 2026-11-27
+
+Changed files
+-------------
+1. app/src/main/java/com/hoisly/launcher/ui/widgets/GlyphLiquidGlass.kt
+   - Added the missing Compose dp import.
+   - Kept the existing Hoisly Liquid Glass painter/shader path.
+   - Applies the renderer through the measured clock glyph path, so no rectangular
+     panel is drawn. The fallback paints only the glyph mask.
+   - Centers glyph geometry using measured text width.
+
+2. app/src/main/java/com/hoisly/launcher/ui/widgets/BoldClockWidget.kt
+   - Replaced invalid Typeface.BLACK references with named Android typefaces.
+   - Added five distinct heavy typeface choices: sans black, black italic, bold serif,
+     bold monospace, and rounded bold.
+   - Added per-widget appearance/font/scale preferences.
+   - Added a long-press customization dialog with live glyph preview, appearance
+     selection, font selection, pinch resize, Save, and Cancel.
+   - Added pinch-to-resize on the placed clock, with size constrained to its available
+     widget bounds to avoid clipping.
+   - Keeps the widget surface transparent; the clock is rendered as glyphs only.
+
+3. app/src/main/res/values/strings.xml
+   - Added English strings for the clock customization UI.
+
+4. app/src/main/res/values-ru/strings.xml
+   - Added Russian translations for the clock customization UI.
+
+Preserved without modification
+------------------------------
+- NotificationBadgeFeed.kt and its cumulative per-app persistent totals.
+- LauncherViewModel.removeEmptyPages() and its Edit Menu integration.
+- Existing launcher navigation, widget registration, and shared Liquid Glass renderer.
+- Existing app identity and project architecture.
+
+Verification
+------------
+- ZIP extraction and archive integrity: passed.
+- XML parsing for both changed string resource files: passed.
+- Static source checks: missing dp import corrected; Typeface.BLACK references removed.
+- :app:compileDebugKotlin: NOT RUN TO COMPLETION.
+  Gradle wrapper could not download Gradle 9.8.1 because services.gradle.org DNS
+  resolution failed (java.net.UnknownHostException).
+- :app:testDebugUnitTest: NOT RUN TO COMPLETION for the same network failure.
+- :app:assembleRelease: NOT RUN TO COMPLETION for the same network failure.
+- No Android SDK is installed in this execution environment.
+- No APK was generated. Installability and visual behavior on a device remain unverified.
+
+Important
+---------
+This archive is a modified source project, not a verified release. Run the three
+Gradle commands on a machine with JDK 17, Android SDK 37, and Gradle distribution
+access before installing or publishing.
