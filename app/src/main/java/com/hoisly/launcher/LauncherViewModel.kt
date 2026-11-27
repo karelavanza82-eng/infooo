@@ -356,7 +356,8 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
 
     /** Applies a saved arrangement in one layout update; no JSON download or import is needed. */
     fun applyHomeSetup(id: String) {
-        if (!canArrange) return
+        // Applying a saved snapshot is a restore operation, not a user rearrangement.
+        // It must remain available even when ordinary layout editing is locked.
         val setup = homeSetups.value.firstOrNull { it.id == id } ?: return
         writer.sync { setup.layout }
         homeSetupDialog.value = false
