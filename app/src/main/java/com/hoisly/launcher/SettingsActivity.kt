@@ -119,7 +119,7 @@ class SettingsActivity : ComponentActivity(), SettingsActions {
     private fun refreshSystemState() {
         isDefaultHome = roleManager.isRoleHeld(RoleManager.ROLE_HOME)
         isHomeRoleAvailable = roleManager.isRoleAvailable(RoleManager.ROLE_HOME)
-        hasWallpaperAccess = WallpaperBlur.hasAccess(this)
+        hasWallpaperAccess = WallpaperBlur.hasAccess()
         IslandAccess.refresh(this)
     }
 
@@ -132,14 +132,14 @@ class SettingsActivity : ComponentActivity(), SettingsActions {
     }
 
     override fun requestWallpaperAccess() {
-        // Match ZFL: WallpaperManager bitmap access on Android 11+ requires All files access.
-        // The Home-screen prompt still offers the system photo picker as a narrow fallback.
-        val intent = Intent(
+        // Use the same ZFL special-access page as the home-screen prompt.
+        val appAccess = Intent(
             Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
             "package:$packageName".toUri(),
         )
-        runCatching { startActivity(intent) }
-            .onFailure { startActivity(Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)) }
+        runCatching { startActivity(appAccess) }.onFailure {
+            runCatching { startActivity(Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)) }
+        }
     }
 
     override fun setAppLanguage(tag: String?) {

@@ -1,7 +1,7 @@
 HOISLY v9.2 source verification
 
-Archive: source ZIP integrity checked after adaptive wallpaper-access patch.
-Source changes: ZFL-inspired WallpaperManager access route with OEM-adaptive API probing, persisted system-picker fallback, actual access diagnostics, and preserved HOISLY glass renderer.
+Archive: source ZIP created and integrity checked.
+Source changes: three explicit glass modes implemented (WallpaperBlur, Frosted, Liquid).
 Gradle compile: NOT VERIFIED. Wrapper requires Gradle 9.8.1; download failed in this environment with UnknownHostException for services.gradle.org.
 APK: NOT BUILT.
 Physical-device tests: NOT RUN.

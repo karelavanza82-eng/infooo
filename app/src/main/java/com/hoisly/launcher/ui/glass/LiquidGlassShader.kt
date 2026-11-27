@@ -1,7 +1,5 @@
 package com.hoisly.launcher.ui.glass
 
-import android.content.Context
-
 import android.graphics.BitmapShader
 import android.graphics.RuntimeShader
 import android.graphics.Shader
@@ -226,14 +224,14 @@ internal object LiquidGlassShader {
  * Plain-text status of Liquid Glass for the settings screen, so a tester can screenshot it
  * instead of collecting logcat. Main thread only (may compile the shader).
  */
-fun glassDiagnosticsText(source: GlassSource?, context: Context? = null): String {
+fun glassDiagnosticsText(source: GlassSource?): String {
     val sdk = Build.VERSION.SDK_INT
     val supported = isLiquidGlassSupported(sdk)
     val shaderOk = supported && isLiquidGlassReady()
     return buildString {
         appendLine("Android API: $sdk (${Build.MANUFACTURER} ${Build.MODEL})")
         appendLine("Liquid supported (API>=33): $supported")
-        appendLine("Wallpaper access: ${WallpaperBlur.hasAccess(context)}")
+        appendLine("Wallpaper access: ${WallpaperBlur.hasAccess()}")
         appendLine("Wallpaper loaded: ${source != null}, sharp=${source?.sharp != null}, body=${source?.body != null}")
         appendLine("Shader compiled: $shaderOk")
         appendLine(GlassStats.summary())

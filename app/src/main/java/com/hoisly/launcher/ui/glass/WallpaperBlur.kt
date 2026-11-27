@@ -13,6 +13,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.BitmapFactory
 import android.os.Build
+import android.os.Environment
 import android.util.Log
 import android.view.WindowManager
 import androidx.compose.ui.graphics.ImageBitmap
@@ -65,6 +66,10 @@ object WallpaperBlur {
     /** Saturation boost of the blurred copy; Liquid glass applies it to the sharp copy too. */
     const val SATURATION: Float = 1.6f
 
+    /** True once a wallpaper was read successfully through WallpaperManager in this process. */
+    @Volatile
+    private var loadedOnce = false
+
     /** Why the last read failed (shown in logcat, tag HoislyGlass); null when it worked. */
     @Volatile
     var lastFailure: String? = null
@@ -90,6 +95,7 @@ object WallpaperBlur {
     fun setFallbackWallpaper(context: Context, uri: Uri): Boolean = runCatching {
         context.contentResolver.takePersistableUriPermission(uri, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(KEY_FALLBACK_URI, uri.toString()).apply()
+        loadedOnce = false
         appContext = context.applicationContext
         lastFailure = null
         true
@@ -100,41 +106,25 @@ object WallpaperBlur {
 
     fun clearFallbackWallpaper(context: Context) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().remove(KEY_FALLBACK_URI).apply()
+        loadedOnce = false
     }
 
     fun hasFallbackWallpaper(context: Context): Boolean =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY_FALLBACK_URI, null) != null
 
     /**
-     * Probe the actual APIs instead of assuming that a permission implies wallpaper access.
-     * OEMs differ: some allow WallpaperManager without All files access, while others reject it
-     * even when that special access is enabled. A persisted document URI is the least-privilege
-     * fallback and is checked independently.
+     * Whether the special access required by WallpaperManager is enabled. On Android 13+
+     * READ_MEDIA_IMAGES is not a substitute for MANAGE_EXTERNAL_STORAGE when reading the
+     * current system wallpaper. The home/settings prompts use this same state check.
      */
-    fun hasAccess(context: Context? = appContext): Boolean {
-        val app = context?.applicationContext ?: return false
-        if (hasReadableFallback(app)) return true
-        return try {
-            val manager = WallpaperManager.getInstance(app)
-            // A live wallpaper is rendered by its service; the stored bitmap is not a faithful
-            // representation of the visible wallpaper, so request the selected-image fallback.
-            val isLiveWallpaper = runCatching { manager.wallpaperInfo != null }.getOrDefault(false)
-            if (isLiveWallpaper) false else manager.drawable != null || manager.peekDrawable() != null
-        } catch (_: SecurityException) {
-            false
-        } catch (_: Throwable) {
-            false
-        }
-    }
-
-    private fun hasReadableFallback(context: Context): Boolean {
-        val raw = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-            .getString(KEY_FALLBACK_URI, null) ?: return false
-        return try {
-            context.contentResolver.openFileDescriptor(Uri.parse(raw), "r")?.use { true } ?: false
-        } catch (_: Throwable) {
-            false
-        }
+    fun hasAccess(): Boolean {
+        // Android 13+ does not grant wallpaper-image access through READ_MEDIA_IMAGES.
+        // Android 14+ requires MANAGE_EXTERNAL_STORAGE for WallpaperManager image APIs.
+        // Use the actual special-access state, not a probe of the deprecated no-arg API:
+        // that API can throw even after the user has granted the correct access.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && Environment.isExternalStorageManager()) return true
+        val context = appContext ?: return false
+        return hasFallbackWallpaper(context)
     }
 
     /** Changes whenever the user sets a new wallpaper; -1 if unknown. */
@@ -204,33 +194,35 @@ object WallpaperBlur {
         appContext = context.applicationContext
         val manager = WallpaperManager.getInstance(context)
         val failures = mutableListOf<String>()
-        // Do not gate this on MANAGE_EXTERNAL_STORAGE or READ_MEDIA_IMAGES. Their relationship
-        // with WallpaperManager differs across Android releases and OEM ROMs. Probe the real API
-        // first, and treat SecurityException/null as a normal fallback condition.
-        try {
-            val isLiveWallpaper = runCatching { manager.wallpaperInfo != null }.getOrDefault(false)
-            if (isLiveWallpaper) {
-                failures += "live wallpaper: system bitmap may not match the rendered wallpaper; use selected-image fallback"
+        // A live wallpaper is rendered by its own service. WallpaperManager cannot provide
+        // the live frame as a bitmap, so do not silently substitute a stale static image.
+        if (runCatching { manager.getWallpaperInfo(WallpaperManager.FLAG_SYSTEM) }.getOrNull() != null) {
+            failures += "live wallpaper: system does not expose the rendered frame as a bitmap"
+        } else {
+            val attempts = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                // API 34 introduced the FLAG_* overloads. The legacy no-argument methods are
+                // documented to throw SecurityException on Android 14+, even on supported devices.
+                listOf<Pair<String, () -> Drawable?>>(
+                    "getDrawable(FLAG_SYSTEM)" to { manager.getDrawable(WallpaperManager.FLAG_SYSTEM) },
+                    "peekDrawable(FLAG_SYSTEM)" to { manager.peekDrawable(WallpaperManager.FLAG_SYSTEM) },
+                )
             } else {
-                val attempts = listOf<Pair<String, () -> Drawable?>>(
+                listOf<Pair<String, () -> Drawable?>>(
                     "drawable" to { manager.drawable },
                     "peekDrawable" to { manager.peekDrawable() },
                 )
-                for ((name, read) in attempts) {
-                    try {
-                        val d = read() ?: continue
-                        return d.toSoftwareDrawable(context)
-                    } catch (e: SecurityException) {
-                        failures += "$name: SecurityException ${e.message}"
-                    } catch (e: Throwable) {
-                        failures += "$name: ${e.javaClass.simpleName} ${e.message}"
-                    }
+            }
+            for ((name, read) in attempts) {
+                try {
+                    val d = read() ?: continue
+                    lastFailure = null
+                    return d.toSoftwareDrawable(context)
+                } catch (e: SecurityException) {
+                    failures += "$name: SecurityException ${e.message}"
+                } catch (e: Throwable) {
+                    failures += "$name: ${e.javaClass.simpleName} ${e.message}"
                 }
             }
-        } catch (e: SecurityException) {
-            failures += "wallpaperInfo: SecurityException ${e.message}"
-        } catch (e: Throwable) {
-            failures += "wallpaperInfo: ${e.javaClass.simpleName} ${e.message}"
         }
         // Android 13+ and many OEM builds restrict WallpaperManager independently of media permissions.
         // Fall back to an image explicitly selected by the user through the system document picker.
@@ -267,6 +259,7 @@ object WallpaperBlur {
     /** Draws the wallpaper center-cropped to the screen, like the system does, [downscale] times smaller. */
     private fun render(context: Context, downscale: Int, saturation: Float): Bitmap? {
         val drawable = readWallpaper(context) ?: return null
+        loadedOnce = true
         lastFailure = null
 
         val screen = context.getSystemService(WindowManager::class.java).maximumWindowMetrics.bounds

@@ -85,7 +85,6 @@ internal fun sampleApps(vm: SettingsViewModel, count: Int): List<AppInfo> {
 
 @Composable
 fun GlassSettingsScreen(vm: SettingsViewModel, actions: SettingsActions, onBack: () -> Unit) {
-    val context = LocalContext.current
     val settings by vm.settings.state.collectAsStateWithLifecycle()
     val wallpaper by vm.wallpaper.collectAsStateWithLifecycle()
     // Local values while dragging; persisted when the finger is lifted.
@@ -188,7 +187,7 @@ fun GlassSettingsScreen(vm: SettingsViewModel, actions: SettingsActions, onBack:
         }
         if (settings.blurEffect) {
             item {
-                val diag = glassDiagnosticsText(LocalGlassSource.current, context)
+                val diag = glassDiagnosticsText(LocalGlassSource.current)
                 SectionFooter("Glass diagnostics\n$diag")
             }
         }

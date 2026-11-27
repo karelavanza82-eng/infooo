@@ -434,9 +434,15 @@ class MainActivity : ComponentActivity(), LauncherActions {
     }
 
     override fun requestGlassAccess() {
-        // Do not request broad storage / all-files access for wallpaper. Let the user grant
-        // access to one image using Android's system picker when the OEM blocks WallpaperManager.
-        pickGlassWallpaper.launch(arrayOf("image/*"))
+        // Match ZFL's wallpaper access route. Android 13+/14+ WallpaperManager image access
+        // requires MANAGE_EXTERNAL_STORAGE; a photo-picker grant cannot replace this permission.
+        val appAccess = Intent(
+            Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+            Uri.parse("package:$packageName"),
+        )
+        runCatching { startActivity(appAccess) }.onFailure {
+            runCatching { startActivity(Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)) }
+        }
     }
 
     override fun openSettings() {
