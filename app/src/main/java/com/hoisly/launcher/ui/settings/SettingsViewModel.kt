@@ -9,7 +9,6 @@ import com.hoisly.launcher.data.AppRepository
 import com.hoisly.launcher.data.HomeState
 import com.hoisly.launcher.data.LayoutRepository
 import com.hoisly.launcher.data.LayoutStore
-import com.hoisly.launcher.data.toLayout
 import com.hoisly.launcher.data.buildHomeLayout
 import com.hoisly.launcher.data.AppLibraryState
 import com.hoisly.launcher.data.AppSnapshot
