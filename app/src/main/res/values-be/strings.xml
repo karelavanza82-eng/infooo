@@ -61,22 +61,22 @@
     <string name="remove_dialog_message">Праграма застанецца ўсталяванай, толькі знікне з галоўнага экрана.</string>
     <string name="remove_dialog_remove_from_home">Прыбраць з галоўнага экрана</string>
     <string name="remove_dialog_uninstall">Выдаліць праграму</string>
-    <string name="row_import">Імпартаваць размяшчэнне</string>
-    <string name="import_title">Імпарт размяшчэння</string>
-    <string name="import_description">Перанясіце галоўны экран з іншага лаўнчара: старонкі, папкі і док. Працуе з лаўнчарамі на аснове Android Launcher3, напрыклад iOS27L.</string>
-    <string name="import_choose_launcher">Лаўнчар</string>
+
+
+
+
     <string name="import_no_launchers">Сумяшчальных лаўнчараў не знойдзена.</string>
-    <string name="import_not_allowed">Гэты лаўнчар не дазваляе іншым праграмам чытаць яго размяшчэнне.</string>
-    <string name="import_summary">Што будзе імпартавана</string>
+
+
     <string name="import_pages">Старонкі</string>
     <string name="import_folders">Папкі</string>
     <string name="import_apps_on_home">Праграмы на галоўным экране</string>
     <string name="import_remove_others">Прыбраць іншыя праграмы з галоўнага экрана</string>
-    <string name="import_widgets_note">Віджэты пакуль не імпартуюцца. Праграмы, прыбраныя з галоўнага экрана, застаюцца ўсталяванымі.</string>
-    <string name="import_action">Імпартаваць</string>
+
+
     <string name="import_confirm_title">Імпартаваць з %1$s?</string>
     <string name="import_confirm_message">Бягучае размяшчэнне галоўнага экрана будзе заменена.</string>
-    <string name="import_done">Галоўны экран імпартаваны</string>
+
     <plurals name="import_remove_others_count">
         <item quantity="one">%d праграма, якой няма на яго галоўным экране</item>
         <item quantity="few">%d праграмы, якіх няма на яго галоўным экране</item>
@@ -246,7 +246,6 @@
     <string name="area_labels_hide">Схаваць</string>
     <string name="home_section_layout">Раскладка</string>
     <string name="layout_lock">Заблакіраваць раскладку галоўнага экрана</string>
-    <string name="import_locked">Раскладка галоўнага экрана заблакіравана. Разблакіруйце яе, каб імпартаваць.</string>
 
     <!-- App Library customization -->
     <string name="library_pinned">Замацаваныя</string>

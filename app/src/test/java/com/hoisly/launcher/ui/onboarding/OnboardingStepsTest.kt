@@ -5,7 +5,6 @@ import com.hoisly.launcher.ui.onboarding.OnboardingMode.Full
 import com.hoisly.launcher.ui.onboarding.OnboardingStep.Appearance
 import com.hoisly.launcher.ui.onboarding.OnboardingStep.DefaultHome
 import com.hoisly.launcher.ui.onboarding.OnboardingStep.Hello
-import com.hoisly.launcher.ui.onboarding.OnboardingStep.Import
 import com.hoisly.launcher.ui.onboarding.OnboardingStep.Language
 import com.hoisly.launcher.ui.onboarding.OnboardingStep.WallpaperAccess
 import com.hoisly.launcher.ui.onboarding.OnboardingStep.Welcome
@@ -16,7 +15,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class OnboardingStepsTest {
-    private val fresh = SetupSystemState(isDefaultHome = false, homeRoleAvailable = true, hasWallpaperAccess = false, hasImportSources = true)
+    private val fresh = SetupSystemState(isDefaultHome = false, homeRoleAvailable = true, hasWallpaperAccess = false)
 
     @Test
     fun freshInstallShowsEveryStep() {
@@ -28,13 +27,11 @@ class OnboardingStepsTest {
         assertFalse(DefaultHome in onboardingSteps(fresh.copy(isDefaultHome = true), Full))
         assertFalse(DefaultHome in onboardingSteps(fresh.copy(homeRoleAvailable = false), Full))
         assertFalse(WallpaperAccess in onboardingSteps(fresh.copy(hasWallpaperAccess = true), Full))
-        assertFalse(Import in onboardingSteps(fresh.copy(hasImportSources = false), Full))
-        assertFalse(Import in onboardingSteps(fresh.copy(hasImportSources = null), Full))
-    }
+                    }
 
     @Test
     fun forwardAndBackSkipMissingSteps() {
-        val steps = onboardingSteps(fresh.copy(isDefaultHome = true, hasImportSources = false), Full)
+        val steps = onboardingSteps(fresh.copy(isDefaultHome = true, ), Full)
         assertEquals(WallpaperAccess, nextStep(Language, steps))
         assertEquals(Appearance, nextStep(WallpaperAccess, steps))
         assertEquals(WallpaperAccess, previousStep(Appearance, steps))
@@ -57,7 +54,7 @@ class OnboardingStepsTest {
         val refused = onboardingSteps(fresh, Full)
         assertEquals(DefaultHome, resolveStep(DefaultHome, refused))
         val accessGiven = onboardingSteps(fresh.copy(hasWallpaperAccess = true), Full)
-        assertEquals(Import, resolveStep(WallpaperAccess, accessGiven))
+        assertEquals(Appearance, resolveStep(WallpaperAccess, accessGiven))
     }
 
     @Test
@@ -76,23 +73,16 @@ class OnboardingStepsTest {
         assertNull(previousStep(DefaultHome, onboardingSteps(fresh, FinishSetup)))
     }
 
-    @Test
-    fun importLookupBlocksOnlyStepsBeforeImport() {
-        assertTrue(needsImportLookup(Language, Full, null))
-        assertFalse(needsImportLookup(Language, Full, false))
-        assertFalse(needsImportLookup(Appearance, Full, null))
-        assertFalse(needsImportLookup(DefaultHome, FinishSetup, null))
-    }
 
     @Test
     fun progressCountsShownStepsAndStaysStable() {
         val all = onboardingSteps(fresh, Full)
         assertNull(stepProgress(Welcome, all, emptySet()))
-        assertEquals(StepProgress(1, 5), stepProgress(Language, all, setOf(Language)))
+        assertEquals(StepProgress(1, 4), stepProgress(Language, all, setOf(Language)))
         // Home role granted: the step left the list but was shown, so the total stays.
         val after = onboardingSteps(fresh.copy(isDefaultHome = true), Full)
-        assertEquals(StepProgress(3, 5), stepProgress(WallpaperAccess, after, setOf(Language, DefaultHome, WallpaperAccess)))
+        assertEquals(StepProgress(3, 4), stepProgress(WallpaperAccess, after, setOf(Language, DefaultHome, WallpaperAccess)))
         // Never shown (already default home): not counted.
-        assertEquals(StepProgress(2, 4), stepProgress(WallpaperAccess, after, setOf(Language, WallpaperAccess)))
+        assertEquals(StepProgress(2, 3), stepProgress(WallpaperAccess, after, setOf(Language, WallpaperAccess)))
     }
 }

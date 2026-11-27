@@ -60,22 +60,22 @@
     <string name="remove_dialog_message">A aplicação continua instalada; apenas sai do ecrã inicial.</string>
     <string name="remove_dialog_remove_from_home">Remover do ecrã inicial</string>
     <string name="remove_dialog_uninstall">Desinstalar aplicação</string>
-    <string name="row_import">Importar disposição</string>
-    <string name="import_title">Importar disposição</string>
-    <string name="import_description">Transfira o ecrã inicial de outro iniciador: páginas, pastas e dock. Funciona com iniciadores baseados no Launcher3 do Android, como o iOS27L.</string>
-    <string name="import_choose_launcher">Iniciador</string>
+
+
+
+
     <string name="import_no_launchers">Não foram encontrados iniciadores compatíveis.</string>
-    <string name="import_not_allowed">Este iniciador não permite que outras aplicações leiam a sua disposição.</string>
-    <string name="import_summary">O que será importado</string>
+
+
     <string name="import_pages">Páginas</string>
     <string name="import_folders">Pastas</string>
     <string name="import_apps_on_home">Aplicações no ecrã inicial</string>
     <string name="import_remove_others">Remover outras aplicações do ecrã inicial</string>
-    <string name="import_widgets_note">Os widgets ainda não são importados. As aplicações removidas do ecrã inicial continuam instaladas.</string>
-    <string name="import_action">Importar</string>
+
+
     <string name="import_confirm_title">Importar de %1$s?</string>
     <string name="import_confirm_message">A disposição atual do ecrã inicial será substituída.</string>
-    <string name="import_done">Ecrã inicial importado</string>
+
     <plurals name="import_remove_others_count">
         <item quantity="one">%d aplicação que não está no ecrã inicial de origem</item>
         <item quantity="many">%d aplicações que não estão no ecrã inicial de origem</item>
@@ -244,7 +244,6 @@
     <string name="area_labels_hide">Ocultar</string>
     <string name="home_section_layout">Disposição</string>
     <string name="layout_lock">Bloquear disposição do ecrã inicial</string>
-    <string name="import_locked">A disposição do ecrã inicial está bloqueada. Desbloqueie-a para importar.</string>
 
     <!-- App Library customization -->
     <string name="library_pinned">Afixadas</string>

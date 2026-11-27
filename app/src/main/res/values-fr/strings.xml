@@ -61,22 +61,22 @@
     <string name="remove_dialog_message">L’application restera installée ; elle disparaîtra seulement de l’écran d’accueil.</string>
     <string name="remove_dialog_remove_from_home">Retirer de l’accueil</string>
     <string name="remove_dialog_uninstall">Désinstaller l’application</string>
-    <string name="row_import">Importer la disposition</string>
-    <string name="import_title">Importer la disposition</string>
-    <string name="import_description">Transférez votre écran d’accueil depuis un autre lanceur : pages, dossiers et dock. Compatible avec les lanceurs basés sur Launcher3 d’Android, comme iOS27L.</string>
-    <string name="import_choose_launcher">Lanceur</string>
+
+
+
+
     <string name="import_no_launchers">Aucun lanceur compatible trouvé.</string>
-    <string name="import_not_allowed">Ce lanceur n’autorise pas les autres applications à lire sa disposition.</string>
-    <string name="import_summary">Éléments à importer</string>
+
+
     <string name="import_pages">Pages</string>
     <string name="import_folders">Dossiers</string>
     <string name="import_apps_on_home">Applications sur l’accueil</string>
     <string name="import_remove_others">Retirer les autres applications de l’accueil</string>
-    <string name="import_widgets_note">Les widgets ne sont pas encore importés. Les applications retirées de l’accueil restent installées.</string>
-    <string name="import_action">Importer</string>
+
+
     <string name="import_confirm_title">Importer depuis %1$s ?</string>
     <string name="import_confirm_message">La disposition actuelle de votre écran d’accueil sera remplacée.</string>
-    <string name="import_done">Écran d’accueil importé</string>
+
     <plurals name="import_remove_others_count">
         <item quantity="one">%d application absente de son écran d’accueil</item>
         <item quantity="many">%d applications absentes de son écran d’accueil</item>
@@ -243,7 +243,7 @@
     <string name="area_labels_hide">Masquer</string>
     <string name="home_section_layout">Disposition</string>
     <string name="layout_lock">Verrouiller la disposition de l’accueil</string>
-    <string name="import_locked">La disposition de l’écran d’accueil est verrouillée. Déverrouillez-la pour importer.</string>
+
     <string name="library_pinned">Épinglées</string>
     <string name="library_all_apps">Toutes les apps</string>
     <string name="library_view_switch">Affichage : %1$s</string>

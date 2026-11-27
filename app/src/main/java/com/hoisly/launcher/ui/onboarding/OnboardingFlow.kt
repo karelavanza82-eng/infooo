@@ -11,29 +11,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
-import com.hoisly.launcher.data.ImportSource
 import com.hoisly.launcher.ui.settings.SettingsActions
 import com.hoisly.launcher.ui.settings.SettingsViewModel
 import com.hoisly.launcher.ui.settings.pushTransition
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 
 /** Hello hands over to Welcome with a crossfade (both are black; Hello has already faded out). */
 private const val HELLO_FADE_IN_MS = 600
 private const val HELLO_FADE_OUT_MS = 300
 
 /** What the setup knows about the device, from the activity (refreshed in onResume). */
-fun SettingsActions.setupState(hasImportSources: Boolean?): SetupSystemState = SetupSystemState(
+fun SettingsActions.setupState(): SetupSystemState = SetupSystemState(
     isDefaultHome = isDefaultHome,
     homeRoleAvailable = isHomeRoleAvailable,
     hasWallpaperAccess = hasWallpaperAccess,
-    hasImportSources = hasImportSources,
 )
 
 /**
@@ -47,16 +40,12 @@ fun SettingsActions.setupState(hasImportSources: Boolean?): SetupSystemState = S
  */
 @Composable
 fun OnboardingFlow(vm: SettingsViewModel, actions: SettingsActions, mode: OnboardingMode, onFinish: () -> Unit) {
-    val sources by produceState<List<ImportSource>?>(if (mode == OnboardingMode.Full) null else emptyList()) {
-        if (mode == OnboardingMode.Full) value = vm.importSources()
-    }
-    fun steps(): List<OnboardingStep> = onboardingSteps(actions.setupState(sources?.isNotEmpty()), mode)
+    fun steps(): List<OnboardingStep> = onboardingSteps(actions.setupState(), mode)
 
     val steps = steps()
     var current by rememberSaveable { mutableStateOf(steps.firstOrNull() ?: OnboardingStep.Appearance) }
     var shown by rememberSaveable { mutableStateOf(setOf(current)) }
     var finished by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
 
     fun go(step: OnboardingStep?) {
         when {
@@ -75,10 +64,7 @@ fun OnboardingFlow(vm: SettingsViewModel, actions: SettingsActions, mode: Onboar
     /** Leaves [from]; a second tap during the transition (already left) is ignored. */
     fun next(from: OnboardingStep) {
         if (current != from) return
-        scope.launch {
-            if (needsImportLookup(from, mode, sources?.isNotEmpty())) snapshotFlow { sources }.first { it != null }
-            if (current == from) go(nextStep(from, steps()))
-        }
+        if (current == from) go(nextStep(from, steps()))
     }
 
     // Back from a system screen: a step whose job is now done moves on by itself.
@@ -103,7 +89,6 @@ fun OnboardingFlow(vm: SettingsViewModel, actions: SettingsActions, mode: Onboar
             OnboardingStep.DefaultHome -> DefaultHomeStep(progress, onRequest = actions::requestDefaultHome, onSkip = { next(step) })
             OnboardingStep.WallpaperAccess ->
                 WallpaperAccessStep(progress, onRequest = actions::requestWallpaperAccess, onSkip = { next(step) })
-            OnboardingStep.Import -> ImportStep(vm, sources.orEmpty(), progress, onNext = { next(step) })
             OnboardingStep.Appearance -> AppearanceStep(vm, progress, onNext = { next(step) })
         }
     }

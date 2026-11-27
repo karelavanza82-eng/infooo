@@ -61,22 +61,22 @@
     <string name="remove_dialog_message">Қолданба орнатылған күйінде қалады, тек басты экраннан алынады.</string>
     <string name="remove_dialog_remove_from_home">Басты экраннан алып тастау</string>
     <string name="remove_dialog_uninstall">Қолданбаны жою</string>
-    <string name="row_import">Орналасуды импорттау</string>
-    <string name="import_title">Орналасуды импорттау</string>
-    <string name="import_description">Басқа лаунчерден басты экраныңызды көшіріңіз: беттер, қалталар және док. iOS27L сияқты Android Launcher3 негізіндегі лаунчерлермен жұмыс істейді.</string>
-    <string name="import_choose_launcher">Лаунчер</string>
+
+
+
+
     <string name="import_no_launchers">Үйлесімді лаунчерлер табылмады.</string>
-    <string name="import_not_allowed">Бұл лаунчер басқа қолданбаларға өз орналасуын оқуға рұқсат бермейді.</string>
-    <string name="import_summary">Импортталатын деректер</string>
+
+
     <string name="import_pages">Беттер</string>
     <string name="import_folders">Қалталар</string>
     <string name="import_apps_on_home">Басты экрандағы қолданбалар</string>
     <string name="import_remove_others">Басқа қолданбаларды басты экраннан алып тастау</string>
-    <string name="import_widgets_note">Виджеттер әзірге импортталмайды. Басты экраннан алынған қолданбалар орнатылған күйінде қалады.</string>
-    <string name="import_action">Импорттау</string>
+
+
     <string name="import_confirm_title">%1$s лаунчерінен импортталсын ба?</string>
     <string name="import_confirm_message">Қазіргі басты экран орналасуы ауыстырылады.</string>
-    <string name="import_done">Басты экран импортталды</string>
+
     <plurals name="import_remove_others_count">
         <item quantity="one">Бастапқы басты экранда жоқ %d қолданба</item>
         <item quantity="other">Бастапқы басты экранда жоқ %d қолданба</item>
@@ -242,7 +242,7 @@
     <string name="area_labels_hide">Жасыру</string>
     <string name="home_section_layout">Орналасу</string>
     <string name="layout_lock">Басты экран орналасуын құлыптау</string>
-    <string name="import_locked">Басты экран орналасуы құлыпталған. Импорттау үшін құлпын ашыңыз.</string>
+
     <string name="library_pinned">Бекітілгендер</string>
     <string name="library_all_apps">Барлық қолданбалар</string>
     <string name="library_view_switch">Көрініс: %1$s</string>

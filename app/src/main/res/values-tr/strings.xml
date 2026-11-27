@@ -61,22 +61,22 @@
     <string name="remove_dialog_message">Uygulama yüklü kalır, yalnızca ana ekrandan kaldırılır.</string>
     <string name="remove_dialog_remove_from_home">Ana ekrandan kaldır</string>
     <string name="remove_dialog_uninstall">Uygulamayı sil</string>
-    <string name="row_import">Düzeni içe aktar</string>
-    <string name="import_title">Düzeni içe aktar</string>
-    <string name="import_description">Ana ekranınızı başka bir başlatıcıdan aktarın: sayfalar, klasörler ve dock. iOS27L gibi Android Launcher3 tabanlı başlatıcılarla çalışır.</string>
-    <string name="import_choose_launcher">Başlatıcı</string>
+
+
+
+
     <string name="import_no_launchers">Uyumlu başlatıcı bulunamadı.</string>
-    <string name="import_not_allowed">Bu başlatıcı diğer uygulamaların düzenini okumasına izin vermiyor.</string>
-    <string name="import_summary">İçe aktarılacaklar</string>
+
+
     <string name="import_pages">Sayfalar</string>
     <string name="import_folders">Klasörler</string>
     <string name="import_apps_on_home">Ana ekrandaki uygulamalar</string>
     <string name="import_remove_others">Diğer uygulamaları ana ekrandan kaldır</string>
-    <string name="import_widgets_note">Widget’lar henüz içe aktarılmıyor. Ana ekrandan kaldırılan uygulamalar yüklü kalır.</string>
-    <string name="import_action">İçe aktar</string>
+
+
     <string name="import_confirm_title">%1$s üzerinden içe aktarılsın mı?</string>
     <string name="import_confirm_message">Mevcut ana ekran düzeniniz değiştirilecek.</string>
-    <string name="import_done">Ana ekran içe aktarıldı</string>
+
     <plurals name="import_remove_others_count">
         <item quantity="one">Kaynak ana ekranda olmayan %d uygulama</item>
         <item quantity="other">Kaynak ana ekranda olmayan %d uygulama</item>
@@ -244,7 +244,6 @@
     <string name="area_labels_hide">Gizle</string>
     <string name="home_section_layout">Düzen</string>
     <string name="layout_lock">Ana ekran düzenini kilitle</string>
-    <string name="import_locked">Ana ekran düzeni kilitli. İçe aktarmak için kilidi açın.</string>
 
     <!-- App Library customization -->
     <string name="library_pinned">Sabitlenenler</string>

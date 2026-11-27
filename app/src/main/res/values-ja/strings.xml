@@ -60,22 +60,22 @@
     <string name="remove_dialog_message">ホーム画面からのみ取り除かれます。アプリはインストールされたままです。</string>
     <string name="remove_dialog_remove_from_home">ホーム画面から取り除く</string>
     <string name="remove_dialog_uninstall">アプリをアンインストール</string>
-    <string name="row_import">レイアウトをインポート</string>
-    <string name="import_title">レイアウトをインポート</string>
-    <string name="import_description">別のランチャーからホーム画面のページ、フォルダ、ドックを引き継ぎます。iOS27L など、Android の Launcher3 をベースにしたランチャーに対応しています。</string>
-    <string name="import_choose_launcher">ランチャー</string>
+
+
+
+
     <string name="import_no_launchers">対応するランチャーが見つかりません。</string>
-    <string name="import_not_allowed">このランチャーは、他のアプリによるレイアウトの読み取りを許可していません。</string>
-    <string name="import_summary">インポートする内容</string>
+
+
     <string name="import_pages">ページ</string>
     <string name="import_folders">フォルダ</string>
     <string name="import_apps_on_home">ホーム画面のアプリ</string>
     <string name="import_remove_others">他のアプリをホーム画面から取り除く</string>
-    <string name="import_widgets_note">ウィジェットのインポートにはまだ対応していません。ホーム画面から取り除かれたアプリも、インストールされたままです。</string>
-    <string name="import_action">インポート</string>
+
+
     <string name="import_confirm_title">%1$s からインポートしますか？</string>
     <string name="import_confirm_message">現在のホーム画面のレイアウトが置き換えられます。</string>
-    <string name="import_done">ホーム画面をインポートしました</string>
+
     <plurals name="import_remove_others_count">
         <item quantity="other">インポート元のホーム画面にない %d 個のアプリ</item>
     </plurals>
@@ -242,7 +242,6 @@
     <string name="area_labels_hide">非表示</string>
     <string name="home_section_layout">レイアウト</string>
     <string name="layout_lock">ホーム画面のレイアウトをロック</string>
-    <string name="import_locked">ホーム画面のレイアウトはロックされています。読み込むにはロックを解除してください。</string>
 
     <!-- App Library customization -->
     <string name="library_pinned">ピン留め</string>

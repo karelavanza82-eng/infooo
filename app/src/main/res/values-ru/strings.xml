@@ -61,22 +61,22 @@
     <string name="remove_dialog_message">Приложение останется установленным, оно просто уйдёт с экрана «Домой».</string>
     <string name="remove_dialog_remove_from_home">Убрать с экрана «Домой»</string>
     <string name="remove_dialog_uninstall">Удалить приложение</string>
-    <string name="row_import">Импорт раскладки</string>
-    <string name="import_title">Импорт раскладки</string>
-    <string name="import_description">Перенесите экран «Домой» из другого лаунчера: страницы, папки и док. Работает с лаунчерами на основе Android Launcher3, например iOS27L.</string>
-    <string name="import_choose_launcher">Лаунчер</string>
+
+
+
+
     <string name="import_no_launchers">Совместимых лаунчеров не найдено.</string>
-    <string name="import_not_allowed">Этот лаунчер не разрешает другим приложениям читать свою раскладку.</string>
-    <string name="import_summary">Что будет перенесено</string>
+
+
     <string name="import_pages">Страницы</string>
     <string name="import_folders">Папки</string>
     <string name="import_apps_on_home">Приложения на экране</string>
     <string name="import_remove_others">Убрать остальные приложения с экрана</string>
-    <string name="import_widgets_note">Виджеты пока не переносятся. Убранные с экрана приложения остаются установленными.</string>
-    <string name="import_action">Импортировать</string>
+
+
     <string name="import_confirm_title">Импортировать из %1$s?</string>
     <string name="import_confirm_message">Текущая раскладка экрана «Домой» будет заменена.</string>
-    <string name="import_done">Раскладка импортирована</string>
+
     <plurals name="import_remove_others_count">
         <item quantity="one">%d приложение, которого нет на его экране</item>
         <item quantity="few">%d приложения, которых нет на его экране</item>
@@ -244,7 +244,7 @@
     <string name="area_labels_hide">Скрыть</string>
     <string name="home_section_layout">Раскладка</string>
     <string name="layout_lock">Заблокировать раскладку</string>
-    <string name="import_locked">Раскладка рабочего стола заблокирована. Разблокируйте её, чтобы импортировать.</string>
+
     <string name="library_pinned">Закреплённые</string>
     <string name="library_all_apps">Все приложения</string>
     <string name="library_view_switch">Вид: %1$s</string>

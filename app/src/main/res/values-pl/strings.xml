@@ -61,22 +61,22 @@
     <string name="remove_dialog_message">Aplikacja pozostanie zainstalowana, zniknie tylko z ekranu głównego.</string>
     <string name="remove_dialog_remove_from_home">Usuń z ekranu głównego</string>
     <string name="remove_dialog_uninstall">Odinstaluj aplikację</string>
-    <string name="row_import">Importuj układ</string>
-    <string name="import_title">Importuj układ</string>
-    <string name="import_description">Przenieś ekran główny z innego launchera: strony, foldery i dok. Działa z launcherami opartymi na Android Launcher3, takimi jak iOS27L.</string>
-    <string name="import_choose_launcher">Launcher</string>
+
+
+
+
     <string name="import_no_launchers">Nie znaleziono zgodnych launcherów.</string>
-    <string name="import_not_allowed">Ten launcher nie pozwala innym aplikacjom odczytywać swojego układu.</string>
-    <string name="import_summary">Co zostanie zaimportowane</string>
+
+
     <string name="import_pages">Strony</string>
     <string name="import_folders">Foldery</string>
     <string name="import_apps_on_home">Aplikacje na ekranie głównym</string>
     <string name="import_remove_others">Usuń inne aplikacje z ekranu głównego</string>
-    <string name="import_widgets_note">Widżety nie są jeszcze importowane. Aplikacje usunięte z ekranu głównego pozostają zainstalowane.</string>
-    <string name="import_action">Importuj</string>
+
+
     <string name="import_confirm_title">Importować z %1$s?</string>
     <string name="import_confirm_message">Obecny układ ekranu głównego zostanie zastąpiony.</string>
-    <string name="import_done">Zaimportowano ekran główny</string>
+
     <plurals name="import_remove_others_count">
         <item quantity="one">%d aplikacja, której nie ma na jego ekranie głównym</item>
         <item quantity="few">%d aplikacje, których nie ma na jego ekranie głównym</item>
@@ -246,7 +246,6 @@
     <string name="area_labels_hide">Ukryj</string>
     <string name="home_section_layout">Układ</string>
     <string name="layout_lock">Zablokuj układ ekranu głównego</string>
-    <string name="import_locked">Układ ekranu głównego jest zablokowany. Odblokuj go, aby zaimportować.</string>
 
     <!-- App Library customization -->
     <string name="library_pinned">Przypięte</string>

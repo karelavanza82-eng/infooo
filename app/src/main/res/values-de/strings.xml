@@ -60,22 +60,22 @@
     <string name="remove_dialog_message">Die App bleibt installiert und wird nur vom Startbildschirm entfernt.</string>
     <string name="remove_dialog_remove_from_home">Vom Startbildschirm entfernen</string>
     <string name="remove_dialog_uninstall">App deinstallieren</string>
-    <string name="row_import">Layout importieren</string>
-    <string name="import_title">Layout importieren</string>
-    <string name="import_description">Übernimm deinen Startbildschirm aus einem anderen Launcher: Seiten, Ordner und Dock. Funktioniert mit Launchern auf Basis von Androids Launcher3, etwa iOS27L.</string>
-    <string name="import_choose_launcher">Launcher</string>
+
+
+
+
     <string name="import_no_launchers">Keine kompatiblen Launcher gefunden.</string>
-    <string name="import_not_allowed">Dieser Launcher erlaubt anderen Apps nicht, sein Layout zu lesen.</string>
-    <string name="import_summary">Das wird importiert</string>
+
+
     <string name="import_pages">Seiten</string>
     <string name="import_folders">Ordner</string>
     <string name="import_apps_on_home">Apps auf dem Startbildschirm</string>
     <string name="import_remove_others">Andere Apps vom Startbildschirm entfernen</string>
-    <string name="import_widgets_note">Widgets werden noch nicht importiert. Vom Startbildschirm entfernte Apps bleiben installiert.</string>
-    <string name="import_action">Importieren</string>
+
+
     <string name="import_confirm_title">Aus %1$s importieren?</string>
     <string name="import_confirm_message">Dein aktuelles Startbildschirmlayout wird ersetzt.</string>
-    <string name="import_done">Startbildschirm importiert</string>
+
     <plurals name="import_remove_others_count">
         <item quantity="one">%d App, die nicht auf dessen Startbildschirm ist</item>
         <item quantity="other">%d Apps, die nicht auf dessen Startbildschirm sind</item>
@@ -243,7 +243,6 @@
     <string name="area_labels_hide">Ausblenden</string>
     <string name="home_section_layout">Anordnung</string>
     <string name="layout_lock">Startbildschirm-Anordnung sperren</string>
-    <string name="import_locked">Die Anordnung des Startbildschirms ist gesperrt. Entsperre sie, um zu importieren.</string>
 
     <!-- App Library customization -->
     <string name="library_pinned">Angeheftet</string>

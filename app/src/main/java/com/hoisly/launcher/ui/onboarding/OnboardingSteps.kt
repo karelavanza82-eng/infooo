@@ -1,7 +1,7 @@
 package com.hoisly.launcher.ui.onboarding
 
 /** Screens of the first-run setup, in the order they are shown. */
-enum class OnboardingStep { Hello, Welcome, Language, DefaultHome, WallpaperAccess, Import, Appearance }
+enum class OnboardingStep { Hello, Welcome, Language, DefaultHome, WallpaperAccess, Appearance }
 
 /**
  * [Full] is the first-run setup. [FinishSetup] is opened from Settings and only repeats the
@@ -15,8 +15,6 @@ data class SetupSystemState(
     /** Whether Android lets apps ask for the home role at all. */
     val homeRoleAvailable: Boolean,
     val hasWallpaperAccess: Boolean,
-    /** Whether another launcher's layout can be imported; `null` while still looking. */
-    val hasImportSources: Boolean?,
 )
 
 /** Position of a step among the steps with a progress bar, 1-based. */
@@ -39,7 +37,6 @@ fun onboardingSteps(state: SetupSystemState, mode: OnboardingMode): List<Onboard
         when (step) {
             OnboardingStep.DefaultHome -> state.needsDefaultHome
             OnboardingStep.WallpaperAccess -> !state.hasWallpaperAccess
-            OnboardingStep.Import -> state.hasImportSources == true
             else -> true
         }
     }
@@ -62,12 +59,6 @@ fun previousStep(current: OnboardingStep, steps: List<OnboardingStep>): Onboardi
 fun resolveStep(current: OnboardingStep, steps: List<OnboardingStep>): OnboardingStep? =
     if (current in steps) current else nextStep(current, steps)
 
-/**
- * Leaving [current] has to wait for the import lookup: until it is known whether the Import step
- * exists, moving on could skip it or make it pop up behind the user.
- */
-fun needsImportLookup(current: OnboardingStep, mode: OnboardingMode, hasImportSources: Boolean?): Boolean =
-    mode == OnboardingMode.Full && hasImportSources == null && current < OnboardingStep.Import
 
 /**
  * Progress of [current] over the steps that are or were shown ([shown]), so finishing a step

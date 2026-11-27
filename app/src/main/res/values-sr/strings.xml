@@ -61,22 +61,22 @@
     <string name="remove_dialog_message">Апликација остаје инсталирана, уклања се само са почетног екрана.</string>
     <string name="remove_dialog_remove_from_home">Уклони са почетног екрана</string>
     <string name="remove_dialog_uninstall">Избриши апликацију</string>
-    <string name="row_import">Увези распоред</string>
-    <string name="import_title">Увези распоред</string>
-    <string name="import_description">Пренесите почетни екран из другог покретача: странице, фасцикле и док. Ради са покретачима заснованим на Android Launcher3, као што је iOS27L.</string>
-    <string name="import_choose_launcher">Покретач</string>
+
+
+
+
     <string name="import_no_launchers">Нису пронађени компатибилни покретачи.</string>
-    <string name="import_not_allowed">Овај покретач не дозвољава другим апликацијама да читају његов распоред.</string>
-    <string name="import_summary">Шта ће бити увезено</string>
+
+
     <string name="import_pages">Странице</string>
     <string name="import_folders">Фасцикле</string>
     <string name="import_apps_on_home">Апликације на почетном екрану</string>
     <string name="import_remove_others">Уклони остале апликације са почетног екрана</string>
-    <string name="import_widgets_note">Виџети се још не увозе. Апликације уклоњене са почетног екрана остају инсталиране.</string>
-    <string name="import_action">Увези</string>
+
+
     <string name="import_confirm_title">Увести из %1$s?</string>
     <string name="import_confirm_message">Тренутни распоред почетног екрана биће замењен.</string>
-    <string name="import_done">Почетни екран је увезен</string>
+
     <plurals name="import_remove_others_count">
         <item quantity="one">%d апликација која није на изворном почетном екрану</item>
         <item quantity="few">%d апликације које нису на изворном почетном екрану</item>
@@ -245,7 +245,6 @@
     <string name="area_labels_hide">Сакриј</string>
     <string name="home_section_layout">Распоред</string>
     <string name="layout_lock">Закључај распоред почетног екрана</string>
-    <string name="import_locked">Распоред почетног екрана је закључан. Откључајте га да бисте увезли.</string>
 
     <!-- App Library customization -->
     <string name="library_pinned">Закачене</string>

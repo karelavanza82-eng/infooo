@@ -60,22 +60,22 @@
     <string name="remove_dialog_message">应用只会从主屏幕移除，仍保持安装。</string>
     <string name="remove_dialog_remove_from_home">从主屏幕移除</string>
     <string name="remove_dialog_uninstall">卸载应用</string>
-    <string name="row_import">导入布局</string>
-    <string name="import_title">导入布局</string>
-    <string name="import_description">从其他启动器导入主屏幕，包括页面、文件夹和程序坞。支持基于 Android Launcher3 的启动器，例如 iOS27L。</string>
-    <string name="import_choose_launcher">启动器</string>
+
+
+
+
     <string name="import_no_launchers">未找到兼容的启动器。</string>
-    <string name="import_not_allowed">此启动器不允许其他应用读取其布局。</string>
-    <string name="import_summary">将导入的内容</string>
+
+
     <string name="import_pages">页面</string>
     <string name="import_folders">文件夹</string>
     <string name="import_apps_on_home">主屏幕上的应用</string>
     <string name="import_remove_others">从主屏幕移除其他应用</string>
-    <string name="import_widgets_note">暂不支持导入小组件。从主屏幕移除的应用仍保持安装。</string>
-    <string name="import_action">导入</string>
+
+
     <string name="import_confirm_title">从 %1$s 导入？</string>
     <string name="import_confirm_message">当前主屏幕布局将被替换。</string>
-    <string name="import_done">主屏幕已导入</string>
+
     <plurals name="import_remove_others_count">
         <item quantity="other">%d 个不在其主屏幕上的应用</item>
     </plurals>
@@ -242,7 +242,6 @@
     <string name="area_labels_hide">隐藏</string>
     <string name="home_section_layout">布局</string>
     <string name="layout_lock">锁定主屏幕布局</string>
-    <string name="import_locked">主屏幕布局已锁定。请先解锁再导入。</string>
 
     <!-- App Library customization -->
     <string name="library_pinned">已置顶</string>

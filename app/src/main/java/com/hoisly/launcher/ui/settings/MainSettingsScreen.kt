@@ -20,7 +20,6 @@ import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.SignalCellularAlt
-import androidx.compose.material.icons.rounded.SystemUpdateAlt
 import androidx.compose.material.icons.rounded.WbSunny
 import androidx.compose.material.icons.rounded.Translate
 import androidx.compose.material.icons.rounded.ViewCarousel
@@ -64,7 +63,7 @@ fun MainSettingsScreen(vm: SettingsViewModel, actions: SettingsActions, navigate
     val locale = LocalConfiguration.current.locales[0]
     val context = LocalContext.current
 
-    val unfinished = finishSetupItems(actions.setupState(hasImportSources = null)).size
+    val unfinished = finishSetupItems(actions.setupState()).size
 
     SettingsPage(title = stringResource(R.string.settings_title), onBack = null) {
         item { LauncherHeader(actions.isDefaultHome, onClick = actions::requestDefaultHome) }
@@ -98,12 +97,6 @@ fun MainSettingsScreen(vm: SettingsViewModel, actions: SettingsActions, navigate
                     stringResource(R.string.widget_weather),
                     onClick = { navigate(SettingsRoute.Weather) },
                     tileColor = SettingsStyle.Tile.Cyan,
-                )
-                NavRow(
-                    Icons.Rounded.SystemUpdateAlt,
-                    stringResource(R.string.row_import),
-                    onClick = { navigate(SettingsRoute.Import) },
-                    tileColor = SettingsStyle.Tile.Green,
                 )
             }
         }

@@ -7,9 +7,6 @@ import androidx.lifecycle.viewModelScope
 import com.hoisly.launcher.data.AppInfo
 import com.hoisly.launcher.data.AppRepository
 import com.hoisly.launcher.data.HomeState
-import com.hoisly.launcher.data.ImportPreview
-import com.hoisly.launcher.data.ImportSource
-import com.hoisly.launcher.data.LauncherImporter
 import com.hoisly.launcher.data.LayoutRepository
 import com.hoisly.launcher.data.LayoutStore
 import com.hoisly.launcher.data.toLayout
@@ -163,37 +160,6 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
 
     // endregion
 
-    // region Layout import
-
-    private val importer = LauncherImporter(app)
-
-    /** Launchers whose layout can be imported (a package query, so off the main thread). */
-    suspend fun importSources(): List<ImportSource> = withContext(Dispatchers.IO) { importer.findSources() }
-
-    /**
-     * Reads another launcher's layout for review. Fails with a [SecurityException] when
-     * the launcher protects its layout database.
-     */
-    suspend fun previewImport(source: ImportSource): Result<ImportPreview> = withContext(Dispatchers.IO) {
-        runCatching {
-            val prefs = settings.state.value
-            val visible = repository.apps.value.filter { it.key !in prefs.hiddenApps }
-            val grid = layoutRepository.load()?.grid ?: layoutStore.legacyGrid()
-            importer.read(source, visible, grid, prefs.dockSlots)
-        }
-    }
-
-    /**
-     * Replaces the Home Screen with the imported layout; the home screen updates right away.
-     * A locked layout is never replaced: the user unlocks it first. Returns whether it was applied.
-     */
-    fun applyImport(preview: ImportPreview, removeOtherApps: Boolean): Boolean {
-        if (settings.state.value.layoutLocked) return false
-        layoutRepository.update(preview.toLayout(removeOtherApps))
-        return true
-    }
-
-    // endregion
 
     override fun onCleared() {
         repository.close()

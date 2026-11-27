@@ -5,25 +5,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.BlurOn
 import androidx.compose.material.icons.rounded.Home
-import androidx.compose.material.icons.rounded.SystemUpdateAlt
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hoisly.launcher.R
-import com.hoisly.launcher.data.ImportSource
 import com.hoisly.launcher.ui.settings.IconAppearanceRows
 import com.hoisly.launcher.ui.settings.IconPreviewRow
-import com.hoisly.launcher.ui.settings.ImportConfirmation
-import com.hoisly.launcher.ui.settings.ImportSourceList
-import com.hoisly.launcher.ui.settings.ImportSummary
 import com.hoisly.launcher.ui.settings.SectionFooter
 import com.hoisly.launcher.ui.settings.SettingsCard
 import com.hoisly.launcher.ui.settings.SettingsViewModel
-import com.hoisly.launcher.ui.settings.rememberImportState
 import com.hoisly.launcher.ui.settings.sampleApps
 
 /** Apps in the live icon preview of the Appearance step. */
@@ -60,35 +51,6 @@ internal fun WallpaperAccessStep(progress: StepProgress?, onRequest: () -> Unit,
         onSecondary = onSkip,
         header = { StepGlyph(Icons.Rounded.BlurOn) },
     )
-}
-
-/** The Import screen of Settings in one step: same list, review, alert and apply. */
-@Composable
-internal fun ImportStep(vm: SettingsViewModel, sources: List<ImportSource>, progress: StepProgress?, onNext: () -> Unit) {
-    val state = rememberImportState(vm)
-    // With a single launcher there is nothing to choose: review it right away.
-    LaunchedEffect(sources) {
-        if (state.selected == null) sources.singleOrNull()?.let(state::select)
-    }
-    StepScaffold(
-        progress = progress,
-        title = stringResource(R.string.onboarding_import_title),
-        subtitle = stringResource(R.string.onboarding_import_body),
-        primaryText = stringResource(R.string.import_action),
-        onPrimary = { state.confirming = true },
-        primaryEnabled = state.preview != null,
-        secondaryText = stringResource(R.string.onboarding_not_now),
-        onSecondary = onNext,
-        header = { StepGlyph(Icons.Rounded.SystemUpdateAlt) },
-    ) {
-        ImportSourceList(sources, state)
-        if (state.failed) SectionFooter(stringResource(R.string.import_not_allowed))
-        state.preview?.let { preview ->
-            Spacer(Modifier.height(16.dp))
-            ImportSummary(preview, state)
-        }
-    }
-    ImportConfirmation(state, onApplied = onNext)
 }
 
 /**

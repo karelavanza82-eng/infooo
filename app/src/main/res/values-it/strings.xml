@@ -61,22 +61,22 @@
     <string name="remove_dialog_message">L’app resterà installata e verrà rimossa solo dalla schermata Home.</string>
     <string name="remove_dialog_remove_from_home">Rimuovi dalla Home</string>
     <string name="remove_dialog_uninstall">Disinstalla app</string>
-    <string name="row_import">Importa disposizione</string>
-    <string name="import_title">Importa disposizione</string>
-    <string name="import_description">Trasferisci la schermata Home da un altro launcher: pagine, cartelle e dock. Funziona con i launcher basati su Launcher3 di Android, come iOS27L.</string>
-    <string name="import_choose_launcher">Launcher</string>
+
+
+
+
     <string name="import_no_launchers">Nessun launcher compatibile trovato.</string>
-    <string name="import_not_allowed">Questo launcher non consente ad altre app di leggere la sua disposizione.</string>
-    <string name="import_summary">Elementi da importare</string>
+
+
     <string name="import_pages">Pagine</string>
     <string name="import_folders">Cartelle</string>
     <string name="import_apps_on_home">App sulla schermata Home</string>
     <string name="import_remove_others">Rimuovi le altre app dalla Home</string>
-    <string name="import_widgets_note">I widget non vengono ancora importati. Le app rimosse dalla Home restano installate.</string>
-    <string name="import_action">Importa</string>
+
+
     <string name="import_confirm_title">Importare da %1$s?</string>
     <string name="import_confirm_message">La disposizione attuale della schermata Home verrà sostituita.</string>
-    <string name="import_done">Schermata Home importata</string>
+
     <plurals name="import_remove_others_count">
         <item quantity="one">%d app non presente sulla sua schermata Home</item>
         <item quantity="many">%d app non presenti sulla sua schermata Home</item>
@@ -245,7 +245,6 @@
     <string name="area_labels_hide">Nascondi</string>
     <string name="home_section_layout">Disposizione</string>
     <string name="layout_lock">Blocca la disposizione della Home</string>
-    <string name="import_locked">La disposizione della schermata Home è bloccata. Sbloccala per importare.</string>
 
     <!-- App Library customization -->
     <string name="library_pinned">Fissate</string>
