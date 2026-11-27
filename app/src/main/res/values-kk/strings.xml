@@ -536,4 +536,5 @@
     <string name="widget_bold_clock">Bold Clock</string>
     <string name="widget_bold_clock_description">A bold digital clock. Pinch to resize and choose a heavy number style.</string>
     <string name="widget_variant_bold_clock">Bold Digital</string>
+    <string name="glass_style_wallpaper_blur">Түсқағазды бұлдырату</string>
 </resources>
