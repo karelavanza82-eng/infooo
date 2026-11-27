@@ -171,6 +171,24 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
         appTransition.value = AppTransition(++appTransitionIds, AppTransitionPhase.Opening, bounds, icon, iconSurfaceColor(icon))
     }
 
+    /** The surface of an app that was cancelled by tapping another icon: it shrinks away quickly. */
+    val appTransitionOut: MutableStateFlow<AppTransition?> = MutableStateFlow(null)
+
+    /**
+     * Another icon was tapped while a surface was still running: the running one is cancelled
+     * (its app never starts) and shrinks away next to the new one growing out of [bounds].
+     */
+    fun switchAppTransition(bounds: Rect, icon: ImageBitmap?) {
+        val old = appTransition.value
+        appTransitionOut.value = old?.copy(id = ++appTransitionIds, phase = AppTransitionPhase.Closing)
+        appTransition.value = AppTransition(++appTransitionIds, AppTransitionPhase.Opening, bounds, icon, iconSurfaceColor(icon))
+    }
+
+    /** Removes the cancelled surface once it finished shrinking; a newer one stays. */
+    fun endOutgoing(id: Long) {
+        if (appTransitionOut.value?.id == id) appTransitionOut.value = null
+    }
+
     /** Turns an opening surface into a closing one. `false` if no app was opened through the surface. */
     fun beginAppClosing(): Boolean {
         val open = appTransition.value?.takeIf { it.phase == AppTransitionPhase.Opening } ?: return false

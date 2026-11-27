@@ -3,9 +3,11 @@ package com.hoisly.launcher.ui.home
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.tween
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -60,6 +62,9 @@ fun AppTransitionOverlay(vm: LauncherViewModel, progress: Animatable<Float, Anim
     val current by vm.appTransition.collectAsStateWithLifecycle()
     val settings by vm.settings.state.collectAsStateWithLifecycle()
     val transition = current
+    val outgoing by vm.appTransitionOut.collectAsStateWithLifecycle()
+    // Surface of an app cancelled by tapping another icon: shrinks away while the new one grows.
+    val outProgress = remember { Animatable(0f) }
     val style = settings.appAnimationStyle
     val speedFactor = (1.35f - settings.animationSpeedPercent.coerceIn(0, 100) / 100f * 0.7f).coerceIn(0.55f, 1.35f)
 
@@ -86,6 +91,15 @@ fun AppTransitionOverlay(vm: LauncherViewModel, progress: Animatable<Float, Anim
         }
         when (t.phase) {
             AppTransitionPhase.Opening -> {
+                val out = vm.appTransitionOut.value
+                if (out != null) {
+                    // Hand the half-grown surface of the cancelled app over to the outgoing layer.
+                    outProgress.snapTo(progress.value)
+                    launch {
+                        outProgress.animateTo(0f, tween((170 * speedFactor).roundToInt().coerceAtLeast(1)))
+                        vm.endOutgoing(out.id)
+                    }
+                }
                 progress.snapTo(0f)
                 progress.animateTo(1f, tween(duration, easing = easing))
             }
@@ -96,9 +110,11 @@ fun AppTransitionOverlay(vm: LauncherViewModel, progress: Animatable<Float, Anim
         }
     }
 
-    if (transition == null) return
+    val out = outgoing
+    if (transition == null && out == null) return
     Canvas(Modifier.fillMaxSize()) {
-        drawAppTransitionVisual(style, transition.bounds, transition.icon, transition.color, progress.value)
+        if (out != null) drawAppTransitionVisual(style, out.bounds, out.icon, out.color, outProgress.value)
+        if (transition != null) drawAppTransitionVisual(style, transition.bounds, transition.icon, transition.color, progress.value)
     }
 }
 

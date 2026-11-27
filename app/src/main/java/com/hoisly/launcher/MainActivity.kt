@@ -1,6 +1,7 @@
 package com.hoisly.launcher
 
 import com.hoisly.launcher.ui.theme.Motion
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import android.Manifest
 import android.content.ContentUris
@@ -69,6 +70,7 @@ import com.hoisly.launcher.ui.glass.WallpaperBlur
 import com.hoisly.launcher.ui.glass.isLiquidGlassReady
 import com.hoisly.launcher.ui.glass.resolveGlassMode
 import com.hoisly.launcher.ui.glass.LocalGlassStyle
+import com.hoisly.launcher.ui.home.AppTransitionPhase
 import com.hoisly.launcher.ui.home.HomeScreen
 import com.hoisly.launcher.ui.lockscreen.HoislyLockScreen
 import com.hoisly.launcher.ui.home.LauncherActions
@@ -361,15 +363,24 @@ class MainActivity : ComponentActivity(), LauncherActions {
     }
 
     override fun launch(app: AppInfo, bounds: Rect) {
-        // A surface is still growing or shrinking: ignore the extra tap.
-        if (vm.appTransition.value != null) return
+        // A surface is already running. While the app behind it has not started yet (or the
+        // surface is shrinking back), another icon may be tapped: the running launch is cancelled
+        // and the new icon animates instead. Once an app really started, extra taps are ignored.
+        val running = vm.appTransition.value
+        if (running != null) {
+            val openingNotStarted = running.phase == AppTransitionPhase.Opening && launchJob?.isActive == true && !appStarted
+            val closing = running.phase == AppTransitionPhase.Closing
+            if (!openingNotStarted && !closing) return
+            if (openingNotStarted && app.key == launchTargetKey) return
+        }
         vm.launchStats.recordLaunch(app.key)
         val source = bounds.toAndroidRect()
         val animate = vm.settings.state.value.openCloseAnimation
         if (animate && !bounds.isEmpty && animatorScale() > 0f) {
-            launchThroughSurface(app, bounds, source)
+            launchThroughSurface(app, bounds, source, replace = running != null)
             return
         }
+        if (running != null) return
         // If there is no icon rectangle (for example a search command), do not ask Android
         // to run its own scale-up animation. Icon launches use the launcher-drawn surface below;
         // launches without an origin should simply appear without a second system animation.
@@ -379,14 +390,23 @@ class MainActivity : ComponentActivity(), LauncherActions {
         startApp(app, source, options)
     }
 
+    private var launchJob: Job? = null
+    private var appStarted = false
+    private var launchTargetKey: String? = null
+
     /**
      * The icon grows into a rounded surface that fills the screen while the home screen blurs;
      * the app starts shortly before it is full and fades in over it. Returning shrinks the
      * surface back into the icon ([onResume]).
      */
-    private fun launchThroughSurface(app: AppInfo, bounds: Rect, source: android.graphics.Rect) {
-        vm.beginAppTransition(bounds, icons.cached(app, iconSizePx))
-        lifecycleScope.launch {
+    private fun launchThroughSurface(app: AppInfo, bounds: Rect, source: android.graphics.Rect, replace: Boolean = false) {
+        // Tapping another icon cancels the previous pending launch: its app never starts.
+        launchJob?.cancel()
+        appStarted = false
+        launchTargetKey = app.key
+        val icon = icons.cached(app, iconSizePx)
+        if (replace) vm.switchAppTransition(bounds, icon) else vm.beginAppTransition(bounds, icon)
+        launchJob = lifecycleScope.launch {
             delay((Motion.APP_LEAD_MS * animatorScale()).toLong())
             // The icon-origin surface is the only opening animation. Explicitly disable
             // the app-window transition (0, 0) so Android cannot add a second animation on top.
@@ -398,6 +418,7 @@ class MainActivity : ComponentActivity(), LauncherActions {
                 vm.beginAppClosing()
                 return@launch
             }
+            appStarted = true
             // Still in front after this long: the app did not open, so the surface goes home again.
             delay(Motion.APP_START_TIMEOUT_MS)
             if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) vm.beginAppClosing()

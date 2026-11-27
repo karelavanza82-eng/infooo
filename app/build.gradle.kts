@@ -13,8 +13,8 @@ android {
         applicationId = "com.hoisly.launcher"
         minSdk = 31
         targetSdk = 37
-        versionCode = 20104
-        versionName = "2.2.0"
+        versionCode = 20105
+        versionName = "2.2.1"
     }
 
     // CI signs releases with the project keystore passed through the environment.

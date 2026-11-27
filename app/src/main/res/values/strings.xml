@@ -32,7 +32,7 @@
     <string name="about_project_location">Project created in</string>
     <string name="about_project_location_value">Sragen, Central Java, Indonesia</string>
     <string name="about_description">A personal Android launcher project.</string>
-    <string name="about_version">Version 2.2.0</string>
+    <string name="about_version">Version 2.2.1</string>
     <string name="row_version">Version</string>
     <string name="row_license">License</string>
     <string name="general_blur">Blur effect</string>
