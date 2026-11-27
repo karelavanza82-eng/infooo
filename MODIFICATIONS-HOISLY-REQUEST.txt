@@ -1,0 +1,12 @@
+Hoisly source modifications
+
+1. Added a fourth Edit menu item: Manage Widgets / Kelola Widget.
+2. Added a widget manager dialog that lists widgets on home pages and the Today page,
+   including widgets inside Smart Stacks. Each item can be removed from this manager,
+   so removal remains available even when the current page is empty.
+3. Changed the custom status-bar airplane glyph from a 45-degree diagonal to a level,
+   horizontal left-facing airplane to match the supplied reference.
+
+Build verification: Gradle compilation could not be run in this environment because
+services.gradle.org could not be resolved (DNS/network unavailable). Source and archive
+integrity checks were run; compile/runtime behavior still needs an Android/Gradle build.
