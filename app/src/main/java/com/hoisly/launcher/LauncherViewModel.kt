@@ -183,6 +183,19 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
         if (appTransition.value?.id == id) appTransition.value = null
     }
 
+    /** Parallel launch cards: one per recent icon tap, each animates on its own and removes itself. */
+    val parallelCards: MutableStateFlow<List<com.hoisly.launcher.ui.home.ParallelCard>> = MutableStateFlow(emptyList())
+    private var parallelIds: Long = 0
+
+    fun spawnParallelCard(bounds: Rect, icon: ImageBitmap?) {
+        val card = com.hoisly.launcher.ui.home.ParallelCard(++parallelIds, bounds, icon, iconSurfaceColor(icon))
+        parallelCards.value = (parallelCards.value + card).takeLast(com.hoisly.launcher.ui.home.PARALLEL_MAX_CARDS)
+    }
+
+    fun removeParallelCard(id: Long) {
+        parallelCards.value = parallelCards.value.filterNot { it.id == id }
+    }
+
     /** A real return from a launched app or a background Home Intent, for the return policy. */
     val returnToHome: MutableSharedFlow<Unit> = MutableSharedFlow(extraBufferCapacity = 1)
 

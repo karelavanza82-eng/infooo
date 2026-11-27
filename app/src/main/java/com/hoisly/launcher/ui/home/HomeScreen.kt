@@ -430,6 +430,7 @@ fun HomeScreen(vm: LauncherViewModel, actions: LauncherActions) {
         )
 
         AppTransitionOverlay(vm, appProgress)
+        ParallelLaunchOverlay(vm)
 
         PanelHost(panels, vm)
 

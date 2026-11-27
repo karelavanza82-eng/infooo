@@ -112,6 +112,7 @@ fun DrawScope.drawAppTransitionVisual(style: String, bounds: Rect, icon: ImageBi
         "ANTICIPATE" -> drawAnticipate(bounds, color, progress)
         "SCAN" -> drawScan(bounds, color, progress)
         "MIST" -> drawMist(bounds, color, progress)
+        "PARALLEL" -> drawParallelPreview(bounds, icon, color, progress)
         else -> drawHoislySurface(bounds, icon, color, progress)
     }
 }

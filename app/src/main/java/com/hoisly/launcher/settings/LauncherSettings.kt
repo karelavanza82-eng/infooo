@@ -127,7 +127,7 @@ class LauncherSettings private constructor(context: Context) {
     fun setResumeAnimation(value: Boolean): Unit = update { it.copy(resumeAnimation = value) }
     fun setAnimationSpeedPercent(value: Int): Unit = update { it.copy(animationSpeedPercent = value.coerceIn(0, 100)) }
     fun setAppAnimationStyle(value: String): Unit = update {
-        val supported = setOf("HOISLY", "IOS27", "AURA", "SHUTTER", "ORBIT", "ANTICIPATE", "SCAN", "MIST")
+        val supported = setOf("HOISLY", "IOS27", "AURA", "SHUTTER", "ORBIT", "ANTICIPATE", "SCAN", "MIST", "PARALLEL")
         it.copy(appAnimationStyle = value.takeIf { key -> key in supported } ?: "HOISLY")
     }
     fun setPageTransition(value: PageTransition): Unit = update { it.copy(pageTransition = value) }
@@ -201,7 +201,7 @@ class LauncherSettings private constructor(context: Context) {
         resumeAnimation = prefs.getBoolean(KEY_RESUME_ANIM, true),
         animationSpeedPercent = prefs.getInt(KEY_ANIMATION_SPEED, 30).coerceIn(0, 100).also { com.hoisly.launcher.ui.theme.Motion.setSpeedPercent(it) },
         appAnimationStyle = prefs.getString(KEY_APP_ANIMATION_STYLE, "HOISLY")
-            ?.takeIf { it in setOf("HOISLY", "IOS27", "AURA", "SHUTTER", "ORBIT", "ANTICIPATE", "SCAN", "MIST") }
+            ?.takeIf { it in setOf("HOISLY", "IOS27", "AURA", "SHUTTER", "ORBIT", "ANTICIPATE", "SCAN", "MIST", "PARALLEL") }
             ?: "HOISLY",
         showLockScreenAfterSleep = prefs.getBoolean(KEY_LOCK_AFTER_SLEEP, true),
         glassTint = prefs.getFloat(KEY_GLASS_TINT, Defaults.glassTint),

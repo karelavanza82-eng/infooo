@@ -69,6 +69,7 @@ import com.hoisly.launcher.ui.glass.isLiquidGlassReady
 import com.hoisly.launcher.ui.glass.resolveGlassMode
 import com.hoisly.launcher.ui.glass.LocalGlassStyle
 import com.hoisly.launcher.ui.home.HomeScreen
+import com.hoisly.launcher.ui.home.PARALLEL_IDLE_MS
 import com.hoisly.launcher.ui.lockscreen.HoislyLockScreen
 import com.hoisly.launcher.ui.home.LauncherActions
 import com.hoisly.launcher.ui.icon.BadgeSource
@@ -357,6 +358,12 @@ class MainActivity : ComponentActivity(), LauncherActions {
     }
 
     override fun launch(app: AppInfo, bounds: Rect) {
+        // Parallel animation: every tap gets its own card; only the last tap opens its app.
+        val launchSettings = vm.settings.state.value
+        if (launchSettings.appAnimationStyle == "PARALLEL" && launchSettings.openCloseAnimation && !bounds.isEmpty && animatorScale() > 0f) {
+            launchParallel(app, bounds)
+            return
+        }
         // A surface is still growing or shrinking: ignore the extra tap.
         if (vm.appTransition.value != null) return
         vm.launchStats.recordLaunch(app.key)
@@ -373,6 +380,21 @@ class MainActivity : ComponentActivity(), LauncherActions {
             .withoutSplashAnimation()
             .toBundle()
         startApp(app, source, options)
+    }
+
+    private var parallelJob: kotlinx.coroutines.Job? = null
+
+    private fun launchParallel(app: AppInfo, bounds: Rect) {
+        vm.spawnParallelCard(bounds, icons.cached(app, iconSizePx))
+        parallelJob?.cancel()
+        parallelJob = lifecycleScope.launch {
+            delay(PARALLEL_IDLE_MS)
+            vm.launchStats.recordLaunch(app.key)
+            val options = ActivityOptions.makeCustomAnimation(this@MainActivity, 0, 0)
+                .withoutSplashAnimation()
+                .toBundle()
+            startApp(app, bounds.toAndroidRect(), options)
+        }
     }
 
     /**
