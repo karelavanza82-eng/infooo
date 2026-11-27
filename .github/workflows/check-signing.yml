@@ -1,0 +1,64 @@
+
+name: Check HOISLY Signing Key
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Compare Signing Certificate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Restore signing keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.HOISLY_KEYSTORE_BASE64 }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::Keystore secret is missing"
+            exit 1
+          fi
+
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/check.p12"
+
+          test -s "$RUNNER_TEMP/check.p12"
+
+      - name: Print certificate fingerprint
+        env:
+          STORE_PASSWORD: ${{ secrets.HOISLY_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.HOISLY_KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$STORE_PASSWORD" ] || [ -z "$KEY_ALIAS" ]; then
+            echo "::error::Signing credentials are missing"
+            exit 1
+          fi
+
+          keytool -exportcert \
+            -keystore "$RUNNER_TEMP/check.p12" \
+            -storetype PKCS12 \
+            -storepass "$STORE_PASSWORD" \
+            -alias "$KEY_ALIAS" \
+            -file "$RUNNER_TEMP/cert.der"
+
+          keytool -printcert \
+            -file "$RUNNER_TEMP/cert.der"
+
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -f "$RUNNER_TEMP/check.p12"
+          rm -f "$RUNNER_TEMP/cert.der"
+          
