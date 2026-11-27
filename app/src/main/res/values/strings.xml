@@ -106,7 +106,6 @@
     <string name="glass_tint">Glass brightness</string>
     <string name="glass_edge">Edge highlight</string>
     <string name="glass_style">Glass style</string>
-    <string name="glass_style_wallpaper_blur">Wallpaper Blur</string>
     <string name="glass_style_frosted">Frosted</string>
     <string name="glass_style_liquid">Liquid</string>
     <string name="glass_refraction">Refraction</string>

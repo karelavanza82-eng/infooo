@@ -144,16 +144,11 @@ internal class GlassNode(
             GlassStats.painterFailed++
         }
 
-        // Wallpaper Blur is the raw blurred wallpaper slice. Frosted adds tint and an edge.
-        // Both remain available when the Liquid shader or source image is unavailable.
+        // Frosted, or the flat tint without a wallpaper.
+        val color = if (tint.isSpecified) tint else Color.White.copy(alpha = style.tintAlpha)
         with(frosted) {
-            if (style.mode == GlassMode.WallpaperBlur) {
-                drawWallpaperBlur(path, source, windowPos, style.fallback)
-            } else {
-                val color = if (tint.isSpecified) tint else Color.White.copy(alpha = style.tintAlpha)
-                drawBody(path, source, color, windowPos, style.fallback)
-                if (style.edge) drawEdge(path, stroke)
-            }
+            drawBody(path, source, color, windowPos, style.fallback)
+            if (style.edge) drawEdge(path, stroke)
         }
         drawContent()
     }

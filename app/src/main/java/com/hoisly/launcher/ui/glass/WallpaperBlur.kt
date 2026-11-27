@@ -2,22 +2,23 @@ package com.hoisly.launcher.ui.glass
 
 import android.app.WallpaperManager
 import android.content.Context
-import android.net.Uri
 import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Environment
+import android.os.ParcelFileDescriptor
 import android.util.Log
 import android.view.WindowManager
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.core.graphics.createBitmap
 import com.hoisly.launcher.ui.theme.LiquidGlassTokens
 import kotlinx.coroutines.Dispatchers
@@ -78,53 +79,25 @@ object WallpaperBlur {
     @Volatile
     private var appContext: Context? = null
 
-    private const val PREFS = "hoisly_glass_source"
-    private const val KEY_FALLBACK_URI = "fallback_wallpaper_uri"
-
-    /** WallpaperManager access is OEM/OS-policy dependent; media permission is NOT a guarantee. */
-    @Deprecated("Use the system photo picker / OpenDocument and setFallbackWallpaper instead")
+    /** The runtime permission WallpaperManager checks: Photos on Android 13+, storage before. */
     fun mediaPermission(): String =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Manifest.permission.READ_MEDIA_IMAGES
         else Manifest.permission.READ_EXTERNAL_STORAGE
 
-    @Deprecated("A media permission does not grant WallpaperManager access")
     fun hasMediaPermission(context: Context): Boolean =
         context.checkSelfPermission(mediaPermission()) == PackageManager.PERMISSION_GRANTED
 
-    /** Persist a user-selected image as a portable wallpaper source without broad storage permission. */
-    fun setFallbackWallpaper(context: Context, uri: Uri): Boolean = runCatching {
-        context.contentResolver.takePersistableUriPermission(uri, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(KEY_FALLBACK_URI, uri.toString()).apply()
-        loadedOnce = false
-        appContext = context.applicationContext
-        lastFailure = null
-        true
-    }.getOrElse {
-        Log.w(GLASS_TAG, "Could not persist selected wallpaper URI", it)
-        false
-    }
-
-    fun clearFallbackWallpaper(context: Context) {
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().remove(KEY_FALLBACK_URI).apply()
-        loadedOnce = false
-    }
-
-    fun hasFallbackWallpaper(context: Context): Boolean =
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY_FALLBACK_URI, null) != null
-
     /**
-     * Whether the special access required by WallpaperManager is enabled. On Android 13+
-     * READ_MEDIA_IMAGES is not a substitute for MANAGE_EXTERNAL_STORAGE when reading the
-     * current system wallpaper. The home/settings prompts use this same state check.
+     * Whether the system lets us read the wallpaper bitmap. WallpaperManager checks the media
+     * read permission (Android 13+: READ_MEDIA_IMAGES; some ROMs report it as an ignored appop,
+     * "Op READ_MEDIA_IMAGES ignore"), and on some ROMs All files access is accepted instead.
+     * A read that already worked counts as access. UI uses this for the "allow wallpaper access" prompt.
      */
     fun hasAccess(): Boolean {
-        // Android 13+ does not grant wallpaper-image access through READ_MEDIA_IMAGES.
-        // Android 14+ requires MANAGE_EXTERNAL_STORAGE for WallpaperManager image APIs.
-        // Use the actual special-access state, not a probe of the deprecated no-arg API:
-        // that API can throw even after the user has granted the correct access.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && Environment.isExternalStorageManager()) return true
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R || loadedOnce) return true
         val context = appContext ?: return false
-        return hasFallbackWallpaper(context)
+        if (hasMediaPermission(context)) return true
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU && Environment.isExternalStorageManager()
     }
 
     /** Changes whenever the user sets a new wallpaper; -1 if unknown. */
@@ -141,7 +114,11 @@ object WallpaperBlur {
         val small = render(context, DOWNSCALE, SATURATION) ?: return@withContext null
         val pixels = boxBlur(small, RADIUS, passes = 3)
         val luminance = LuminanceMap.fromArgb(pixels, small.width, small.height)
-        val body = if (sharp != null && isLiquidGlassSupported(Build.VERSION.SDK_INT)) renderBody(context) else null
+        // Build the shader body from the exact same preview bitmap used by the refracting rim.
+        // Re-reading WallpaperManager here can return a different frame/image on vendor ROMs.
+        val body = if (sharp != null && isLiquidGlassSupported(Build.VERSION.SDK_INT)) {
+            renderBodyFromSharp(sharp)
+        } else null
         GlassSource(small.asImageBitmap(), DOWNSCALE, sharp, PREVIEW_DOWNSCALE, luminance, body)
     }
 
@@ -161,19 +138,20 @@ object WallpaperBlur {
         runCatching { render(context, 1, saturation = 1f)?.asImageBitmap() }.getOrNull()
     }
 
-    /** The body of Liquid glass: the saturated wallpaper with [LiquidGlassTokens.Frost] of a light blur mixed in. */
-    private fun renderBody(context: Context): ImageBitmap? {
-        val bitmap = render(context, PREVIEW_DOWNSCALE, SATURATION) ?: return null
+    /** Build the Liquid body from the same wallpaper frame as [sharp], avoiding a second
+     * WallpaperManager read that may disagree or fail on vendor-specific implementations. */
+    private fun renderBodyFromSharp(sharp: ImageBitmap): ImageBitmap? = runCatching {
+        val bitmap = sharp.asAndroidBitmap().copy(Bitmap.Config.ARGB_8888, true) ?: return null
         val w = bitmap.width
         val h = bitmap.height
-        val sharp = IntArray(w * h)
-        bitmap.getPixels(sharp, 0, w, 0, 0, w, h)
+        val original = IntArray(w * h)
+        bitmap.getPixels(original, 0, w, 0, 0, w, h)
         val blurred = boxBlur(bitmap, FROST_RADIUS, passes = 3)
         val t = (LiquidGlassTokens.Frost * 256).toInt().coerceIn(0, 256)
-        for (i in blurred.indices) blurred[i] = mixArgb(sharp[i], blurred[i], t)
+        for (i in blurred.indices) blurred[i] = mixArgb(original[i], blurred[i], t)
         bitmap.setPixels(blurred, 0, w, 0, 0, w, h)
-        return bitmap.asImageBitmap()
-    }
+        bitmap.asImageBitmap()
+    }.getOrNull()
 
     /** a + (b - a) × t / 256 per channel. */
     private fun mixArgb(a: Int, b: Int, t: Int): Int {
@@ -194,56 +172,51 @@ object WallpaperBlur {
         appContext = context.applicationContext
         val manager = WallpaperManager.getInstance(context)
         val failures = mutableListOf<String>()
-        // A live wallpaper is rendered by its own service. WallpaperManager cannot provide
-        // the live frame as a bitmap, so do not silently substitute a stale static image.
-        if (runCatching { manager.getWallpaperInfo(WallpaperManager.FLAG_SYSTEM) }.getOrNull() != null) {
-            failures += "live wallpaper: system does not expose the rendered frame as a bitmap"
-        } else {
-            val attempts = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                // API 34 introduced the FLAG_* overloads. The legacy no-argument methods are
-                // documented to throw SecurityException on Android 14+, even on supported devices.
-                listOf<Pair<String, () -> Drawable?>>(
-                    "getDrawable(FLAG_SYSTEM)" to { manager.getDrawable(WallpaperManager.FLAG_SYSTEM) },
-                    "peekDrawable(FLAG_SYSTEM)" to { manager.peekDrawable(WallpaperManager.FLAG_SYSTEM) },
-                )
-            } else {
-                listOf<Pair<String, () -> Drawable?>>(
-                    "drawable" to { manager.drawable },
-                    "peekDrawable" to { manager.peekDrawable() },
-                )
-            }
-            for ((name, read) in attempts) {
-                try {
-                    val d = read() ?: continue
-                    lastFailure = null
-                    return d.toSoftwareDrawable(context)
-                } catch (e: SecurityException) {
-                    failures += "$name: SecurityException ${e.message}"
-                } catch (e: Throwable) {
-                    failures += "$name: ${e.javaClass.simpleName} ${e.message}"
-                }
-            }
-        }
-        // Android 13+ and many OEM builds restrict WallpaperManager independently of media permissions.
-        // Fall back to an image explicitly selected by the user through the system document picker.
-        val selected = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY_FALLBACK_URI, null)
-        if (selected != null) {
+
+        // Route A: file-descriptor API. Some OEM WallpaperManager implementations expose
+        // the wallpaper through this route even when drawable/peekDrawable are blocked.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            var descriptor: ParcelFileDescriptor? = null
             try {
-                val uri = Uri.parse(selected)
-                val bitmap = context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it) }
-                if (bitmap != null) {
-                    lastFailure = null
-                    return BitmapDrawable(context.resources, bitmap)
+                descriptor = manager.getWallpaperFile(WallpaperManager.FLAG_SYSTEM)
+                if (descriptor != null) {
+                    val bitmap = descriptor.use { BitmapFactory.decodeFileDescriptor(it.fileDescriptor) }
+                    if (bitmap != null) return BitmapDrawable(context.resources, bitmap).toSoftwareDrawable(context)
+                    failures += "getWallpaperFile: bitmap decode returned null"
+                } else {
+                    failures += "getWallpaperFile: no system wallpaper descriptor"
                 }
-                failures += "selected image: decoder returned null"
             } catch (e: SecurityException) {
-                failures += "selected image: permission revoked (${e.message})"
-                context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().remove(KEY_FALLBACK_URI).apply()
+                failures += "getWallpaperFile: SecurityException ${e.message}"
+                runCatching { descriptor?.close() }
             } catch (e: Throwable) {
-                failures += "selected image: ${e.javaClass.simpleName} ${e.message}"
+                failures += "getWallpaperFile: ${e.javaClass.simpleName} ${e.message}"
+                runCatching { descriptor?.close() }
             }
         }
-        lastFailure = failures.joinToString(" | ").ifEmpty { "WallpaperManager returned no drawable (live wallpaper / vendor ROM); no user-selected fallback" }
+
+        // Route B/C: public drawable APIs. Keep both because OEM builds differ.
+        val attempts = listOf<Pair<String, () -> Drawable?>>(
+            "drawable" to { manager.drawable },
+            "peekDrawable" to { manager.peekDrawable() },
+        )
+        for ((name, read) in attempts) {
+            try {
+                val d = read()
+                if (d == null) {
+                    failures += "$name: returned null"
+                    continue
+                }
+                return d.toSoftwareDrawable(context)
+            } catch (e: SecurityException) {
+                failures += "$name: SecurityException ${e.message}"
+            } catch (e: Throwable) {
+                failures += "$name: ${e.javaClass.simpleName} ${e.message}"
+            }
+        }
+        lastFailure = failures.joinToString(" | ").ifEmpty {
+            "WallpaperManager returned no system wallpaper (live wallpaper or vendor restriction)"
+        }
         Log.w(GLASS_TAG, "Wallpaper unreadable on API ${Build.VERSION.SDK_INT}: $lastFailure")
         return null
     }
@@ -262,14 +235,21 @@ object WallpaperBlur {
         loadedOnce = true
         lastFailure = null
 
-        val screen = context.getSystemService(WindowManager::class.java).maximumWindowMetrics.bounds
-        val sw = screen.width()
-        val sh = screen.height()
+        val metrics = context.getSystemService(WindowManager::class.java)
+        val screen = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            metrics.maximumWindowMetrics.bounds
+        } else {
+            android.graphics.Rect(0, 0,
+                context.resources.displayMetrics.widthPixels,
+                context.resources.displayMetrics.heightPixels)
+        }
+        val sw = screen.width().coerceAtLeast(1)
+        val sh = screen.height().coerceAtLeast(1)
         val ww = drawable.intrinsicWidth.takeIf { it > 0 } ?: sw
         val wh = drawable.intrinsicHeight.takeIf { it > 0 } ?: sh
 
-        val outW = sw / downscale
-        val outH = sh / downscale
+        val outW = (sw / downscale).coerceAtLeast(1)
+        val outH = (sh / downscale).coerceAtLeast(1)
         val scale = max(sw.toFloat() / ww, sh.toFloat() / wh) / downscale
         val dx = (outW - ww * scale) / 2f
         val dy = (outH - wh * scale) / 2f

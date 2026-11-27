@@ -64,12 +64,9 @@ class SettingsActivity : ComponentActivity(), SettingsActions {
         if (!isDefaultHome) runCatching { startActivity(Intent(Settings.ACTION_HOME_SETTINGS)) }
     }
 
-    private val pickGlassWallpaper = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        if (uri != null && WallpaperBlur.setFallbackWallpaper(this, uri)) {
-            refreshSystemState()
-            hasWallpaperAccess = true
-            vm.refreshGlass()
-        }
+    private val requestWallpaperMedia = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        refreshSystemState()
+        if (granted) vm.refreshGlass() else openAllFilesAccess()
     }
 
     override fun attachBaseContext(newBase: Context) {
@@ -132,14 +129,17 @@ class SettingsActivity : ComponentActivity(), SettingsActions {
     }
 
     override fun requestWallpaperAccess() {
-        // Use the same ZFL special-access page as the home-screen prompt.
-        val appAccess = Intent(
-            Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
-            "package:$packageName".toUri(),
-        )
-        runCatching { startActivity(appAccess) }.onFailure {
-            runCatching { startActivity(Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)) }
+        if (!WallpaperBlur.hasMediaPermission(this)) {
+            requestWallpaperMedia.launch(WallpaperBlur.mediaPermission())
+        } else {
+            openAllFilesAccess()
         }
+    }
+
+    private fun openAllFilesAccess() {
+        val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, "package:$packageName".toUri())
+        runCatching { startActivity(intent) }
+            .onFailure { runCatching { startActivity(Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)) } }
     }
 
     override fun setAppLanguage(tag: String?) {

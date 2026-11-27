@@ -179,12 +179,17 @@ internal object LiquidGlassShader {
 
     /** Points the shader's image inputs at [sharp] and [body]; cheap when they are already bound. */
     fun bind(shader: RuntimeShader, sharp: ImageBitmap, body: ImageBitmap, imageScale: Float) {
-        if (sharp === boundSharp && body === boundBody) return
-        shader.setInputShader("sharpImage", bitmapShader(sharp))
-        shader.setInputShader("bodyImage", bitmapShader(body))
+        // Uniforms belong to the shared RuntimeShader. Always refresh imageScale: another
+        // draw/source may have changed it even when the bitmap instances are unchanged.
+        if (sharp !== boundSharp) {
+            shader.setInputShader("sharpImage", bitmapShader(sharp))
+            boundSharp = sharp
+        }
+        if (body !== boundBody) {
+            shader.setInputShader("bodyImage", bitmapShader(body))
+            boundBody = body
+        }
         shader.setFloatUniform("imageScale", imageScale)
-        boundSharp = sharp
-        boundBody = body
     }
 
     /**

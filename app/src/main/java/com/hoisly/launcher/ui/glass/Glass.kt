@@ -142,24 +142,6 @@ internal class FrostedGlass {
         drawPath(path, shaderBrush!!, colorFilter = tintFilter)
     }
 
-    /** Draws only the blurred wallpaper slice: no tint and no glass rim. */
-    fun DrawScope.drawWallpaperBlur(path: Path, source: GlassSource?, windowPos: Offset, fallback: Color) {
-        if (source == null) {
-            drawPath(path, fallback)
-            return
-        }
-        if (source.image !== shaderImage) {
-            shaderImage = source.image
-            shader = ImageShader(source.image, TileMode.Clamp, TileMode.Clamp)
-            shaderBrush = ShaderBrush(shader!!)
-        }
-        val k = source.downscale.toFloat()
-        matrix.setScale(k, k)
-        matrix.postTranslate(-windowPos.x, -windowPos.y)
-        shader!!.setLocalMatrix(matrix)
-        drawPath(path, shaderBrush!!)
-    }
-
     /** The top-lit gradient edge in [stroke]. */
     fun DrawScope.drawEdge(path: Path, stroke: Color) {
         val brush = strokeBrush?.takeIf { stroke == strokeColor } ?: Brush.verticalGradient(

@@ -122,8 +122,8 @@ class MainActivity : ComponentActivity(), LauncherActions {
         if (result.resultCode == RESULT_OK) configureOrPlace(pending) else cancelWidget(pending)
     }
 
-    private val pickGlassWallpaper = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        if (uri != null && WallpaperBlur.setFallbackWallpaper(this, uri)) vm.refreshWallpaper(force = true)
+    private val requestWallpaperMedia = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) vm.refreshWallpaper(force = true) else openAllFilesAccess()
     }
     private val requestCalendar = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
         vm.refreshWidgets()
@@ -434,15 +434,17 @@ class MainActivity : ComponentActivity(), LauncherActions {
     }
 
     override fun requestGlassAccess() {
-        // Match ZFL's wallpaper access route. Android 13+/14+ WallpaperManager image access
-        // requires MANAGE_EXTERNAL_STORAGE; a photo-picker grant cannot replace this permission.
-        val appAccess = Intent(
-            Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
-            Uri.parse("package:$packageName"),
-        )
-        runCatching { startActivity(appAccess) }.onFailure {
-            runCatching { startActivity(Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)) }
+        if (!WallpaperBlur.hasMediaPermission(this)) {
+            requestWallpaperMedia.launch(WallpaperBlur.mediaPermission())
+        } else {
+            openAllFilesAccess()
         }
+    }
+
+    private fun openAllFilesAccess() {
+        val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, "package:$packageName".toUri())
+        runCatching { startActivity(intent) }
+            .onFailure { runCatching { startActivity(Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)) } }
     }
 
     override fun openSettings() {
