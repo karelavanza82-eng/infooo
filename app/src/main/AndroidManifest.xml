@@ -29,6 +29,9 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.WRITE_SETTINGS" tools:ignore="ProtectedPermissions" />
     <!-- Liquid Glass / wallpaper blur: since Android 11 (effectively required on 13+) WallpaperManager.getDrawable() throws SecurityException for apps without All files access. Used ONLY to read the active wallpaper; optional, the glass stays Frosted without it. -->
+    <!-- Wallpaper read: WallpaperManager checks the media read permission (Photos on Android 13+). -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.READ_CALENDAR" />
     <!-- Status Bar: optional, grantable only over adb. Lets the custom status bar hide SystemUI's own clock/signal/battery slots; never used otherwise. -->

@@ -64,6 +64,11 @@ class SettingsActivity : ComponentActivity(), SettingsActions {
         if (!isDefaultHome) runCatching { startActivity(Intent(Settings.ACTION_HOME_SETTINGS)) }
     }
 
+    private val requestWallpaperMedia = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        refreshSystemState()
+        if (granted) vm.refreshGlass() else openAllFilesAccess()
+    }
+
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(AppLanguage.wrap(newBase))
     }
@@ -124,9 +129,17 @@ class SettingsActivity : ComponentActivity(), SettingsActions {
     }
 
     override fun requestWallpaperAccess() {
+        if (!WallpaperBlur.hasMediaPermission(this)) {
+            requestWallpaperMedia.launch(WallpaperBlur.mediaPermission())
+        } else {
+            openAllFilesAccess()
+        }
+    }
+
+    private fun openAllFilesAccess() {
         val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, "package:$packageName".toUri())
         runCatching { startActivity(intent) }
-            .onFailure { startActivity(Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)) }
+            .onFailure { runCatching { startActivity(Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)) } }
     }
 
     override fun setAppLanguage(tag: String?) {

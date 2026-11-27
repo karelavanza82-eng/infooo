@@ -234,7 +234,25 @@ fun glassDiagnosticsText(source: GlassSource?): String {
         appendLine("Wallpaper access: ${WallpaperBlur.hasAccess()}")
         appendLine("Wallpaper loaded: ${source != null}, sharp=${source?.sharp != null}, body=${source?.body != null}")
         appendLine("Shader compiled: $shaderOk")
+        appendLine(GlassStats.summary())
         WallpaperBlur.lastFailure?.let { appendLine("Wallpaper error: $it") }
         if (supported) LiquidGlassShader.failureMessage?.let { appendLine("Shader error: $it") }
     }.trimEnd()
+}
+
+/**
+ * Counts, since the process started, how every glass surface was drawn and why Liquid fell
+ * back to Frosted. Main thread only. Shown in the settings diagnostics so "all true but
+ * still not Liquid" can be told apart without logcat.
+ */
+object GlassStats {
+    var liquidOk = 0
+    var modeFrosted = 0
+    var noSource = 0
+    var noSharp = 0
+    var noOutline = 0
+    var painterFailed = 0
+
+    fun summary(): String =
+        "Draw stats: liquid=$liquidOk, modeFrosted=$modeFrosted, noSource=$noSource, noSharp=$noSharp, noOutline=$noOutline, painterFailed=$painterFailed"
 }

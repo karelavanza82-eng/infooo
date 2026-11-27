@@ -2,6 +2,8 @@ package com.hoisly.launcher.ui.glass
 
 import android.app.WallpaperManager
 import android.content.Context
+import android.Manifest
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.ColorMatrix
@@ -71,18 +73,33 @@ object WallpaperBlur {
     var lastFailure: String? = null
         private set
 
+    @Volatile
+    private var appContext: Context? = null
+
+    /** The runtime permission WallpaperManager checks: Photos on Android 13+, storage before. */
+    fun mediaPermission(): String =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Manifest.permission.READ_MEDIA_IMAGES
+        else Manifest.permission.READ_EXTERNAL_STORAGE
+
+    fun hasMediaPermission(context: Context): Boolean =
+        context.checkSelfPermission(mediaPermission()) == PackageManager.PERMISSION_GRANTED
+
     /**
-     * Whether the system lets us read the wallpaper bitmap. Since Android 11 (and for good from
-     * Android 13) `WallpaperManager.getDrawable()` throws SecurityException for a normal app, so
-     * the only grant a launcher can ask for is All files access (MANAGE_EXTERNAL_STORAGE).
-     * Some ROMs let the read through without it, so a read that already worked also counts.
-     * UI uses this to decide whether to show the "allow wallpaper access" prompt.
+     * Whether the system lets us read the wallpaper bitmap. WallpaperManager checks the media
+     * read permission (Android 13+: READ_MEDIA_IMAGES; some ROMs report it as an ignored appop,
+     * "Op READ_MEDIA_IMAGES ignore"), and on some ROMs All files access is accepted instead.
+     * A read that already worked counts as access. UI uses this for the "allow wallpaper access" prompt.
      */
-    fun hasAccess(): Boolean =
-        Build.VERSION.SDK_INT < Build.VERSION_CODES.R || loadedOnce || Environment.isExternalStorageManager()
+    fun hasAccess(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R || loadedOnce) return true
+        val context = appContext ?: return false
+        if (hasMediaPermission(context)) return true
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU && Environment.isExternalStorageManager()
+    }
 
     /** Changes whenever the user sets a new wallpaper; -1 if unknown. */
     fun wallpaperId(context: Context): Int = runCatching {
+        appContext = context.applicationContext
         WallpaperManager.getInstance(context).getWallpaperId(WallpaperManager.FLAG_SYSTEM)
     }.getOrDefault(-1)
 
@@ -144,7 +161,9 @@ object WallpaperBlur {
      * the reason when none works instead of failing silently (the glass then stays Frosted).
      */
     private fun readWallpaper(context: Context): Drawable? {
+        appContext = context.applicationContext
         val manager = WallpaperManager.getInstance(context)
+        val failures = mutableListOf<String>()
         val attempts = listOf<Pair<String, () -> Drawable?>>(
             "drawable" to { manager.drawable },
             "peekDrawable" to { manager.peekDrawable() },
@@ -154,12 +173,12 @@ object WallpaperBlur {
                 val d = read() ?: continue
                 return d.toSoftwareDrawable(context)
             } catch (e: SecurityException) {
-                lastFailure = "$name: SecurityException (all-files access missing?) ${e.message}"
+                failures += "$name: SecurityException ${e.message}"
             } catch (e: Throwable) {
-                lastFailure = "$name: ${e.javaClass.simpleName} ${e.message}"
+                failures += "$name: ${e.javaClass.simpleName} ${e.message}"
             }
         }
-        if (lastFailure == null) lastFailure = "WallpaperManager returned no drawable (live wallpaper / vendor ROM)"
+        lastFailure = failures.joinToString(" | ").ifEmpty { "WallpaperManager returned no drawable (live wallpaper / vendor ROM)" }
         Log.w(GLASS_TAG, "Wallpaper unreadable on API ${Build.VERSION.SDK_INT}: $lastFailure")
         return null
     }

@@ -26,3 +26,15 @@ Belum dibuild/dites (tidak ada akses jaringan untuk Gradle di sini).
 Settings > layar Glass (saat Blur aktif) menampilkan blok "Glass diagnostics": versi Android,
 izin wallpaper, apakah wallpaper termuat, apakah shader AGSL ter-compile, plus pesan error.
 Tester cukup kirim screenshot blok ini.
+
+## Update (hasil tes realme RMX3710, Android 15)
+Diagnostik menunjukkan: `SecurityException: Op READ_MEDIA_IMAGES ignore for package com.hoisly.launcher`.
+Jadi di Android 13+ WallpaperManager memeriksa izin media (Foto), bukan hanya All files access.
+- Manifest: tambah `READ_MEDIA_IMAGES` (dan `READ_EXTERNAL_STORAGE` maxSdk 32).
+- Tombol "Akses wallpaper" kini meminta izin Foto/Media dulu; kalau ditolak baru membuka halaman All files access.
+- `hasAccess()` di Android 13+ = izin media diberikan atau wallpaper pernah berhasil dibaca (All files saja tidak dianggap cukup).
+- Diagnostik kini menampilkan semua error percobaan baca, bukan hanya yang terakhir.
+
+## Update v9.0 (poll: 17 orang "semua true tapi tetap tidak aktif")
+Diagnostik kini juga menampilkan "Draw stats": berapa permukaan glass yang tergambar Liquid
+(`liquid`) dan alasan jatuh ke Frosted (`modeFrosted`, `noSource`, `noSharp`, `noOutline`, `painterFailed`).

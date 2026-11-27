@@ -117,6 +117,12 @@ internal class GlassNode(
         val style = currentValueOf(LocalGlassStyle)
 
         liquidDrawn = false
+        when {
+            style.mode != GlassMode.Liquid -> GlassStats.modeFrosted++
+            source == null -> GlassStats.noSource++
+            source.sharp == null -> GlassStats.noSharp++
+            frame.outline == null -> GlassStats.noOutline++
+        }
         if (style.mode == GlassMode.Liquid && source?.sharp != null && Build.VERSION.SDK_INT >= LIQUID_GLASS_MIN_SDK) {
             // A pressed button grows and follows the finger, content included; the hit area stays put.
             if (press.measure(size.width, size.height, LiquidGlassTokens.PressGrow.toPx(), LiquidGlassTokens.DragStretch.toPx())) {
@@ -131,7 +137,11 @@ internal class GlassNode(
                 liquidDrawn = drawLiquid(source, style)
                 if (liquidDrawn) drawContent()
             }
-            if (liquidDrawn) return
+            if (liquidDrawn) {
+                GlassStats.liquidOk++
+                return
+            }
+            GlassStats.painterFailed++
         }
 
         // Frosted, or the flat tint without a wallpaper.

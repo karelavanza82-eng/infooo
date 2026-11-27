@@ -65,6 +65,7 @@ import com.hoisly.launcher.ui.glass.GlassTiltSensor
 import com.hoisly.launcher.ui.glass.LocalGlassLight
 import com.hoisly.launcher.ui.glass.LocalGlassSource
 import com.hoisly.launcher.ui.glass.glassStyle
+import com.hoisly.launcher.ui.glass.WallpaperBlur
 import com.hoisly.launcher.ui.glass.isLiquidGlassReady
 import com.hoisly.launcher.ui.glass.resolveGlassMode
 import com.hoisly.launcher.ui.glass.LocalGlassStyle
@@ -121,6 +122,9 @@ class MainActivity : ComponentActivity(), LauncherActions {
         if (result.resultCode == RESULT_OK) configureOrPlace(pending) else cancelWidget(pending)
     }
 
+    private val requestWallpaperMedia = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) vm.refreshWallpaper(force = true) else openAllFilesAccess()
+    }
     private val requestCalendar = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
         vm.refreshWidgets()
     }
@@ -430,9 +434,17 @@ class MainActivity : ComponentActivity(), LauncherActions {
     }
 
     override fun requestGlassAccess() {
+        if (!WallpaperBlur.hasMediaPermission(this)) {
+            requestWallpaperMedia.launch(WallpaperBlur.mediaPermission())
+        } else {
+            openAllFilesAccess()
+        }
+    }
+
+    private fun openAllFilesAccess() {
         val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, "package:$packageName".toUri())
         runCatching { startActivity(intent) }
-            .onFailure { startActivity(Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)) }
+            .onFailure { runCatching { startActivity(Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)) } }
     }
 
     override fun openSettings() {
