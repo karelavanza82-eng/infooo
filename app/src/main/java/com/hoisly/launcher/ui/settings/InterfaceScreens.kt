@@ -85,6 +85,7 @@ internal fun sampleApps(vm: SettingsViewModel, count: Int): List<AppInfo> {
 
 @Composable
 fun GlassSettingsScreen(vm: SettingsViewModel, actions: SettingsActions, onBack: () -> Unit) {
+    val context = LocalContext.current
     val settings by vm.settings.state.collectAsStateWithLifecycle()
     val wallpaper by vm.wallpaper.collectAsStateWithLifecycle()
     // Local values while dragging; persisted when the finger is lifted.
@@ -121,16 +122,15 @@ fun GlassSettingsScreen(vm: SettingsViewModel, actions: SettingsActions, onBack:
         item { SectionHeader(stringResource(R.string.glass_section_panels)) }
         item {
             SettingsCard {
-                if (liquidSupported) {
-                    Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-                        RowTitle(stringResource(R.string.glass_style))
-                        Spacer(Modifier.height(10.dp))
-                        SegmentedControl(
-                            options = GlassMode.entries.map { stringResource(it.labelRes) },
-                            selectedIndex = GlassMode.entries.indexOf(settings.glassMode),
-                            onSelect = { index -> vm.settings.update { it.copy(glassMode = GlassMode.entries[index]) } },
-                        )
-                    }
+                Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                    val availableModes = GlassMode.entries.filter { it != GlassMode.Liquid || liquidSupported }
+                    RowTitle(stringResource(R.string.glass_style))
+                    Spacer(Modifier.height(10.dp))
+                    SegmentedControl(
+                        options = availableModes.map { stringResource(it.labelRes) },
+                        selectedIndex = availableModes.indexOf(settings.glassMode).coerceAtLeast(0),
+                        onSelect = { index -> vm.settings.update { it.copy(glassMode = availableModes[index]) } },
+                    )
                 }
                 SwitchRow(stringResource(R.string.general_blur), settings.blurEffect, vm.settings::setBlurEffect)
                 SliderRow(
@@ -188,7 +188,7 @@ fun GlassSettingsScreen(vm: SettingsViewModel, actions: SettingsActions, onBack:
         }
         if (settings.blurEffect) {
             item {
-                val diag = glassDiagnosticsText(LocalGlassSource.current)
+                val diag = glassDiagnosticsText(LocalGlassSource.current, context)
                 SectionFooter("Glass diagnostics\n$diag")
             }
         }
@@ -197,6 +197,7 @@ fun GlassSettingsScreen(vm: SettingsViewModel, actions: SettingsActions, onBack:
 
 private val GlassMode.labelRes: Int
     get() = when (this) {
+        GlassMode.WallpaperBlur -> R.string.glass_style_wallpaper_blur
         GlassMode.Frosted -> R.string.glass_style_frosted
         GlassMode.Liquid -> R.string.glass_style_liquid
     }

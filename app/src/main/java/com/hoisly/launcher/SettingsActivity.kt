@@ -64,9 +64,12 @@ class SettingsActivity : ComponentActivity(), SettingsActions {
         if (!isDefaultHome) runCatching { startActivity(Intent(Settings.ACTION_HOME_SETTINGS)) }
     }
 
-    private val requestWallpaperMedia = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        refreshSystemState()
-        if (granted) vm.refreshGlass() else openAllFilesAccess()
+    private val pickGlassWallpaper = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null && WallpaperBlur.setFallbackWallpaper(this, uri)) {
+            refreshSystemState()
+            hasWallpaperAccess = true
+            vm.refreshGlass()
+        }
     }
 
     override fun attachBaseContext(newBase: Context) {
@@ -116,7 +119,7 @@ class SettingsActivity : ComponentActivity(), SettingsActions {
     private fun refreshSystemState() {
         isDefaultHome = roleManager.isRoleHeld(RoleManager.ROLE_HOME)
         isHomeRoleAvailable = roleManager.isRoleAvailable(RoleManager.ROLE_HOME)
-        hasWallpaperAccess = WallpaperBlur.hasAccess()
+        hasWallpaperAccess = WallpaperBlur.hasAccess(this)
         IslandAccess.refresh(this)
     }
 
@@ -129,17 +132,14 @@ class SettingsActivity : ComponentActivity(), SettingsActions {
     }
 
     override fun requestWallpaperAccess() {
-        if (!WallpaperBlur.hasMediaPermission(this)) {
-            requestWallpaperMedia.launch(WallpaperBlur.mediaPermission())
-        } else {
-            openAllFilesAccess()
-        }
-    }
-
-    private fun openAllFilesAccess() {
-        val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, "package:$packageName".toUri())
+        // Match ZFL: WallpaperManager bitmap access on Android 11+ requires All files access.
+        // The Home-screen prompt still offers the system photo picker as a narrow fallback.
+        val intent = Intent(
+            Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+            "package:$packageName".toUri(),
+        )
         runCatching { startActivity(intent) }
-            .onFailure { runCatching { startActivity(Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)) } }
+            .onFailure { startActivity(Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)) }
     }
 
     override fun setAppLanguage(tag: String?) {

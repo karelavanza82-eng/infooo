@@ -7,6 +7,8 @@ import kotlin.math.asin
 
 /** How glass surfaces are rendered. */
 enum class GlassMode {
+    /** Pure blurred wallpaper sample, without glass tint or rim. */
+    WallpaperBlur,
     /** A slice of the blurred wallpaper with a tint and a gradient edge: works on every Android version. */
     Frosted,
     /** A lens computed by an AGSL shader from the wallpaper under the element (Android 13+). */
@@ -27,7 +29,11 @@ fun isLiquidGlassSupported(sdkInt: Int): Boolean = sdkInt >= LIQUID_GLASS_MIN_SD
  * shader compiled; Frosted in every other case.
  */
 fun resolveGlassMode(requested: GlassMode, sdkInt: Int, shaderReady: Boolean): GlassMode =
-    if (requested == GlassMode.Liquid && isLiquidGlassSupported(sdkInt) && shaderReady) GlassMode.Liquid else GlassMode.Frosted
+    when {
+        requested != GlassMode.Liquid -> requested
+        isLiquidGlassSupported(sdkInt) && shaderReady -> GlassMode.Liquid
+        else -> GlassMode.Frosted
+    }
 
 /**
  * Whether the tilt sensor should run: only for a visible home screen with Liquid glass and

@@ -122,8 +122,8 @@ class MainActivity : ComponentActivity(), LauncherActions {
         if (result.resultCode == RESULT_OK) configureOrPlace(pending) else cancelWidget(pending)
     }
 
-    private val requestWallpaperMedia = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (granted) vm.refreshWallpaper(force = true) else openAllFilesAccess()
+    private val pickGlassWallpaper = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null && WallpaperBlur.setFallbackWallpaper(this, uri)) vm.refreshWallpaper(force = true)
     }
     private val requestCalendar = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
         vm.refreshWidgets()
@@ -434,17 +434,9 @@ class MainActivity : ComponentActivity(), LauncherActions {
     }
 
     override fun requestGlassAccess() {
-        if (!WallpaperBlur.hasMediaPermission(this)) {
-            requestWallpaperMedia.launch(WallpaperBlur.mediaPermission())
-        } else {
-            openAllFilesAccess()
-        }
-    }
-
-    private fun openAllFilesAccess() {
-        val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, "package:$packageName".toUri())
-        runCatching { startActivity(intent) }
-            .onFailure { runCatching { startActivity(Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)) } }
+        // Do not request broad storage / all-files access for wallpaper. Let the user grant
+        // access to one image using Android's system picker when the OEM blocks WallpaperManager.
+        pickGlassWallpaper.launch(arrayOf("image/*"))
     }
 
     override fun openSettings() {

@@ -345,7 +345,7 @@ fun HomeScreen(vm: LauncherViewModel, actions: LauncherActions) {
                         liftedId = liftedId,
                         callbacks = pageIcons,
                         widgetCallbacks = pageWidgets,
-                        showGlassPrompt = homePage == 0 && !editMode && settings.blurEffect && LocalGlassSource.current == null && !WallpaperBlur.hasAccess(),
+                        showGlassPrompt = homePage == 0 && !editMode && settings.blurEffect && LocalGlassSource.current == null && !WallpaperBlur.hasAccess(context),
                         onGlassPrompt = actions::requestGlassAccess,
                         onEnterEdit = vm::enterEditMode,
                         onExitEdit = vm::exitEditMode,
