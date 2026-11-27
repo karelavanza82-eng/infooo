@@ -522,7 +522,7 @@
         <string name="about_project_location">Project created in</string>
         <string name="about_project_location_value">Sragen, Central Java, Indonesia</string>
         <string name="about_description">A personal Android launcher project.</string>
-        <string name="about_version">Version 2.1.1</string>
+        <string name="about_version">Version 2.2.0</string>
         <string name="widget_worldclock">World Clock</string>
         <string name="widget_worldclock_description">See the local time and date.</string>
         <string name="widget_variant_worldclock">World Clock</string>
