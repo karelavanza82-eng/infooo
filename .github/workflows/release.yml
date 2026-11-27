@@ -58,7 +58,7 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
         with:
-          packages: platform-tools
+          packages: platform-tools, build-tools;35.0.0
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -125,7 +125,13 @@ jobs:
 
           ls -lh "$APK"
 
-          ACTUAL=$(apksigner verify --print-certs "$APK" | sed -n 's/.*SHA-256 digest: //p' | head -1 | tr '[:lower:]' '[:upper:]')
+          APKSIGNER="$(find "${ANDROID_HOME:-$ANDROID_SDK_ROOT}/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
+          if [ -z "$APKSIGNER" ]; then
+            echo "::error::apksigner was not found in the installed Android build-tools"
+            exit 1
+          fi
+
+          ACTUAL=$("$APKSIGNER" verify --print-certs "$APK" | sed -n 's/.*SHA-256 digest: //p' | head -1 | tr '[:lower:]' '[:upper:]')
           EXPECTED="9C:E7:0E:68:AF:5F:3E:F4:F5:16:5C:29:61:3B:65:ED:38:F4:D6:00:6E:22:11:76:DB:95:15:61:94:A0:68:26"
           if [ "$ACTUAL" != "$EXPECTED" ]; then
             echo "::error::Built APK signing certificate does not match installed HOISLY app"
