@@ -50,6 +50,7 @@ import com.hoisly.launcher.data.addToHome
 import com.hoisly.launcher.data.syncedWith
 import com.hoisly.launcher.data.visibleApps
 import com.hoisly.launcher.data.LayoutStore
+import com.hoisly.launcher.data.HomeSetupStore
 import com.hoisly.launcher.data.removeFromHome
 import com.hoisly.launcher.data.buildHomeLayout
 import com.hoisly.launcher.data.move
@@ -58,6 +59,7 @@ import com.hoisly.launcher.settings.LauncherSettings
 import com.hoisly.launcher.ui.glass.GlassSource
 import com.hoisly.launcher.ui.glass.WallpaperBlur
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -103,6 +105,9 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
     val settings: LauncherSettings = LauncherSettings.get(app)
     private val layoutRepository = LayoutRepository.get(app)
     private val store: LayoutStore = layoutRepository.store
+    private val homeSetupStore = HomeSetupStore(app)
+    val homeSetups: MutableStateFlow<List<HomeSetupStore.Setup>> = MutableStateFlow(homeSetupStore.all(store.legacyGrid()))
+    val homeSetupDialog: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
     /** The persisted arrangement; null until loaded. Always normalized for the current grid size. */
     private val layout: StateFlow<LayoutData?> = layoutRepository.layout
@@ -323,6 +328,44 @@ class LauncherViewModel(app: Application) : AndroidViewModel(app) {
     fun removeFromHome(app: AppInfo) {
         removeRequest.value = null
         writer.arrange { it.removeFromHome(app.key, dockCapacity) }
+    }
+
+    /** Opens the local Home Screen setup manager from the edit menu. */
+    fun openHomeSetups() {
+        homeSetupDialog.value = true
+        refreshHomeSetups()
+    }
+
+    fun closeHomeSetups() { homeSetupDialog.value = false }
+
+    private fun refreshHomeSetups() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val saved = homeSetupStore.all(store.legacyGrid())
+            homeSetups.value = saved
+        }
+    }
+
+    /** Saves the current pages, folders, dock, widgets and grid privately inside Hoisly. */
+    fun saveHomeSetup(name: String) {
+        val current = layout.value ?: return
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching { homeSetupStore.save(name, current, store.legacyGrid()) }
+                .onSuccess { homeSetups.value = it }
+        }
+    }
+
+    /** Applies a saved arrangement in one layout update; no JSON download or import is needed. */
+    fun applyHomeSetup(id: String) {
+        if (!canArrange) return
+        val setup = homeSetups.value.firstOrNull { it.id == id } ?: return
+        writer.sync { setup.layout }
+        homeSetupDialog.value = false
+    }
+
+    fun deleteHomeSetup(id: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            homeSetups.value = homeSetupStore.delete(id, store.legacyGrid())
+        }
     }
 
     /** Removes every truly empty Home Screen page while always keeping at least one page. */

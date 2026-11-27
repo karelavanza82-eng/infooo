@@ -20,6 +20,7 @@ import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.Widgets
 import androidx.compose.material.icons.rounded.Wallpaper
 import androidx.compose.material.icons.rounded.DeleteSweep
+import androidx.compose.material.icons.rounded.BookmarkAdd
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -61,6 +62,7 @@ fun EditTopBar(
     onWallpapers: () -> Unit,
     onManageWidgets: () -> Unit,
     onRemoveEmptyPages: () -> Unit,
+    onSaveSetup: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var menuOpen by remember { mutableStateOf(false) }
@@ -84,6 +86,7 @@ fun EditTopBar(
                         onWallpapers = { menuOpen = false; onWallpapers() },
                         onManageWidgets = { menuOpen = false; onManageWidgets() },
                         onRemoveEmptyPages = { menuOpen = false; onRemoveEmptyPages() },
+                        onSaveSetup = { menuOpen = false; onSaveSetup() },
                     )
                 }
             }
@@ -114,7 +117,7 @@ private fun GlassPill(text: String, onClick: () -> Unit) {
 }
 
 @Composable
-private fun EditMenu(onAddWidget: () -> Unit, onCustomize: () -> Unit, onWallpapers: () -> Unit, onManageWidgets: () -> Unit, onRemoveEmptyPages: () -> Unit) {
+private fun EditMenu(onAddWidget: () -> Unit, onCustomize: () -> Unit, onWallpapers: () -> Unit, onManageWidgets: () -> Unit, onRemoveEmptyPages: () -> Unit, onSaveSetup: () -> Unit) {
     val shape = ContinuousRoundedShape(Tokens.MenuRadius)
     Column(
         Modifier
@@ -129,6 +132,7 @@ private fun EditMenu(onAddWidget: () -> Unit, onCustomize: () -> Unit, onWallpap
         EditMenuRow(Icons.Rounded.Wallpaper, stringResource(R.string.edit_wallpapers), onWallpapers)
         EditMenuRow(Icons.Rounded.DeleteSweep, stringResource(R.string.edit_manage_widgets), onManageWidgets)
         EditMenuRow(Icons.Rounded.DeleteSweep, stringResource(R.string.edit_remove_empty_pages), onRemoveEmptyPages)
+        EditMenuRow(Icons.Rounded.BookmarkAdd, "Simpan Setup", onSaveSetup)
     }
 }
 

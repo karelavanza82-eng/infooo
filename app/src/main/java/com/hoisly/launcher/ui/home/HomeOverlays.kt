@@ -14,8 +14,21 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsIgnoringVisibility
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.weight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.Alignment
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -86,6 +99,19 @@ internal fun HomeOverlays(
             onWallpapers = actions::openWallpaperPicker,
             onManageWidgets = vm::openWidgetManager,
             onRemoveEmptyPages = vm::removeEmptyPages,
+            onSaveSetup = vm::openHomeSetups,
+        )
+    }
+
+    val setupDialog by vm.homeSetupDialog.collectAsStateWithLifecycle()
+    val setups by vm.homeSetups.collectAsStateWithLifecycle()
+    if (setupDialog) {
+        HomeSetupDialog(
+            setups = setups,
+            onSave = vm::saveHomeSetup,
+            onApply = vm::applyHomeSetup,
+            onDelete = vm::deleteHomeSetup,
+            onClose = vm::closeHomeSetups,
         )
     }
 
@@ -170,4 +196,54 @@ internal fun HomeOverlays(
             onDismiss = { vm.removeRequest.value = null },
         )
     }
+}
+
+
+@Composable
+private fun HomeSetupDialog(
+    setups: List<com.hoisly.launcher.data.HomeSetupStore.Setup>,
+    onSave: (String) -> Unit,
+    onApply: (String) -> Unit,
+    onDelete: (String) -> Unit,
+    onClose: () -> Unit,
+) {
+    var name by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onClose,
+        title = { Text("Simpan Setup Home Screen") },
+        text = {
+            Column {
+                Text("Simpan susunan halaman, folder, widget, dock, dan grid. Setup tersimpan otomatis di Hoisly.")
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it.take(40) },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Nama setup") },
+                    placeholder = { Text("Contoh: Liquid Glass") },
+                    singleLine = true,
+                )
+                TextButton(
+                    onClick = { if (name.isNotBlank()) { onSave(name.trim()); name = "" } },
+                    enabled = name.isNotBlank(),
+                ) { Text("Simpan setup ini") }
+                if (setups.isNotEmpty()) {
+                    Text("Setup tersimpan", fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)
+                    LazyColumn {
+                        items(setups, key = { it.id }) { setup ->
+                            Row(
+                                Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                TextButton(onClick = { onApply(setup.id) }, modifier = Modifier.weight(1f)) {
+                                    Text(setup.name)
+                                }
+                                TextButton(onClick = { onDelete(setup.id) }) { Text("Hapus") }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onClose) { Text("Selesai") } },
+    )
 }

@@ -166,11 +166,18 @@ class IconLoader(
         cache.get(key)?.let { return it }
         return withContext(Dispatchers.IO) {
             val density = resources.displayMetrics.densityDpi
-            // Custom icon of the user first, then the bundled iOS 26 pack, then the app's own icon.
+            // A selected third-party pack takes precedence. If it has no mapping for an app,
+            // keep that app's real icon instead of silently substituting Hoisly's monochrome pack.
+            // The bundled iOS pack is used only when the user has not selected an external pack.
+            val externalPackSelected = prefs.iconPackPackage != null
             val icon = stamp?.let { loadCustom(app, spec, sizePx) }
                 ?: loadThirdPartyIcon(app, spec, sizePx)
-                ?: IosIconPack.load(resources, app.packageName, sizePx)
-                ?: render(app.info.getIcon(density), spec, sizePx)
+                ?: if (externalPackSelected) {
+                    render(app.info.getIcon(density), spec, sizePx)
+                } else {
+                    IosIconPack.load(resources, app.packageName, sizePx)
+                        ?: render(app.info.getIcon(density), spec, sizePx)
+                }
             if (liveSuffixes.any(key::contains)) cache.put(key, icon)
             icon
         }
@@ -222,9 +229,19 @@ class IconLoader(
                 .takeIf { it != 0 } ?: packContext.resources.getIdentifier(drawableName, "mipmap", pack)
             if (drawableId == 0) return null
             val drawable = packContext.resources.getDrawable(drawableId, packContext.theme)
-            val bitmap = render(drawable, spec, sizePx)
-            bitmap
+            // Icon-pack artwork is already designed by its author. Draw it onto a transparent
+            // canvas instead of passing it through drawLegacy(), which adds an opaque white
+            // plate behind transparent PNG icons. Also do not recolor a Liquid Glass pack.
+            renderIconPack(drawable, spec, sizePx)
         }.getOrNull()
+    }
+
+    private fun renderIconPack(drawable: Drawable, spec: IconSpec, sizePx: Int): ImageBitmap {
+        val bitmap = createBitmap(sizePx, sizePx)
+        val canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, sizePx, sizePx)
+        drawable.draw(canvas)
+        return finish(bitmap, spec.copy(style = IconStyle.Plain), sizePx)
     }
 
     private fun loadCustom(app: AppInfo, spec: IconSpec, s: Int): ImageBitmap? {
