@@ -6,7 +6,11 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.os.Build
+import android.os.Environment
+import android.util.Log
 import android.view.WindowManager
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
@@ -58,12 +62,24 @@ object WallpaperBlur {
     /** Saturation boost of the blurred copy; Liquid glass applies it to the sharp copy too. */
     const val SATURATION: Float = 1.6f
 
+    /** True once a wallpaper was read successfully through WallpaperManager in this process. */
+    @Volatile
+    private var loadedOnce = false
+
+    /** Why the last read failed (shown in logcat, tag HoislyGlass); null when it worked. */
+    @Volatile
+    var lastFailure: String? = null
+        private set
+
     /**
-     * Kept for existing UI call sites. Reading the currently applied system wallpaper through
-     * WallpaperManager does not require MANAGE_EXTERNAL_STORAGE; never gate glass rendering on
-     * the unrelated All files access special permission.
+     * Whether the system lets us read the wallpaper bitmap. Since Android 11 (and for good from
+     * Android 13) `WallpaperManager.getDrawable()` throws SecurityException for a normal app, so
+     * the only grant a launcher can ask for is All files access (MANAGE_EXTERNAL_STORAGE).
+     * Some ROMs let the read through without it, so a read that already worked also counts.
+     * UI uses this to decide whether to show the "allow wallpaper access" prompt.
      */
-    fun hasAccess(): Boolean = true
+    fun hasAccess(): Boolean =
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.R || loadedOnce || Environment.isExternalStorageManager()
 
     /** Changes whenever the user sets a new wallpaper; -1 if unknown. */
     fun wallpaperId(context: Context): Int = runCatching {
@@ -123,14 +139,44 @@ object WallpaperBlur {
         return out
     }
 
+    /**
+     * Reads the current wallpaper with every route the platform offers, newest first, and logs
+     * the reason when none works instead of failing silently (the glass then stays Frosted).
+     */
+    private fun readWallpaper(context: Context): Drawable? {
+        val manager = WallpaperManager.getInstance(context)
+        val attempts = listOf<Pair<String, () -> Drawable?>>(
+            "drawable" to { manager.drawable },
+            "peekDrawable" to { manager.peekDrawable() },
+        )
+        for ((name, read) in attempts) {
+            try {
+                val d = read() ?: continue
+                return d.toSoftwareDrawable(context)
+            } catch (e: SecurityException) {
+                lastFailure = "$name: SecurityException (all-files access missing?) ${e.message}"
+            } catch (e: Throwable) {
+                lastFailure = "$name: ${e.javaClass.simpleName} ${e.message}"
+            }
+        }
+        if (lastFailure == null) lastFailure = "WallpaperManager returned no drawable (live wallpaper / vendor ROM)"
+        Log.w(GLASS_TAG, "Wallpaper unreadable on API ${Build.VERSION.SDK_INT}: $lastFailure")
+        return null
+    }
+
+    /** Some platform builds hand out HARDWARE bitmaps, which a software Canvas refuses to draw. */
+    private fun Drawable.toSoftwareDrawable(context: Context): Drawable {
+        val bitmap = (this as? BitmapDrawable)?.bitmap ?: return this
+        if (bitmap.config != Bitmap.Config.HARDWARE) return this
+        val copy = bitmap.copy(Bitmap.Config.ARGB_8888, false) ?: return this
+        return BitmapDrawable(context.resources, copy)
+    }
+
     /** Draws the wallpaper center-cropped to the screen, like the system does, [downscale] times smaller. */
     private fun render(context: Context, downscale: Int, saturation: Float): Bitmap? {
-        val manager = WallpaperManager.getInstance(context)
-        // WallpaperManager is the supported system API for reading the currently applied
-        // wallpaper. Do not reject live-wallpaper devices up front: some Android builds expose
-        // a current-frame/static snapshot through drawable even when wallpaperInfo is non-null.
-        // If the platform/vendor denies access or returns no drawable, fail gracefully.
-        val drawable = runCatching { manager.drawable }.getOrNull() ?: return null
+        val drawable = readWallpaper(context) ?: return null
+        loadedOnce = true
+        lastFailure = null
 
         val screen = context.getSystemService(WindowManager::class.java).maximumWindowMetrics.bounds
         val sw = screen.width()

@@ -12,6 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import com.hoisly.launcher.ui.glass.GlassMode
 import com.hoisly.launcher.ui.glass.GlassProfile
 import com.hoisly.launcher.ui.glass.WallpaperBlur
+import com.hoisly.launcher.ui.glass.glassDiagnosticsText
 import com.hoisly.launcher.ui.glass.glassStyle
 import com.hoisly.launcher.ui.glass.isLiquidGlassSupported
 import androidx.compose.foundation.layout.Arrangement
@@ -183,6 +184,12 @@ fun GlassSettingsScreen(vm: SettingsViewModel, actions: SettingsActions, onBack:
                 SettingsCard {
                     NavRow(Icons.Rounded.Wallpaper, stringResource(R.string.general_wallpaper_access), onClick = actions::requestWallpaperAccess)
                 }
+            }
+        }
+        if (settings.blurEffect) {
+            item {
+                val diag = glassDiagnosticsText(LocalGlassSource.current)
+                SectionFooter("Glass diagnostics\n$diag")
             }
         }
     }

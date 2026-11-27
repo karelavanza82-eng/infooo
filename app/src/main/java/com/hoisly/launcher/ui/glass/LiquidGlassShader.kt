@@ -152,7 +152,10 @@ fun isLiquidGlassReady(): Boolean =
 @RequiresApi(LIQUID_GLASS_MIN_SDK)
 internal object LiquidGlassShader {
     private var shader: RuntimeShader? = null
-    private var failed = false
+    var failed = false
+        private set
+    var failureMessage: String? = null
+        private set
 
     // Wallpaper images currently bound as the shader's inputs, and the density of the constants.
     private var boundSharp: ImageBitmap? = null
@@ -168,6 +171,7 @@ internal object LiquidGlassShader {
         } catch (e: Throwable) {
             // IllegalArgumentException with the compiler's message, or a broken platform build.
             Log.e(GLASS_TAG, "Liquid Glass shader unavailable, falling back to Frosted", e)
+            failureMessage = e.message?.take(300)
             failed = true
             null
         }
@@ -214,4 +218,23 @@ internal object LiquidGlassShader {
         BitmapShader(image.asAndroidBitmap(), Shader.TileMode.CLAMP, Shader.TileMode.CLAMP).apply {
             filterMode = BitmapShader.FILTER_MODE_LINEAR
         }
+}
+
+/**
+ * Plain-text status of Liquid Glass for the settings screen, so a tester can screenshot it
+ * instead of collecting logcat. Main thread only (may compile the shader).
+ */
+fun glassDiagnosticsText(source: GlassSource?): String {
+    val sdk = Build.VERSION.SDK_INT
+    val supported = isLiquidGlassSupported(sdk)
+    val shaderOk = supported && isLiquidGlassReady()
+    return buildString {
+        appendLine("Android API: $sdk (${Build.MANUFACTURER} ${Build.MODEL})")
+        appendLine("Liquid supported (API>=33): $supported")
+        appendLine("Wallpaper access: ${WallpaperBlur.hasAccess()}")
+        appendLine("Wallpaper loaded: ${source != null}, sharp=${source?.sharp != null}, body=${source?.body != null}")
+        appendLine("Shader compiled: $shaderOk")
+        WallpaperBlur.lastFailure?.let { appendLine("Wallpaper error: $it") }
+        if (supported) LiquidGlassShader.failureMessage?.let { appendLine("Shader error: $it") }
+    }.trimEnd()
 }
