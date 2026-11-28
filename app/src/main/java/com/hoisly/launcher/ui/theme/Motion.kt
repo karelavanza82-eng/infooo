@@ -57,7 +57,7 @@ object Motion {
      * app's own cold start runs in parallel with the animation instead of after it. Deliberately not
      * scaled by the animation speed: it is latency, not choreography.
      */
-    const val APP_LEAD_MS: Long = 40
+    const val APP_LEAD_MS: Long = 300
     /** If no app covers the home screen by then, the surface returns to its icon. */
     const val APP_START_TIMEOUT_MS: Long = 2500
     /** Corner of the full-screen surface. */
