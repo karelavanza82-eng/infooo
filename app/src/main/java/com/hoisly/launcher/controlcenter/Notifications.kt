@@ -1,5 +1,7 @@
 package com.hoisly.launcher.controlcenter
 
+import androidx.compose.ui.graphics.Color
+
 import android.text.format.DateUtils
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
