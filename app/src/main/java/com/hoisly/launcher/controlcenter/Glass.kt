@@ -1,5 +1,7 @@
 package com.hoisly.launcher.controlcenter
 
+import com.hoisly.launcher.ui.glass.glass as hoislyGlass
+
 import android.app.NotificationManager
 import android.media.session.PlaybackState
 import android.os.SystemClock
@@ -96,13 +98,19 @@ object G {
 }
 
 /** Frosted surface: translucent fill with a soft top-lit rim, clipped to [shape]. */
-fun Modifier.glass(shape: Shape, fill: Color = G.fill): Modifier = this
-    .clip(shape)
-    .background(Brush.verticalGradient(listOf(fill.copy(alpha = (fill.alpha * 1.3f).coerceAtMost(1f)), fill)))
-    .rim(shape)
+/**
+ * Control Center surfaces deliberately use the same Hoisly glass renderer as the launcher,
+ * rather than maintaining a second, visually divergent glass implementation.
+ */
+fun Modifier.glass(shape: Shape, fill: Color = G.fill): Modifier =
+    this.hoislyGlass(
+        shape = shape,
+        tint = fill,
+        profile = com.hoisly.launcher.ui.glass.GlassProfile.Panel,
+    )
 
-fun Modifier.rim(shape: Shape): Modifier =
-    this.border(0.9.dp, Brush.verticalGradient(listOf(G.rimTop, G.rimBottom, G.rimTop.copy(alpha = 0.3f))), shape)
+/** The shared Hoisly renderer already draws its optical edge; do not add a second rim. */
+fun Modifier.rim(shape: Shape): Modifier = this
 
 /** Absolute placement in "reference dp": x, y, width and height measured on the 360dp reference screen. */
 @Composable

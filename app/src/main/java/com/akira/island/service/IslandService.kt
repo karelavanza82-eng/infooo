@@ -984,7 +984,8 @@ class TouchRoot(
     private val target: () -> View?,
     private val onOutside: (rawX: Float, rawY: Float) -> Unit,
 ) : View(context) {
-    private val origin = IntArray(2)
+    private val touchOrigin = IntArray(2)
+    private val targetOrigin = IntArray(2)
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
         if (ev.actionMasked == MotionEvent.ACTION_OUTSIDE) {
@@ -992,12 +993,25 @@ class TouchRoot(
             return true
         }
         val view = target() ?: return false
-        view.getLocationOnScreen(origin)
+        if (!view.isAttachedToWindow || !view.isShown) return false
+
+        // Translate from this touch-window's local coordinates into the drawing window's
+        // local coordinates. Using the actual window origins is reliable across cutouts,
+        // display rotations and OEMs that apply a non-zero accessibility-overlay offset.
+        getLocationOnScreen(touchOrigin)
+        view.getLocationOnScreen(targetOrigin)
         val copy = MotionEvent.obtain(ev)
-        // rawX - x — это левый верхний угол окна касаний на экране
-        copy.offsetLocation(ev.rawX - ev.x - origin[0], ev.rawY - ev.y - origin[1])
-        view.dispatchTouchEvent(copy)
-        copy.recycle()
+        try {
+            copy.offsetLocation(
+                (touchOrigin[0] - targetOrigin[0]).toFloat(),
+                (touchOrigin[1] - targetOrigin[1]).toFloat(),
+            )
+            view.dispatchTouchEvent(copy)
+        } finally {
+            copy.recycle()
+        }
+        // The touch window owns this hit region; don't let Android route the same tap to
+        // the app underneath after forwarding it to the island.
         return true
     }
 }

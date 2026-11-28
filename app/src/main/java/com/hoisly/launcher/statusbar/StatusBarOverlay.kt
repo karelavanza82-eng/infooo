@@ -52,9 +52,17 @@ class StatusBarOverlay(
         jobs = listOf(
             scope.launch { StatusBarStore.state.collect { apply(it) } },
             scope.launch {
-                combine(IslandBus.shadeOpen, IslandBus.keyguard, IslandBus.screenOn, IslandBus.landscape) { shade, keyguard, on, _ ->
-                    on && !shade && !keyguard
-                }.collect { visibleByState = it; updateVisibility() }
+                combine(IslandBus.shadeOpen, IslandBus.keyguard, IslandBus.screenOn) { shade, keyguard, on ->
+                    Triple(shade, keyguard, on)
+                }.collect { (shade, keyguard, on) ->
+                    shadeOpenState = shade
+                    keyguardState = keyguard
+                    screenOnState = on
+                    updateVisibility()
+                }
+            },
+            scope.launch {
+                StatusBarStore.landscapeGesture.collect { landscapeGestureActive = it; updateVisibility() }
             },
         )
     }
@@ -101,7 +109,10 @@ class StatusBarOverlay(
         monitor?.refreshTelephony()
     }
 
-    private var visibleByState = true
+    private var screenOnState = true
+    private var shadeOpenState = false
+    private var keyguardState = false
+    private var landscapeGestureActive = false
 
     private fun apply(next: StatusBarPreferences) {
         prefs = next
@@ -162,9 +173,11 @@ class StatusBarOverlay(
     private fun updateVisibility() {
         val v = view ?: return
         val landscape = service.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-        // Landscape is always unobstructed: hide the custom overlay and, when the optional
-        // secure-setting grant exists, hide the duplicated native status icons as well.
-        val show = visibleByState && !(landscape && prefs.hideInLandscape)
+        // In landscape the custom bar stays hidden at rest, but is revealed while the user
+        // pulls down from the top edge. The native icons remain hidden to avoid duplication.
+        val show = screenOnState &&
+            (!shadeOpenState || keyguardState || (landscape && landscapeGestureActive)) &&
+            (!landscape || !prefs.hideInLandscape || landscapeGestureActive)
         val target = if (show) View.VISIBLE else View.INVISIBLE
         if (v.visibility != target) v.visibility = target
         SystemIconHider.apply(service, hide = prefs.hideSystemIcons || (landscape && prefs.hideInLandscape))

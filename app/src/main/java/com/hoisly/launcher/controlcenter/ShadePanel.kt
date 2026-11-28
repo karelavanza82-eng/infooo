@@ -17,6 +17,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -32,6 +36,7 @@ import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.LinkOff
 import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.Public
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.SignalCellularAlt
 import androidx.compose.material.icons.rounded.WbSunny
 import androidx.compose.material.icons.rounded.Bluetooth
@@ -39,6 +44,7 @@ import androidx.compose.material.icons.rounded.AirplanemodeActive
 import androidx.compose.material.icons.rounded.WifiTethering
 import androidx.compose.material.icons.rounded.Wifi
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -69,6 +75,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import java.util.Date
+import com.hoisly.launcher.ui.glass.GlassMode
+import com.hoisly.launcher.ui.glass.GlassSource
+import com.hoisly.launcher.ui.glass.GlassStyle
+import com.hoisly.launcher.ui.glass.LocalGlassSource
+import com.hoisly.launcher.ui.glass.LocalGlassStyle
+import com.hoisly.launcher.ui.glass.WallpaperBlur
 
 private fun frac(v: Float, start: Float, end: Float) = ((v - start) / (end - start)).coerceIn(0f, 1f)
 
@@ -89,50 +101,172 @@ fun ShadePanel(controller: ShadeController, tiles: TileRepository, host: ShadeSe
     val states by tiles.state.collectAsState()
     val placed by tiles.placed.collectAsState()
     val media by MediaRepo.items.collectAsState()
+    ControlCenterPreferences.init(ctx)
+    val ccPrefs by ControlCenterPreferences.state.collectAsState()
     var page by remember { mutableIntStateOf(0) }
+    val sidePager = rememberPagerState(initialPage = 1, pageCount = { 2 })
     val closed by remember(controller) { derivedStateOf { controller.expansion.value == 0f } }
-    LaunchedEffect(closed) { if (closed) page = 0 }
+    LaunchedEffect(closed) {
+        if (closed) {
+            page = 0
+            sidePager.scrollToPage(1)
+        }
+    }
+
+    val glassSource by produceState<GlassSource?>(initialValue = null, ctx) {
+        value = try {
+            val sharp = WallpaperBlur.loadPreview(ctx)
+            WallpaperBlur.load(ctx, sharp)
+        } catch (_: Throwable) {
+            null
+        }
+    }
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val unit = maxWidth.value / 360f
-        CompositionLocalProvider(LocalUnit provides unit, LocalPalette provides palette) {
+        CompositionLocalProvider(
+            LocalUnit provides unit,
+            LocalPalette provides palette,
+            LocalGlassSource provides glassSource,
+            LocalGlassStyle provides GlassStyle(mode = GlassMode.Liquid),
+        ) {
             val pxPerU = with(LocalDensity.current) { 1.u.toPx() }
-            val scrimAlpha = if (blurEnabled) 0.62f else 0.96f
+            val scrimAlpha = (if (blurEnabled) 0.62f else 0.96f) * ccPrefs.backgroundOpacity
 
-            // Dark scrim over the blurred backdrop.
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .graphicsLayer { alpha = frac(controller.expansion.value.coerceIn(0f, 1f), 0f, 0.4f) * scrimAlpha }
-                    .background(Color(0xFF0B0B0C))
-                    .panelDrag(controller)
-                    .tapToClose(controller),
-            )
+            // Page 0 is the notification shade; a rightward swipe from Control Center reveals it.
+            HorizontalPager(
+                state = sidePager,
+                modifier = Modifier.fillMaxSize(),
+                userScrollEnabled = true,
+                key = { it },
+            ) { side ->
+                if (side == 0) {
+                    Box(Modifier.fillMaxSize().background(Color(0xFF0B0B0C).copy(alpha = scrimAlpha))) {
+                        NotificationPage(host, Modifier.fillMaxSize())
+                    }
+                } else {
+                    Box(Modifier.fillMaxSize()) {
+                        Box(
+                            Modifier
+                                .fillMaxSize()
+                                .graphicsLayer { alpha = frac(controller.expansion.value.coerceIn(0f, 1f), 0f, 0.4f) * scrimAlpha }
+                                .background(Color(0xFF0B0B0C))
+                                .panelDrag(controller)
+                                .tapToClose(controller),
+                        )
 
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .panelDrag(controller)
-                    .tapToClose(controller)
-                    .graphicsLayer {
-                        val o = controller.expansion.value.coerceIn(0f, 1f)
-                        alpha = frac(o, 0.05f, 0.6f)
-                        translationY = -(1f - o) * 48f * pxPerU
-                        val s = 0.94f + 0.06f * o
-                        scaleX = s; scaleY = s
-                        transformOrigin = TransformOrigin(0.5f, 0f)
-                    },
-            ) {
-                Crossfade(targetState = page, label = "page") { pg ->
-                    when (pg) {
-                        0 -> MainPage(states, placed, media, tiles, host)
-                        1 -> MusicPage(media, host)
-                        else -> ConnectivityPage(states, tiles, host)
+                        Box(
+                            Modifier
+                                .fillMaxSize()
+                                .panelDrag(controller)
+                                .tapToClose(controller)
+                                .graphicsLayer {
+                                    val o = controller.expansion.value.coerceIn(0f, 1f)
+                                    alpha = frac(o, 0.05f, 0.6f)
+                                    translationY = -(1f - o) * 48f * pxPerU + ccPrefs.offsetY * pxPerU
+                                    translationX = ccPrefs.offsetX * pxPerU
+                                    scaleX = (0.94f + 0.06f * o) * ccPrefs.scale
+                                    scaleY = (0.94f + 0.06f * o) * ccPrefs.scale
+                                    transformOrigin = TransformOrigin(0.5f, 0f)
+                                },
+                        ) {
+                            Crossfade(targetState = page, label = "page") { pg ->
+                                when (pg) {
+                                    0 -> MainPage(states, placed, media, tiles, host)
+                                    1 -> MusicPage(media, host)
+                                    2 -> ConnectivityPage(states, tiles, host)
+                                    else -> ControlCenterSettingsPage(ccPrefs, ctx)
+                                }
+                            }
+                            PageRail(page) { page = it }
+                        }
                     }
                 }
-                PageRail(page) { page = it }
             }
         }
+    }
+}
+
+/** Notification side of the shade, matching the iOS rightward-swipe interaction. */
+@Composable
+private fun NotificationPage(host: ShadeService, modifier: Modifier = Modifier) {
+    val notifications by NotifListener.items.collectAsState()
+    var openMenuKey by remember { mutableStateOf<String?>(null) }
+    Column(modifier.padding(start = 18.u, end = 18.u, top = 36.u, bottom = 24.u)) {
+        Row(
+            Modifier.fillMaxWidth().padding(bottom = 14.u),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text("Notifications", color = Color.White, fontSize = 24.us, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+            Text(
+                "Clear all",
+                color = Color.White.copy(alpha = if (notifications.isEmpty()) 0.35f else 0.85f),
+                fontSize = 13.us,
+                modifier = Modifier.clickable(enabled = notifications.isNotEmpty()) {
+                    NotifListener.instance?.dismissAll()
+                    openMenuKey = null
+                },
+            )
+        }
+        if (notifications.isEmpty()) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("No notifications", color = Color.White.copy(alpha = 0.65f), fontSize = 15.us)
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(10.u),
+            ) {
+                items(notifications, key = { it.key }) { item ->
+                    NotificationCard(
+                        item = item,
+                        onOpen = { host.sendPendingIntent(it.contentIntent) },
+                        onDismiss = { NotifListener.instance?.dismiss(it) },
+                        onAction = { n, index ->
+                            val action = n.actions.getOrNull(index)
+                            if (action?.remoteInputs?.isNotEmpty() == true) host.openReply(n.key, index)
+                            else host.sendPendingIntent(action?.actionIntent)
+                        },
+                        onSnooze = { NotifListener.instance?.snooze(it, 60L * 60L * 1000L) },
+                        onSettings = {
+                            host.launch(
+                                Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                                    .putExtra(Settings.EXTRA_APP_PACKAGE, it.pkg),
+                            )
+                        },
+                        menuOpen = openMenuKey == item.key,
+                        onMenuOpenChange = { openMenuKey = if (it) item.key else null },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** Live layout and translucency controls. Values persist immediately. */
+@Composable
+private fun ControlCenterSettingsPage(value: ControlCenterPreferences, context: android.content.Context) {
+    Column(
+        Modifier.fillMaxSize().padding(start = 38.u, end = 38.u, top = 56.u, bottom = 24.u),
+        verticalArrangement = Arrangement.spacedBy(10.u),
+    ) {
+        Text("Control Center", color = Color.White, fontSize = 22.us, fontWeight = FontWeight.SemiBold)
+        Text("Size · ${(value.scale * 100).toInt()}%", color = Color.White.copy(alpha = 0.85f), fontSize = 13.us)
+        Slider(value.scale, { v -> ControlCenterPreferences.update(context) { it.copy(scale = v) } }, valueRange = 0.75f..1.2f)
+        Text("Horizontal position · ${value.offsetX.toInt()} dp", color = Color.White.copy(alpha = 0.85f), fontSize = 13.us)
+        Slider(value.offsetX, { v -> ControlCenterPreferences.update(context) { it.copy(offsetX = v) } }, valueRange = -48f..48f)
+        Text("Vertical position · ${value.offsetY.toInt()} dp", color = Color.White.copy(alpha = 0.85f), fontSize = 13.us)
+        Slider(value.offsetY, { v -> ControlCenterPreferences.update(context) { it.copy(offsetY = v) } }, valueRange = -48f..48f)
+        Text("Background transparency · ${((1f - value.backgroundOpacity) * 100).toInt()}%", color = Color.White.copy(alpha = 0.85f), fontSize = 13.us)
+        Slider(value.backgroundOpacity, { v -> ControlCenterPreferences.update(context) { it.copy(backgroundOpacity = v) } }, valueRange = 0.1f..1f)
+        Text("Changes are saved automatically", color = Color.White.copy(alpha = 0.55f), fontSize = 11.us)
+        Text(
+            "Reset",
+            color = Color.White,
+            fontSize = 14.us,
+            modifier = Modifier.clip(RoundedCornerShape(50)).clickable { ControlCenterPreferences.reset(context) }.padding(horizontal = 16.u, vertical = 9.u),
+        )
     }
 }
 
@@ -141,7 +275,11 @@ fun ShadePanel(controller: ShadeController, tiles: TileRepository, host: ShadeSe
 @Composable
 private fun MainPage(states: Map<String, TileUi>, placed: PlacedTiles, media: List<MediaItem>, tiles: TileRepository, host: ShadeService) {
     Box(Modifier.fillMaxSize()) {
-        IosStatusRow(Modifier.at(LEFT, 10f, CONTENT_W, 24f))
+        // In landscape the dedicated Hoisly status-bar overlay is the only status row;
+        // drawing this compact in-panel copy as well would duplicate the indicators.
+        if (LocalConfiguration.current.orientation != android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
+            IosStatusRow(Modifier.at(LEFT, 10f, CONTENT_W, 24f))
+        }
 
         // Music card (swipe sideways when more than one player is active).
         if (media.size > 1) {
@@ -267,8 +405,8 @@ private fun ConnectivityPage(states: Map<String, TileUi>, tiles: TileRepository,
 /** The three page icons down the right edge: favourites, music, connectivity. */
 @Composable
 private fun PageRail(page: Int, onPage: (Int) -> Unit) {
-    val icons = listOf(Icons.Rounded.Favorite, Icons.Rounded.MusicNote, Icons.Rounded.CellTower)
-    val ys = listOf(256f, 306f, 354f)
+    val icons = listOf(Icons.Rounded.Favorite, Icons.Rounded.MusicNote, Icons.Rounded.CellTower, Icons.Rounded.Settings)
+    val ys = listOf(256f, 306f, 354f, 402f)
     icons.forEachIndexed { i, icon ->
         Box(
             Modifier
@@ -320,7 +458,7 @@ private fun Sliders(brightnessModifier: Modifier, volumeModifier: Modifier) {
         icon = Icons.Rounded.WbSunny,
         iconTint = G.yellow,
         onIconClick = { auto = !auto; Brightness.setAuto(ctx, auto) },
-        modifier = brightnessModifier.rim(pill),
+        modifier = brightnessModifier.glass(pill, G.fill),
         trackColor = track, fillColor = G.white, idleTint = Color.White.copy(alpha = 0.75f),
         heightU = 138f, iconDp = 28f,
     )
@@ -331,7 +469,7 @@ private fun Sliders(brightnessModifier: Modifier, volumeModifier: Modifier) {
         iconTint = G.cyan,
         onIconClick = { MediaVolume.toggleMute(ctx); muted = MediaVolume.isMuted(ctx) },
         steps = MediaVolume.steps(ctx),
-        modifier = volumeModifier.rim(pill),
+        modifier = volumeModifier.glass(pill, G.fill),
         trackColor = track, fillColor = G.white, idleTint = Color.White.copy(alpha = 0.75f),
         heightU = 138f, iconDp = 30f,
     )

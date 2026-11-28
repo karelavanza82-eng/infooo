@@ -112,10 +112,13 @@ class ShadeService : AccessibilityService(), TileHost {
     private fun takeOverFromSystemShade(stage: Float) {
         tiles.refresh()
         controller.open(stage)
+        dismissSystemShadeAfterGesture()
+    }
+
+    /** Dismiss SystemUI's shade even when it finishes the same pull with ACTION_UP (not CANCEL). */
+    private fun dismissSystemShadeAfterGesture() {
         takeoverJob?.cancel()
         takeoverJob = scope.launch {
-            // The finger is still dragging the system shade, so it can reopen; keep closing it
-            // until the gesture has surely ended.
             for (d in longArrayOf(0, 120, 250, 400, 650, 1000, 1500)) {
                 performGlobalAction(GLOBAL_ACTION_DISMISS_NOTIFICATION_SHADE)
                 delay(if (d == 0L) 120 else d / 2)
@@ -165,6 +168,7 @@ class ShadeService : AccessibilityService(), TileHost {
 
     override fun onDestroy() {
         running = null
+        com.hoisly.launcher.statusbar.StatusBarStore.setLandscapeGestureActive(false)
         try { unregisterReceiver(screenReceiver) } catch (_: Exception) {}
         try { wm.removeView(catcher) } catch (_: Exception) {}
         try { wm.removeView(shadeRoot) } catch (_: Exception) {}
@@ -217,6 +221,9 @@ class ShadeService : AccessibilityService(), TileHost {
                     if (!dragging && e.rawY - downY > slop) {
                         dragging = true
                         lastY = e.rawY
+                        com.hoisly.launcher.statusbar.StatusBarStore.setLandscapeGestureActive(
+                            resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE,
+                        )
                     }
                     if (dragging) {
                         // A one-finger pull stops at the notification stage, as on OxygenOS;
@@ -230,8 +237,12 @@ class ShadeService : AccessibilityService(), TileHost {
                     tracker?.computeCurrentVelocity(1000)
                     val vy = tracker?.yVelocity ?: 0f
                     tracker?.recycle(); tracker = null
-                    if (dragging) controller.settle(vy, maxStage = 1f)
+                    if (dragging) {
+                        controller.settle(vy, maxStage = 1f)
+                        dismissSystemShadeAfterGesture()
+                    }
                     dragging = false
+                    com.hoisly.launcher.statusbar.StatusBarStore.setLandscapeGestureActive(false)
                 }
                 MotionEvent.ACTION_CANCEL -> {
                     // SystemUI watches top-edge swipes with a spy window and pilfers the pointer once
@@ -239,7 +250,13 @@ class ShadeService : AccessibilityService(), TileHost {
                     // layered above the system one) and dismiss the system shade underneath.
                     tracker?.recycle(); tracker = null
                     dragging = false
+                    val landscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+                    com.hoisly.launcher.statusbar.StatusBarStore.setLandscapeGestureActive(landscape)
                     takeOverFromSystemShade(1f)
+                    if (landscape) scope.launch {
+                        delay(700)
+                        com.hoisly.launcher.statusbar.StatusBarStore.setLandscapeGestureActive(false)
+                    }
                 }
             }
             true

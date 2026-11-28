@@ -113,6 +113,15 @@ object StatusBarStore {
 
     private val mutable = MutableStateFlow(StatusBarPreferences())
     val state: StateFlow<StatusBarPreferences> = mutable
+
+    // A landscape pull-down is the only time the custom bar should be revealed when
+    // hideInLandscape is enabled. ShadeService updates this transient process-wide signal.
+    private val mutableLandscapeGesture = MutableStateFlow(false)
+    val landscapeGesture: StateFlow<Boolean> = mutableLandscapeGesture
+
+    fun setLandscapeGestureActive(active: Boolean) {
+        mutableLandscapeGesture.value = active
+    }
     private var prefs: SharedPreferences? = null
 
     @Synchronized
