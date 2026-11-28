@@ -105,6 +105,7 @@ fun ShadePanel(controller: ShadeController, tiles: TileRepository, host: ShadeSe
     val states by tiles.state.collectAsState()
     val placed by tiles.placed.collectAsState()
     val tileSizes by TileLayoutStore.sizes(ctx).collectAsState()
+    val layoutPrefs by LayoutPreferencesStore.prefs(ctx).collectAsState()
     val media by MediaRepo.items.collectAsState()
     ControlCenterPreferences.init(ctx)
     val ccPrefs by ControlCenterPreferences.state.collectAsState()
@@ -144,6 +145,7 @@ fun ShadePanel(controller: ShadeController, tiles: TileRepository, host: ShadeSe
             LocalGlassSource provides glassSource,
             LocalGlassStyle provides GlassStyle(mode = GlassMode.Liquid),
             LocalTileSizes provides tileSizes,
+            LocalLayoutPrefs provides layoutPrefs,
         ) {
             val pxPerU = with(LocalDensity.current) { 1.u.toPx() }
             val scrimAlpha = (if (blurEnabled) 0.62f else 0.96f) * ccPrefs.backgroundOpacity
@@ -299,6 +301,30 @@ private fun ControlCenterSettingsPage(value: ControlCenterPreferences, context: 
 
 // region pages
 
+/**
+ * Applies per-slot size + position from [LocalLayoutPrefs] on top of the default absolute
+ * placement produced by [Modifier.at].  Width and height are scaled from the slot's centre so
+ * neighbouring elements are not pushed around; dx/dy shift the whole scaled box.
+ *
+ * @param id    slot id ("media", "brightness", …)
+ * @param x     default left edge in reference dp
+ * @param y     default top edge in reference dp
+ * @param w     default width in reference dp
+ * @param h     default height in reference dp
+ */
+@Composable
+private fun slotModifier(id: String, x: Float, y: Float, w: Float, h: Float): Modifier {
+    val prefs = LocalLayoutPrefs.current[id] ?: SlotPrefs()
+    val sw = prefs.scaleW
+    val sh = prefs.scaleH
+    // Scale about the slot's centre: new x/y so the centre stays the same.
+    val newW = w * sw
+    val newH = h * sh
+    val newX = x + (w - newW) / 2f + prefs.dx
+    val newY = y + (h - newH) / 2f + prefs.dy
+    return Modifier.at(newX, newY, newW, newH)
+}
+
 @Composable
 private fun MainPage(states: Map<String, TileUi>, placed: PlacedTiles, media: List<MediaItem>, tiles: TileRepository, host: ShadeService) {
     if (LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
@@ -309,25 +335,39 @@ private fun MainPage(states: Map<String, TileUi>, placed: PlacedTiles, media: Li
         // Status indicators (carrier, signal and battery) belong to the dedicated status-bar
         // overlay, never inside Control Center. This avoids duplicated Indosat/battery labels.
 
-        // Music card (swipe sideways when more than one player is active).
+        // Music card — slot "media": default 291×139, anchored at (34, 47).
+        val mediaMod = slotModifier("media", LEFT, 47f, CONTENT_W, 139f)
         if (media.size > 1) {
             val pager = rememberPagerState { media.size }
             HorizontalPager(
-                state = pager, modifier = Modifier.at(LEFT, 47f, CONTENT_W, 139f), pageSpacing = 10.u,
+                state = pager, modifier = mediaMod, pageSpacing = 10.u,
                 key = { media[it].token.hashCode() },
             ) { i -> IosMediaCard(media[i], host, Modifier.fillMaxSize()) }
         } else {
-            IosMediaCard(media.firstOrNull(), host, Modifier.at(LEFT, 47f, CONTENT_W, 139f))
+            IosMediaCard(media.firstOrNull(), host, mediaMod)
         }
 
-        ConnectivityBlock(states, tiles, host, Modifier.at(LEFT, 200f, 138f, 138f))
-        Sliders(brightnessModifier = Modifier.at(187f, 200f, 62f, 138f), volumeModifier = Modifier.at(263f, 200f, 62f, 138f))
+        // Connectivity block — slot "connectivity": default 138×138.
+        ConnectivityBlock(states, tiles, host, slotModifier("connectivity", LEFT, 200f, 138f, 138f))
 
+        // Sliders — slots "brightness" (default 62×138) and "volume" (default 62×138).
+        Sliders(
+            brightnessModifier = slotModifier("brightness", 187f, 200f, 62f, 138f),
+            volumeModifier = slotModifier("volume", 263f, 200f, 62f, 138f),
+        )
+
+        // Wide pills — slots "pill0" and "pill1": default 138×62 each.
         placed.highlight.getOrNull(0)?.let { t ->
-            states[t.id]?.let { s -> WidePill(s, { tiles.click(t, host) }, { t.longClick(host) }, Modifier.at(LEFT, 353f, 138f, 62f)) }
+            states[t.id]?.let { s ->
+                WidePill(s, { tiles.click(t, host) }, { t.longClick(host) },
+                    slotModifier("pill0", LEFT, 353f, 138f, 62f))
+            }
         }
         placed.highlight.getOrNull(1)?.let { t ->
-            states[t.id]?.let { s -> WidePill(s, { tiles.click(t, host) }, { t.longClick(host) }, Modifier.at(187f, 353f, 138f, 62f)) }
+            states[t.id]?.let { s ->
+                WidePill(s, { tiles.click(t, host) }, { t.longClick(host) },
+                    slotModifier("pill1", 187f, 353f, 138f, 62f))
+            }
         }
 
         TileRow(placed.grid.take(4), states, tiles, host, 430f)
