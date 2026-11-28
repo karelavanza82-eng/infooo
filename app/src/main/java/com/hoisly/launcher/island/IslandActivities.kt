@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Alarm
 import androidx.compose.material.icons.rounded.AvTimer
@@ -31,6 +32,7 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -166,37 +168,54 @@ private fun TimerAction(label: String, primary: Boolean, modifier: Modifier, onC
     }
 }
 
-/** Plug-in feedback: a green bolt, then the level next to a battery glyph. */
+/** iOS-style charging capsule: percentage inside a green battery, bolt on its right. */
 @Composable
 internal fun CompactCharging(percent: Int?) {
     Row(
-        Modifier.width(LocalIslandStyle.current.compactWidth.dp).height(IslandTokens.CompactHeight).padding(horizontal = IslandTokens.CompactInset * 2),
+        Modifier.width(LocalIslandStyle.current.compactWidth.dp)
+            .height(IslandTokens.CompactHeight)
+            .padding(horizontal = IslandTokens.CompactInset * 2),
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
     ) {
-        Icon(Icons.Rounded.Bolt, contentDescription = stringResource(R.string.island_charging), tint = IslandTokens.Green,
-            modifier = Modifier.size(IslandTokens.CompactBadge))
-        Spacer(Modifier.weight(1f))
         if (percent != null) {
-            Text(stringResource(R.string.island_percent, percent), style = Digits, color = IslandTokens.Green,
-                fontSize = IslandTokens.CompactText, fontWeight = FontWeight.SemiBold, maxLines = 1)
-            Spacer(Modifier.width(6.dp))
-            BatteryGlyph(percent / 100f, IslandTokens.Green)
+            ChargingBattery(percent.coerceIn(0, 100))
+            Spacer(Modifier.width(7.dp))
         }
+        Icon(
+            Icons.Rounded.Bolt,
+            contentDescription = stringResource(R.string.island_charging),
+            tint = Color.White,
+            modifier = Modifier.size(IslandTokens.CompactBadge),
+        )
     }
 }
 
 @Composable
-private fun BatteryGlyph(level: Float, color: Color) {
-    Canvas(Modifier.size(25.dp, 12.dp)) {
-        val stroke = 1.dp.toPx()
-        val cap = 2.dp.toPx()
-        val body = Size(size.width - cap - stroke, size.height - stroke)
-        val radius = CornerRadius(3.5.dp.toPx())
-        drawRoundRect(Color.White.copy(alpha = 0.4f), Offset(stroke / 2, stroke / 2), body, radius, Stroke(stroke))
-        val inset = 2.dp.toPx()
-        drawRoundRect(color, Offset(inset, inset), Size((body.width - inset * 2 + stroke) * level.coerceIn(0f, 1f), size.height - inset * 2),
-            CornerRadius(2.dp.toPx()))
-        drawRoundRect(Color.White.copy(alpha = 0.4f), Offset(size.width - cap, size.height * 0.33f), Size(cap, size.height * 0.34f),
-            CornerRadius(cap))
+private fun ChargingBattery(percent: Int) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .clip(RoundedCornerShape(6.dp))
+            .background(IslandTokens.Green)
+            .padding(horizontal = 7.dp, vertical = 3.dp),
+    ) {
+        Text(
+            text = percent.toString(),
+            style = Digits,
+            color = Color.White,
+            fontSize = IslandTokens.CompactText,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+        )
     }
+    // Small battery terminal nub, immediately to the right of the green body.
+    Box(
+        Modifier
+            .padding(start = 1.dp)
+            .size(width = 2.dp, height = 7.dp)
+            .clip(RoundedCornerShape(topEnd = 2.dp, bottomEnd = 2.dp))
+            .background(IslandTokens.Green)
+    )
 }
+

@@ -44,12 +44,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -77,12 +77,6 @@ import androidx.core.graphics.drawable.toBitmap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
-import com.hoisly.launcher.settings.LauncherSettings
-import com.hoisly.launcher.settings.LocalSettingsState
-import com.hoisly.launcher.ui.glass.LocalGlassSource
-import com.hoisly.launcher.ui.glass.LocalGlassStyle
-import com.hoisly.launcher.ui.glass.WallpaperBlur
-import com.hoisly.launcher.ui.glass.glassStyle
 
 /**
  * Tile editor, opened from the "more" button in the control center. Changes are saved at once and
@@ -93,19 +87,7 @@ class TileEditActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val settings by LauncherSettings.get(this@TileEditActivity).state.collectAsState()
-            val glass by produceState<com.hoisly.launcher.ui.glass.GlassSource?>(null, settings.blurEffect) {
-                value = if (settings.blurEffect) {
-                        val sharp = WallpaperBlur.loadPreview(this@TileEditActivity)
-                        WallpaperBlur.load(this@TileEditActivity, sharp)
-                    } else null
-            }
-            CompositionLocalProvider(
-                LocalPalette provides ShadePalette.from(this@TileEditActivity),
-                LocalSettingsState provides settings,
-                LocalGlassSource provides glass.takeIf { settings.blurEffect },
-                LocalGlassStyle provides settings.glassStyle(),
-            ) { Editor() }
+            CompositionLocalProvider(LocalPalette provides ShadePalette.from(this)) { Editor() }
         }
     }
 
@@ -133,7 +115,7 @@ class TileEditActivity : ComponentActivity() {
                     Icons.AutoMirrored.Rounded.ArrowBack, "Back", tint = P.text,
                     modifier = Modifier.size(40.dp).clip(CircleShape).clickable { finish() }.padding(8.dp),
                 )
-                Text("Atur tile Hoisly", color = P.text, fontSize = 22.sp, fontFamily = Op.Display, fontWeight = FontWeight.Medium,
+                Text("Edit tiles", color = P.text, fontSize = 22.sp, fontFamily = Op.Display, fontWeight = FontWeight.Medium,
                     modifier = Modifier.weight(1f).padding(start = 8.dp))
                 Text(
                     "Reset", color = P.text, fontSize = 15.sp,
@@ -147,7 +129,7 @@ class TileEditActivity : ComponentActivity() {
                 )
             }
 
-            Section("Tile utama", "Pilih dua tile utama yang tampil di samping slider.")
+            Section("Large tiles", "Tap to choose which two tiles sit next to the sliders.")
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 layout.highlight.take(2).forEachIndexed { i, id ->
                     ui(id)?.let { s ->
@@ -158,8 +140,9 @@ class TileEditActivity : ComponentActivity() {
             }
 
             Section(
-                "Susunan tile",
-                "Tahan lalu geser untuk mengubah urutan. Tile pertama tampil di baris cepat.",
+                "Your tiles",
+                "Hold and drag to reorder. The first five also show in the quick row; " +
+                    "after twelve, tiles continue on the next page.",
             )
             ReorderGrid(
                 ids = layout.grid,
@@ -169,7 +152,7 @@ class TileEditActivity : ComponentActivity() {
                 onBadge = { id -> TileLayoutStore.save(ctx, layout.copy(grid = layout.grid - id)) },
             )
 
-            Section("Tambah tile", "Pilih fitur yang ingin ditambahkan. Tile tertentu memerlukan Shizuku.")
+            Section("Add tiles", "Tap a tile to add it. Tiles marked S switch directly only with Shizuku.")
             val unused = layout.unused()
             StaticGrid(unused, ::ui, needsShizuku = { tiles[it]?.needsShizuku == true }) { id ->
                 TileLayoutStore.save(ctx, layout.copy(grid = layout.grid + id))
@@ -177,7 +160,7 @@ class TileEditActivity : ComponentActivity() {
 
             Section("App shortcuts", "Opens an app. Other apps' own quick-settings tiles can't be hosted outside the system.")
             Text(
-                "Tambah aplikasi", color = P.onActive, fontSize = 15.sp, fontWeight = FontWeight.Medium,
+                "Add app", color = P.onActive, fontSize = 15.sp, fontWeight = FontWeight.Medium,
                 modifier = Modifier
                     .padding(top = 4.dp, bottom = 32.dp)
                     .clip(RoundedCornerShape(50))
@@ -366,7 +349,7 @@ private fun AppPicker(onDismiss: () -> Unit, onPick: (String) -> Unit) {
     var query by remember { mutableStateOf("") }
     Dialog(onDismissRequest = onDismiss) {
         Column(Modifier.clip(RoundedCornerShape(28.dp)).background(P.card).padding(vertical = 16.dp).heightIn(max = 560.dp)) {
-            Text("Tambah aplikasi", color = P.text, fontSize = 20.sp, fontFamily = Op.Display, modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
+            Text("Add app", color = P.text, fontSize = 20.sp, fontFamily = Op.Display, modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
             BasicTextField(
                 query, { query = it }, singleLine = true,
                 textStyle = TextStyle(color = P.text, fontSize = 16.sp),

@@ -254,13 +254,13 @@ private fun CompactContentBody(act: Act, s: IslandSettings, wideWidth: Dp) {
             val now = rememberWallNow(1_000, active = act.c.pausedMs == null)
             // Запись экрана — красная, как на iPhone; таймеры и секундомеры Часов — оранжевые
             val recording = act.c.isRecording
-            val tint = if (recording) Tints.Red else Tints.Orange
+            // Recording uses the small iOS-style brick-red status LED at the left edge.
+            // Keep the existing elapsed-time/action model unchanged.
+            val tint = if (recording) Color(0xFFC84A32) else Tints.Orange
             CompactRow(h, gap, side * 1.4f,
                 left = {
                     when {
-                        act.c.recordingKind == RecordingKind.VOICE -> Equalizer(tint, act.c.pausedMs == null, s.liveEqualizer,
-                            Modifier.size(h * 0.62f, h * 0.42f).semantics { contentDescription = RecordingKind.VOICE.title }, bars = 5)
-                        recording -> Icon(act.c.recordingKind!!.icon, act.c.recordingKind.title, tint = tint, modifier = Modifier.size(icon))
+                        recording -> GlowDot(tint, h * 0.16f, !s.reduceEffects)
                         act.c.pausedMs != null -> Icon(Ios.pause, null, tint = tint, modifier = Modifier.size(icon))
                         else -> AppIcon(act.c.icon, h * 0.56f, Ios.timer, tint)
                     }
@@ -303,16 +303,13 @@ private fun CompactContentBody(act: Act, s: IslandSettings, wideWidth: Dp) {
             },
         )
 
-        is Act.ChargingA -> CompactRow(h, gap, side * 1.6f,
-            left = { Icon(Ios.flash, null, tint = Tints.Green, modifier = Modifier.size(icon)) },
-            right = {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    TimeText("${act.b.level}%", Tints.Green, 15)
-                    Spacer(Modifier.width(5.dp))
-                    if (!s.batteryPercentOnly) BatteryGlyph(act.b.level, Tints.Green, Modifier.size(h * 0.6f, h * 0.3f))
-                }
-            },
-        )
+        is Act.ChargingA -> Box(
+            Modifier.width(s.width.dp + s.activeWidth.dp).height(h).padding(end = h * 0.30f),
+            contentAlignment = Alignment.CenterEnd,
+        ) {
+            // Charging is a tiny green confirmation dot on the right, not a permanent bolt.
+            GlowDot(Tints.Green, h * 0.14f, !s.reduceEffects)
+        }
 
         is Act.LiveA -> LiveCompact(act.l, s)
 

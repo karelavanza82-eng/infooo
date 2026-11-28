@@ -284,7 +284,9 @@ class SystemEvents(private val context: Context) {
                 notice(
                     s.evChargeStart,
                     Notice(tr("Зарядка", "Charging"), if (level >= 0) "$level%" else null, ic(R.drawable.ios_flash), Tints.Green,
-                        battery = level.takeIf { it >= 0 }),
+                        battery = level.takeIf { it >= 0 },
+                        // Show the prominent plug-in animation for about 4.5 seconds total.
+                        extraMs = (4_500L - s.noticeDurationMs).coerceAtLeast(0L)),
                 )
             }
 

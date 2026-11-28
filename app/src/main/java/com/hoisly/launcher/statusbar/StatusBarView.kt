@@ -53,10 +53,22 @@ class StatusBarView(context: Context) : View(context) {
     private val netPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val shapePaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val dotPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#FF9500") }
+    private val moonPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
+    private val moonCutPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+        xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_OUT)
+    }
     private val batteryTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         textAlign = Paint.Align.CENTER
         color = Color.BLACK
         typeface = Typeface.create("sans-serif", Typeface.BOLD)
+    }
+    // DST_OUT makes the percentage a real cut-out: wallpaper/status-bar content shows through it.
+    private val batteryCutoutPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        textAlign = Paint.Align.CENTER
+        color = Color.WHITE
+        typeface = Typeface.create("sans-serif", Typeface.BOLD)
+        xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_OUT)
     }
     private val slashPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
@@ -148,11 +160,32 @@ class StatusBarView(context: Context) : View(context) {
         if (prefs.clockTheme == 4) clockPaint.textSize = dp(Metrics.CLOCK_TEXT * 0.94f)
         else clockPaint.textSize = dp(Metrics.CLOCK_TEXT)
         clockPaint.getTextBounds("0", 0, 1, bounds)
-        canvas.drawText(state.time, x, cy + bounds.height() / 2f, clockPaint)
+
+        // DND is shown immediately to the left of the clock, like the iOS crescent indicator.
+        var clockX = x
+        if (state.doNotDisturb) {
+            val moonSize = dp(14f)
+            drawDoNotDisturbMoon(canvas, x, cy - moonSize / 2f, moonSize)
+            clockX += moonSize + dp(4f)
+        }
+        canvas.drawText(state.time, clockX, cy + bounds.height() / 2f, clockPaint)
         if (!prefs.showSilent || !state.silent) return
         val box = dp(Metrics.BELL_BOX)
-        val left = x + clockPaint.measureText(state.time) + dp(Metrics.BELL_GAP) - box * (4f / 24f)
+        val left = clockX + clockPaint.measureText(state.time) + dp(Metrics.BELL_GAP) - box * (4f / 24f)
         drawMutedBell(canvas, left, cy - box / 2f, box)
+    }
+
+
+    private fun drawDoNotDisturbMoon(canvas: Canvas, left: Float, top: Float, size: Float) {
+        val layer = canvas.saveLayer(left, top, left + size, top + size, null)
+        moonPaint.color = color
+        val radius = size * 0.43f
+        val cx = left + size * 0.47f
+        val cy = top + size * 0.52f
+        canvas.drawCircle(cx, cy, radius, moonPaint)
+        // Knock out the upper-right portion to form a clean crescent.
+        canvas.drawCircle(cx + radius * 0.58f, cy - radius * 0.62f, radius * 0.88f, moonCutPaint)
+        canvas.restoreToCount(layer)
     }
 
     private fun drawMutedBell(canvas: Canvas, left: Float, top: Float, box: Float) {
@@ -286,11 +319,13 @@ class StatusBarView(context: Context) : View(context) {
     private fun drawBatteryTheme(canvas: Canvas, rect: RectF, percent: Int, theme: Int) {
         val radius = dp(when (theme) { 0 -> 3f; 1 -> 2.8f; 3 -> 5.5f; 4 -> 3.8f; else -> Metrics.BATTERY_RADIUS27 })
         val stroke = dp(if (theme == 1) 1.15f else if (theme == 4) 1.8f else Metrics.BATTERY_STROKE27)
+        // Keep all battery layers isolated so DST_OUT only cuts the digits from this icon.
         val layer = canvas.saveLayer(rect.left - 1f, rect.top - 1f, rect.right + 1f, rect.bottom + 1f, null)
         shapePaint.style = Paint.Style.STROKE
         shapePaint.strokeWidth = stroke
         shapePaint.color = ColorUtils.setAlphaComponent(color, if (theme == 4) 220 else 190)
         canvas.drawRoundRect(rect, radius, radius, shapePaint)
+
         shapePaint.style = Paint.Style.FILL
         val inset = stroke / 2f + dp(0.45f)
         val inner = RectF(rect.left + inset, rect.top + inset, rect.right - inset, rect.bottom - inset)
@@ -299,16 +334,23 @@ class StatusBarView(context: Context) : View(context) {
         clip.addRoundRect(inner, innerRadius, innerRadius, Path.Direction.CW)
         canvas.save()
         canvas.clipPath(clip)
+
+        // Unfilled battery capacity is always an opaque neutral gray, never transparent.
+        shapePaint.color = Color.rgb(132, 136, 144)
+        canvas.drawRoundRect(inner, innerRadius, innerRadius, shapePaint)
+
+        // The charged portion follows the selected status-bar icon color (black or white).
         val fill = percent.coerceIn(0, 100) / 100f
         shapePaint.color = color
         canvas.drawRect(inner.left, inner.top, inner.left + inner.width() * fill, inner.bottom, shapePaint)
         canvas.restore()
-        // The percentage is opaque and high-contrast, never punched transparent through the icon.
+
+        // Cut the percentage out of both the filled and gray portions so the background
+        // behind the status bar is visible through the numerals, like the iPhone reference.
         val text = percent.coerceIn(0, 100).toString()
-        batteryTextPaint.textSize = dp(if (text.length >= 3) 8.2f else if (theme == 3) 10.2f else Metrics.BATTERY_TEXT)
-        batteryTextPaint.color = if (color == Color.WHITE) Color.BLACK else Color.WHITE
-        batteryTextPaint.getTextBounds(text, 0, text.length, bounds)
-        canvas.drawText(text, rect.centerX(), rect.centerY() + bounds.height() / 2f, batteryTextPaint)
+        batteryCutoutPaint.textSize = dp(if (text.length >= 3) 8.2f else if (theme == 3) 10.2f else Metrics.BATTERY_TEXT)
+        batteryCutoutPaint.getTextBounds(text, 0, text.length, bounds)
+        canvas.drawText(text, rect.centerX(), rect.centerY() + bounds.height() / 2f, batteryCutoutPaint)
         canvas.restoreToCount(layer)
     }
 

@@ -58,6 +58,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.akira.island.core.tr
+import com.hoisly.launcher.ui.glass.GlassProfile
+import com.hoisly.launcher.ui.glass.glass
 
 @Composable
 fun IslandSwitch(checked: Boolean, onChange: (Boolean) -> Unit, enabled: Boolean = true) {
@@ -96,84 +98,69 @@ fun Page(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val scroll = rememberScrollState()
-    // Glass / wallpaper-transparent background matching the launcher home screen aesthetic.
-    Box(
-        Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    listOf(
-                        Color(0xCC0D0D18),  // dark translucent at the top
-                        Color(0xDD10101E),  // slightly more opaque towards the bottom
-                    )
-                )
-            )
-    ) {
     Column(
         Modifier.fillMaxSize()
             .then(if (preview == null) Modifier.verticalScroll(scroll) else Modifier)
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 13.dp),
     ) {
         Spacer(Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
         Spacer(Modifier.height(14.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (onBack != null) {
                 Box(
-                    Modifier.size(48.dp).clip(CircleShape).background(Ui.Card).clickable(onClick = onBack),
+                    Modifier.size(44.dp).glass(CircleShape, profile = GlassProfile.SmallButton).clickable(onClick = onBack),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(Icons.AutoMirrored.Rounded.ArrowBack, tr("Назад", "Back"), tint = Ui.Text)
                 }
-                Spacer(Modifier.width(18.dp))
+                Spacer(Modifier.width(12.dp))
             } else {
-                Spacer(Modifier.width(4.dp))
+                Spacer(Modifier.width(2.dp))
             }
             Text(
                 title,
-                color = Ui.Text,
-                fontSize = if (onBack != null) 26.sp else 28.sp,
-                lineHeight = 30.sp,
+                color = Color.White,
+                fontSize = if (onBack != null) 24.sp else 26.sp,
+                lineHeight = 29.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f),
             )
             if (action != null) {
-                Spacer(Modifier.width(10.dp))
+                Spacer(Modifier.width(8.dp))
                 action()
             }
         }
         if (subtitle != null) {
             Text(
                 subtitle,
-                color = Ui.Sub.copy(alpha = 0.6f),
-                fontSize = 14.sp,
-                modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
+                color = Color.White.copy(alpha = 0.72f),
+                fontSize = 13.sp,
+                modifier = Modifier.fillMaxWidth().padding(top = 9.dp),
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center,
             )
         }
-        Spacer(Modifier.height(18.dp))
+        Spacer(Modifier.height(16.dp))
         if (preview != null) {
             preview()
             Spacer(Modifier.height(12.dp))
-            Column(Modifier.weight(1f).verticalScroll(scroll), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(Modifier.weight(1f).verticalScroll(scroll), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 content()
-                Spacer(Modifier.height(130.dp))
+                Spacer(Modifier.height(28.dp))
                 Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
             }
         } else {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp), content = content)
-            Spacer(Modifier.height(130.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp), content = content)
+            Spacer(Modifier.height(28.dp))
             Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
         }
     }
-    } // closes wallpaper Box
 }
 
 @Composable
 fun PillAction(text: String, onClick: () -> Unit) {
     Box(
         Modifier
-            .clip(CircleShape)
-            .background(Ui.IconBg)
+            .glass(CircleShape, profile = GlassProfile.Button)
             .clickable(onClick = onClick)
             .padding(horizontal = 18.dp, vertical = 14.dp),
     ) {
@@ -204,8 +191,7 @@ fun ToggleCard(
         Modifier
             .fillMaxWidth()
             .alpha(if (enabled) 1f else 0.45f)
-            .clip(RoundedCornerShape(28.dp))
-            .background(Ui.Card)
+            .glass(RoundedCornerShape(28.dp), profile = GlassProfile.Panel)
             .clickable(enabled = enabled) { onChange(!checked) }
             .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -277,8 +263,7 @@ fun GroupItem(
     Row(
         Modifier
             .fillMaxWidth()
-            .clip(pos.shape())
-            .background(Ui.Card)
+            .glass(pos.shape(), profile = GlassProfile.Panel)
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
             .padding(horizontal = 20.dp, vertical = 18.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -313,8 +298,7 @@ fun GroupRow(
     Row(
         Modifier
             .fillMaxWidth()
-            .clip(pos.shape())
-            .background(Ui.Card)
+            .glass(pos.shape(), profile = GlassProfile.Panel)
             .clickable(onClick = onClick)
             .padding(horizontal = 20.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -360,7 +344,7 @@ fun Badge(text: String, modifier: Modifier = Modifier, color: Color = Tile.Orang
 @Composable
 fun IconAction(icon: ImageVector, description: String, onClick: () -> Unit) {
     Box(
-        Modifier.size(48.dp).clip(CircleShape).background(Ui.Card).clickable(onClick = onClick),
+        Modifier.size(48.dp).glass(CircleShape, profile = GlassProfile.SmallButton).clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         Icon(icon, description, tint = Ui.Text)
@@ -382,8 +366,7 @@ fun GroupSlider(
     Column(
         Modifier
             .fillMaxWidth()
-            .clip(pos.shape())
-            .background(Ui.Card)
+            .glass(pos.shape(), profile = GlassProfile.Panel)
             .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 6.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -424,8 +407,7 @@ fun GroupStepSlider(
     Column(
         Modifier
             .fillMaxWidth()
-            .clip(pos.shape())
-            .background(Ui.Card)
+            .glass(pos.shape(), profile = GlassProfile.Panel)
             .padding(start = 20.dp, end = 14.dp, top = 16.dp, bottom = 8.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {

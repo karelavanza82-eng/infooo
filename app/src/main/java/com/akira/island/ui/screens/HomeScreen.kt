@@ -61,6 +61,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.hoisly.launcher.R
+import com.hoisly.launcher.ui.glass.GlassProfile
+import com.hoisly.launcher.ui.glass.glass
 import com.akira.island.core.AlarmInfo
 import com.akira.island.core.AppMessage
 import com.akira.island.core.Controls
@@ -258,7 +260,7 @@ internal fun restrictedHelp(): String = tr(
 @Composable
 private fun DoubleBannerCard(app: String, onFix: () -> Unit, onHide: () -> Unit) {
     Column(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(28.dp)).background(Ui.Card).padding(20.dp),
+        Modifier.fillMaxWidth().glass(RoundedCornerShape(28.dp), profile = GlassProfile.Panel).padding(20.dp),
     ) {
         Text(tr("Сообщения приходят дважды?", "Messages show up twice?"), color = Ui.Text, fontSize = 17.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(6.dp))
@@ -361,7 +363,7 @@ fun TestsScreen(onBack: () -> Unit) {
 
 @Composable
 private fun DemoTile(d: Demo, modifier: Modifier, onClick: () -> Unit) {
-    Column(modifier.clip(RoundedCornerShape(24.dp)).background(Ui.Card).clickable(onClick = onClick).padding(16.dp)) {
+    Column(modifier.glass(RoundedCornerShape(24.dp), profile = GlassProfile.Panel).clickable(onClick = onClick).padding(16.dp)) {
         ItemIcon(d.icon, d.color, 40.dp)
         Spacer(Modifier.height(14.dp))
         Text(d.title, color = Ui.Text, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, lineHeight = 20.sp)

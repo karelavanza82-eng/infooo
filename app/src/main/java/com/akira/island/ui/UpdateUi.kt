@@ -46,6 +46,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.hoisly.launcher.ui.glass.GlassProfile
+import com.hoisly.launcher.ui.glass.glass
 import com.akira.island.core.IslandBus
 import com.akira.island.core.Lang
 import com.akira.island.core.tr
@@ -69,7 +71,7 @@ fun UpdateSection() {
     val release = (state as? UpdateState.Available)?.release ?: return
     var notes by remember(release.version) { mutableStateOf(false) }
 
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(28.dp)).background(Ui.Card).padding(18.dp)) {
+    Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(28.dp), profile = GlassProfile.Panel).padding(18.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.size(48.dp).clip(RoundedCornerShape(18.dp)).background(Ui.Primary), contentAlignment = Alignment.Center) {
                 Icon(Icons.Rounded.SystemUpdate, null, tint = Ui.OnPrimary, modifier = Modifier.size(26.dp))

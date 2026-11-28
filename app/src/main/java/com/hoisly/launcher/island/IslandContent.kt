@@ -226,7 +226,7 @@ internal fun IslandContent(
             }
 
             // Orange activity indicator dot — appears at top-right of island when active
-            if (hasActivity) {
+            if (hasActivity && card != IslandCard.Charging) {
                 Box(
                     Modifier
                         .offset(x = 3.dp, y = (-2).dp)

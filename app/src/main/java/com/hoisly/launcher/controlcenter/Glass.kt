@@ -73,8 +73,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.hoisly.launcher.ui.glass.glass as hoislyGlass
-import com.hoisly.launcher.ui.glass.GlassProfile
 import kotlinx.coroutines.delay
 import java.util.Locale
 
@@ -98,8 +96,10 @@ object G {
 }
 
 /** Frosted surface: translucent fill with a soft top-lit rim, clipped to [shape]. */
-fun Modifier.glass(shape: Shape, fill: Color = G.fill): Modifier =
-    this.hoislyGlass(shape = shape, tint = fill, profile = GlassProfile.Panel)
+fun Modifier.glass(shape: Shape, fill: Color = G.fill): Modifier = this
+    .clip(shape)
+    .background(Brush.verticalGradient(listOf(fill.copy(alpha = (fill.alpha * 1.3f).coerceAtMost(1f)), fill)))
+    .rim(shape)
 
 fun Modifier.rim(shape: Shape): Modifier =
     this.border(0.9.dp, Brush.verticalGradient(listOf(G.rimTop, G.rimBottom, G.rimTop.copy(alpha = 0.3f))), shape)
@@ -140,7 +140,6 @@ fun GlassButton(
 @Composable
 fun GlassCircleTile(tile: TileUi, size: Dp, onClick: () -> Unit, onLongClick: () -> Unit) {
     val on = tile.active && !tile.stateless
-    val iconScale = LocalTileIconScale.current.coerceIn(0.7f, 1.35f)
     val tint = when {
         !on -> Color.White
         tile.id == "rotlock" -> G.red
@@ -149,9 +148,9 @@ fun GlassCircleTile(tile: TileUi, size: Dp, onClick: () -> Unit, onLongClick: ()
     GlassButton(Modifier.size(size), CircleShape, if (on) G.white else G.fill, onClick, onLongClick) {
         val bmp = tile.bitmap
         if (bmp != null) {
-            Image(bmp, null, modifier = Modifier.size((34f * iconScale).u).clip(CircleShape))
+            Image(bmp, null, modifier = Modifier.size(34.u).clip(CircleShape))
         } else {
-            Icon(tile.icon, null, tint = tint, modifier = Modifier.size((30f * iconScale).u))
+            Icon(tile.icon, null, tint = tint, modifier = Modifier.size(30.u))
         }
     }
 }

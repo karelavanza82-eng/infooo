@@ -162,7 +162,8 @@ fun NotificationCard(
                         pastThreshold = false
                     },
                 )
-                .glass(RoundedCornerShape(20.u), G.fill)
+                .clip(RoundedCornerShape(20.u))
+                .background(P.card)
                 .clickable {
                     when {
                         offsetX.value != 0f -> { onMenuOpenChange(false); scope.launch { offsetX.animateTo(0f, spring) } }

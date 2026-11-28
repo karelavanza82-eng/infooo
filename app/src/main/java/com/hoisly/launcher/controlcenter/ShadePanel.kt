@@ -10,21 +10,16 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.awaitVerticalTouchSlopOrCancellation
 import androidx.compose.foundation.gestures.verticalDrag
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -39,15 +34,12 @@ import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.Public
 import androidx.compose.material.icons.rounded.SignalCellularAlt
 import androidx.compose.material.icons.rounded.WbSunny
-import androidx.compose.material.icons.rounded.Tune
-import androidx.compose.material.icons.rounded.NotificationsNone
 import androidx.compose.material.icons.rounded.Bluetooth
 import androidx.compose.material.icons.rounded.AirplanemodeActive
 import androidx.compose.material.icons.rounded.WifiTethering
 import androidx.compose.material.icons.rounded.Wifi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.Slider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -75,11 +67,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.delay
 import java.util.Date
-import kotlin.math.min
 
 private fun frac(v: Float, start: Float, end: Float) = ((v - start) / (end - start)).coerceIn(0f, 1f)
 
@@ -88,8 +77,8 @@ private const val LEFT = 34f
 private const val CONTENT_W = 291f
 
 /**
- * The Hoisly shade has a notification stage and a full Control Center stage. Three Control
- * Center pages are switched from the rail on the right edge:
+ * The whole shade, laid out like the reference control center. One stage: pulling the shade
+ * down opens it fully. Three pages, switched from the rail on the right edge:
  * heart = the main layout, music = players, antenna = connectivity.
  */
 @Composable
@@ -101,18 +90,12 @@ fun ShadePanel(controller: ShadeController, tiles: TileRepository, host: ShadeSe
     val placed by tiles.placed.collectAsState()
     val media by MediaRepo.items.collectAsState()
     var page by remember { mutableIntStateOf(0) }
-    var showLayoutControls by remember { mutableStateOf(false) }
-    var uiScale by remember { mutableFloatStateOf(ctx.getSharedPreferences("hoisly_cc_ui", 0).getFloat("scale", 1f).coerceIn(0.78f, 1.12f)) }
-    var iconScale by remember { mutableFloatStateOf(ctx.getSharedPreferences("hoisly_cc_ui", 0).getFloat("icon_scale", 1f).coerceIn(0.7f, 1.35f)) }
-    val expandedControl = controller.expansion.value > 1.01f
     val closed by remember(controller) { derivedStateOf { controller.expansion.value == 0f } }
     LaunchedEffect(closed) { if (closed) page = 0 }
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
-        // Scale against both axes. The old width-only scale made the fixed 600dp design
-        // overflow and appear enlarged in landscape. Center a fitted reference canvas.
-        val unit = minOf(maxWidth.value / 360f, maxHeight.value / 600f).coerceAtLeast(0.35f) * uiScale
-        CompositionLocalProvider(LocalUnit provides unit, LocalPalette provides palette, LocalTileIconScale provides iconScale) {
+        val unit = maxWidth.value / 360f
+        CompositionLocalProvider(LocalUnit provides unit, LocalPalette provides palette) {
             val pxPerU = with(LocalDensity.current) { 1.u.toPx() }
             val scrimAlpha = if (blurEnabled) 0.62f else 0.96f
 
@@ -128,8 +111,7 @@ fun ShadePanel(controller: ShadeController, tiles: TileRepository, host: ShadeSe
 
             Box(
                 Modifier
-                    .size(width = 360.u, height = 600.u)
-                    .align(Alignment.Center)
+                    .fillMaxSize()
                     .panelDrag(controller)
                     .tapToClose(controller)
                     .graphicsLayer {
@@ -141,105 +123,14 @@ fun ShadePanel(controller: ShadeController, tiles: TileRepository, host: ShadeSe
                         transformOrigin = TransformOrigin(0.5f, 0f)
                     },
             ) {
-                Crossfade(targetState = expandedControl, label = "shadeMode") { fullControl ->
-                    if (fullControl) {
-                        Crossfade(targetState = page, label = "page") { pg ->
-                            when (pg) {
-                                0 -> MainPage(states, placed, media, tiles, host)
-                                1 -> MusicPage(media, host)
-                                else -> ConnectivityPage(states, tiles, host)
-                            }
-                        }
-                        PageRail(page) { page = it }
-                        Box(
-                            Modifier.offset(326.u, 10.u).size(30.u).clip(CircleShape)
-                                .clickable { showLayoutControls = true },
-                            contentAlignment = Alignment.Center,
-                        ) { Icon(Icons.Rounded.Tune, "Atur Control Center", tint = Color.White, modifier = Modifier.size(19.u)) }
-                    } else {
-                        NotificationCenterPage(host, Modifier.fillMaxSize())
+                Crossfade(targetState = page, label = "page") { pg ->
+                    when (pg) {
+                        0 -> MainPage(states, placed, media, tiles, host)
+                        1 -> MusicPage(media, host)
+                        else -> ConnectivityPage(states, tiles, host)
                     }
                 }
-            }
-            if (showLayoutControls) {
-                Dialog(onDismissRequest = { showLayoutControls = false }) {
-                    Column(
-                        Modifier.fillMaxWidth().clip(RoundedCornerShape(28.dp))
-                            .glass(RoundedCornerShape(28.dp), Color(0xB8202024))
-                            .padding(22.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        Text("Tampilan Hoisly", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
-                        Text("Ukuran seluruh elemen", color = Color.White.copy(alpha = 0.78f), fontSize = 13.sp)
-                        Slider(
-                            value = uiScale, onValueChange = {
-                                uiScale = it
-                                ctx.getSharedPreferences("hoisly_cc_ui", 0).edit().putFloat("scale", it).apply()
-                            }, valueRange = 0.78f..1.12f,
-                        )
-                        Text("${(uiScale * 100).toInt()}%", color = Color.White, fontSize = 14.sp)
-                        Text("Ukuran ikon", color = Color.White.copy(alpha = 0.78f), fontSize = 13.sp)
-                        Slider(
-                            value = iconScale, onValueChange = {
-                                iconScale = it
-                                ctx.getSharedPreferences("hoisly_cc_ui", 0).edit().putFloat("icon_scale", it).apply()
-                            }, valueRange = 0.7f..1.35f,
-                        )
-                        Text("${(iconScale * 100).toInt()}%", color = Color.White, fontSize = 14.sp)
-                        Text(
-                            "Edit susunan tile", color = Color.White, fontSize = 15.sp,
-                            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp))
-                                .background(Color(0x3330D158)).clickable {
-                                    showLayoutControls = false
-                                    host.launch(Intent(ctx, TileEditActivity::class.java))
-                                }.padding(14.dp),
-                        )
-                        Text("Selesai", color = Color(0xFF30D158), fontSize = 15.sp,
-                            modifier = Modifier.align(Alignment.End).clickable { showLayoutControls = false }.padding(8.dp))
-                    }
-                }
-            }
-        }
-    }
-}
-
-// Notification Center is the first stage of the Hoisly shade. It uses the same live
-// NotificationListenerService data as the launcher badge feed; no demo-only list is shown.
-@Composable
-private fun NotificationCenterPage(host: ShadeService, modifier: Modifier = Modifier) {
-    val items by NotifListener.items.collectAsState()
-    var openMenu by remember { mutableStateOf(false) }
-    Column(modifier.padding(horizontal = 18.dp, vertical = 18.dp)) {
-        Row(Modifier.fillMaxWidth().padding(bottom = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("Notifikasi", color = Color.White, fontSize = 25.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
-            if (items.isNotEmpty()) {
-                Text("Hapus semua", color = Color.White.copy(alpha = 0.8f), fontSize = 12.sp,
-                    modifier = Modifier.clip(RoundedCornerShape(30.dp)).clickable { NotifListener.instance?.dismissAll() }.padding(8.dp))
-            }
-        }
-        if (items.isEmpty()) {
-            Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(Icons.Rounded.NotificationsNone, null, tint = Color.White.copy(alpha = 0.6f), modifier = Modifier.size(42.dp))
-                    Spacer(Modifier.height(10.dp))
-                    Text("Belum ada notifikasi", color = Color.White, fontSize = 17.sp)
-                    Text("Notifikasi baru akan muncul di sini", color = Color.White.copy(alpha = 0.62f), fontSize = 12.sp)
-                }
-            }
-        } else {
-            LazyColumn(Modifier.fillMaxWidth().weight(1f), verticalArrangement = Arrangement.spacedBy(9.dp)) {
-                items(items, key = { it.key }) { item ->
-                    NotificationCard(
-                        item = item,
-                        onOpen = { host.sendPendingIntent(it.contentIntent) },
-                        onDismiss = { NotifListener.instance?.dismiss(it) },
-                        onAction = { n, index -> n.actions.getOrNull(index)?.actionIntent?.let(host::sendPendingIntent) },
-                        onSnooze = { NotifListener.instance?.snooze(it, 5 * 60 * 1000L) },
-                        onSettings = { n -> host.launch(Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, n.pkg)) },
-                        menuOpen = openMenu,
-                        onMenuOpenChange = { openMenu = it },
-                    )
-                }
+                PageRail(page) { page = it }
             }
         }
     }

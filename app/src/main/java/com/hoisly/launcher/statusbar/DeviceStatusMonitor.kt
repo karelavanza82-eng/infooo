@@ -31,6 +31,8 @@ import kotlin.math.roundToInt
 data class StatusBarState(
     val time: String = "",
     val silent: Boolean = false,
+    /** System Do Not Disturb / Zen Mode is active. */
+    val doNotDisturb: Boolean = false,
     val airplane: Boolean = false,
     /** Lit cellular bars, 0..4. */
     val signalLevel: Int = 0,
@@ -73,6 +75,8 @@ class DeviceStatusMonitor(
                 Intent.ACTION_BATTERY_CHANGED -> applyBattery(intent)
                 AudioManager.RINGER_MODE_CHANGED_ACTION -> state = state.copy(silent = isSilent())
                 Intent.ACTION_AIRPLANE_MODE_CHANGED -> state = state.copy(airplane = isAirplane())
+                android.app.NotificationManager.ACTION_INTERRUPTION_FILTER_CHANGED ->
+                    state = state.copy(doNotDisturb = isDoNotDisturb())
                 else -> state = state.copy(time = formatTime())
             }
             publish()
@@ -88,10 +92,11 @@ class DeviceStatusMonitor(
             addAction(Intent.ACTION_TIMEZONE_CHANGED)
             addAction(AudioManager.RINGER_MODE_CHANGED_ACTION)
             addAction(Intent.ACTION_AIRPLANE_MODE_CHANGED)
+            addAction(android.app.NotificationManager.ACTION_INTERRUPTION_FILTER_CHANGED)
             addAction(Intent.ACTION_BATTERY_CHANGED)
         }
         val sticky = ContextCompat.registerReceiver(app, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
-        state = state.copy(time = formatTime(), silent = isSilent(), airplane = isAirplane())
+        state = state.copy(time = formatTime(), silent = isSilent(), doNotDisturb = isDoNotDisturb(), airplane = isAirplane())
         if (sticky?.action == Intent.ACTION_BATTERY_CHANGED) applyBattery(sticky)
         publish()
         startTelephony()
@@ -126,6 +131,9 @@ class DeviceStatusMonitor(
     }
 
     private fun isSilent(): Boolean = audio != null && audio.ringerMode != AudioManager.RINGER_MODE_NORMAL
+
+    private fun isDoNotDisturb(): Boolean =
+        Settings.Global.getInt(app.contentResolver, "zen_mode", 0) != 0
 
     private fun isAirplane(): Boolean =
         Settings.Global.getInt(app.contentResolver, Settings.Global.AIRPLANE_MODE_ON, 0) == 1
