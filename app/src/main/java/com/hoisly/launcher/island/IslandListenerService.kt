@@ -2,7 +2,6 @@ package com.hoisly.launcher.island
 
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
-import com.hoisly.launcher.panels.notifications.CenterTracker
 import com.hoisly.launcher.settings.BadgeStyle
 import com.hoisly.launcher.settings.LauncherSettings
 import kotlinx.coroutines.CoroutineScope
@@ -26,7 +25,6 @@ class IslandListenerService : NotificationListenerService() {
     private var runtime: IslandRuntime? = null
     private val timers = LinkedHashMap<String, IslandTimerEntry>()
     private val badges = BadgeTracker(this)
-    private val center = CenterTracker(this)
 
     override fun onCreate(): Unit {
         super.onCreate()
@@ -34,11 +32,6 @@ class IslandListenerService : NotificationListenerService() {
         scope.launch {
             settings.map { it.badges != BadgeStyle.Off }.distinctUntilChanged().collect { enabled ->
                 badges.enabled(enabled) { runCatching { activeNotifications }.getOrNull() }
-            }
-        }
-        scope.launch {
-            settings.map { it.panels.notificationCenter to !it.panels.hideNotificationContent }.distinctUntilChanged().collect { (enabled, content) ->
-                center.configure(enabled, content) { runCatching { activeNotifications }.getOrNull() }
             }
         }
         scope.launch {
@@ -69,7 +62,6 @@ class IslandListenerService : NotificationListenerService() {
             islandTimerEntry(sbn, packageName)?.let { timers[sbn.key] = it }
         }
         badges.connected(active)
-        center.connected(active)
         IslandAccess.connection(this, true)
         runtime?.timers(timers.values.toList())
     }
@@ -82,13 +74,11 @@ class IslandListenerService : NotificationListenerService() {
         } else timers.remove(sbn.key) != null
         if (changed) runtime?.timers(timers.values.toList())
         badges.posted(sbn)
-        center.posted(sbn)
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification): Unit {
         if (timers.remove(sbn.key) != null) runtime?.timers(timers.values.toList())
         badges.removed(sbn)
-        center.removed(sbn)
     }
 
     override fun onNotificationRankingUpdate(rankingMap: RankingMap): Unit {
@@ -100,7 +90,6 @@ class IslandListenerService : NotificationListenerService() {
         runtime = null
         timers.clear()
         badges.disconnected()
-        center.disconnected()
         IslandAccess.connection(this, false)
         super.onListenerDisconnected()
     }
@@ -110,7 +99,6 @@ class IslandListenerService : NotificationListenerService() {
         runtime = null
         timers.clear()
         badges.disconnected()
-        center.disconnected()
         scope.cancel()
         IslandAccess.connection(this, false)
         super.onDestroy()

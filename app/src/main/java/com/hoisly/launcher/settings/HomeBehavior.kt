@@ -12,7 +12,6 @@ sealed interface HomeAction {
     data object Search : HomeAction
     data object AppLibrary : HomeAction
     data object Settings : HomeAction
-    data object NotificationCenter : HomeAction
     /** Only offered for Repeat Home. */
     data object MainPage : HomeAction
     data class OpenApp(val target: AppTarget) : HomeAction
@@ -64,7 +63,6 @@ object HomeActionCodec {
         HomeAction.Search -> "search"
         HomeAction.AppLibrary -> "library"
         HomeAction.Settings -> "settings"
-        HomeAction.NotificationCenter -> "notifications"
         HomeAction.MainPage -> "main"
         is HomeAction.OpenApp -> "app1:${part(action.target.component)}:${part(action.target.profile)}"
     }
@@ -73,7 +71,6 @@ object HomeActionCodec {
         "search" -> HomeAction.Search
         "library" -> HomeAction.AppLibrary
         "settings" -> HomeAction.Settings
-        "notifications" -> HomeAction.NotificationCenter
         "main" -> HomeAction.MainPage
         else -> runCatching {
             val parts = value?.takeIf { it.length <= 4096 }?.split(':') ?: return HomeAction.None

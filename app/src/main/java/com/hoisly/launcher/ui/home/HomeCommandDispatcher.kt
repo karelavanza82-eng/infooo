@@ -11,8 +11,6 @@ interface HomeCommands {
     fun settings()
     fun mainPage()
     fun launch(target: AppTarget)
-    /** Panels default to nothing so a host without them (the routing test) stays valid. */
-    fun notificationCenter() {}
     /** Closes the existing top state, returning true if it handled Home. */
     fun closeTop(): Boolean
 }
@@ -25,7 +23,6 @@ class HomeCommandDispatcher(private val commands: HomeCommands) {
             HomeAction.Search -> commands.search()
             HomeAction.AppLibrary -> if (libraryEnabled) commands.library()
             HomeAction.Settings -> commands.settings()
-            HomeAction.NotificationCenter -> commands.notificationCenter()
             HomeAction.MainPage -> commands.mainPage()
             is HomeAction.OpenApp -> commands.launch(action.target)
         }

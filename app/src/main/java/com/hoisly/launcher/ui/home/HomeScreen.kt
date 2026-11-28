@@ -47,8 +47,6 @@ import com.hoisly.launcher.settings.IconArea
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hoisly.launcher.LauncherViewModel
-import com.hoisly.launcher.panels.PanelController
-import com.hoisly.launcher.panels.PanelHost
 import androidx.compose.runtime.CompositionLocalProvider
 import com.hoisly.launcher.data.WidgetTarget
 import com.hoisly.launcher.ui.widgets.LocalWidgetEnvironment
@@ -110,7 +108,6 @@ fun HomeScreen(vm: LauncherViewModel, actions: LauncherActions) {
     val visibleApps by vm.visibleApps.collectAsStateWithLifecycle()
     val settings = LocalSettingsState.current
     val scope = rememberCoroutineScope()
-    val panels = remember(scope) { PanelController(scope) }
     val density = LocalDensity.current
     // Group names follow the UI language; read from the Activity so the in-app language applies.
     val context = LocalContext.current
@@ -189,7 +186,7 @@ fun HomeScreen(vm: LauncherViewModel, actions: LauncherActions) {
     val todayWidgets = remember { widgetCallbacks(vm, actions, drag, onToday = true) }
     val widgetMenu = remember { widgetMenuActions(vm, actions) }
 
-    val dispatcher = remember(vm, actions, drag, pager, scope, panels) { homeDispatcher(vm, actions, drag, pager, scope, panels) }
+    val dispatcher = remember(vm, actions, drag, pager, scope) { homeDispatcher(vm, actions, drag, pager, scope) }
     LaunchedEffect(dispatcher) {
         vm.homePressed.collect {
             val prefs = vm.settings.state.value
@@ -233,7 +230,7 @@ fun HomeScreen(vm: LauncherViewModel, actions: LauncherActions) {
     }
 
     // 0 = sharp, 1 = fully blurred. Read only in layer blocks: it never recomposes the screen.
-    val overlayOpen = appTransition?.phase == AppTransitionPhase.Opening || panels.panel != null || menu != null || openFolder != null || search != null || openGroupId != null || chooserApp != null || gallery
+    val overlayOpen = appTransition?.phase == AppTransitionPhase.Opening || menu != null || openFolder != null || search != null || openGroupId != null || chooserApp != null || gallery
     val ios27Launch = appTransition != null && settings.appAnimationStyle == "IOS27"
     val styledLaunch = appTransition != null && settings.appAnimationStyle != "HOISLY"
     val blur = animateFloatAsState(
@@ -440,8 +437,6 @@ fun HomeScreen(vm: LauncherViewModel, actions: LauncherActions) {
         )
 
         AppTransitionOverlay(vm, appProgress)
-
-        PanelHost(panels, vm)
 
         DraggedIcon(drag)
 

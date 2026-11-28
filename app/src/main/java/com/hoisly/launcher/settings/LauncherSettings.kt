@@ -67,7 +67,6 @@ class LauncherSettings private constructor(context: Context) {
             putInt(KEY_ANIMATION_SPEED, next.animationSpeedPercent)
             putString(KEY_APP_ANIMATION_STYLE, next.appAnimationStyle)
             com.hoisly.launcher.ui.theme.Motion.setSpeedPercent(next.animationSpeedPercent)
-            putBoolean(KEY_LOCK_AFTER_SLEEP, next.showLockScreenAfterSleep)
             putFloat(KEY_GLASS_TINT, next.glassTint)
             putBoolean(KEY_GLASS_EDGE, next.glassEdge)
             putString(KEY_GLASS_MODE, next.glassMode.name)
@@ -99,7 +98,6 @@ class LauncherSettings private constructor(context: Context) {
             putStringSet(KEY_HIDDEN_MENU, next.hiddenMenuActions.map { it.name }.toSet())
             putBoolean(KEY_DYNAMIC_COLOR, next.dynamicColor)
             putIsland(next.island)
-            putPanels(next.panels)
             putBoolean(KEY_ONBOARDING_DONE, next.onboardingDone)
             putFloat(KEY_WALLPAPER_DIM, next.wallpaperDim)
             putBoolean(KEY_KEEP_SCREEN_ON, next.keepScreenOn)
@@ -279,7 +277,6 @@ class LauncherSettings private constructor(context: Context) {
         appAnimationStyle = prefs.getString(KEY_APP_ANIMATION_STYLE, "HOISLY")
             ?.takeIf { it in setOf("HOISLY", "IOS27", "AURA", "SHUTTER", "ORBIT", "ANTICIPATE", "SCAN", "MIST") }
             ?: "HOISLY",
-        showLockScreenAfterSleep = prefs.getBoolean(KEY_LOCK_AFTER_SLEEP, true),
         glassTint = prefs.getFloat(KEY_GLASS_TINT, Defaults.glassTint),
         glassEdge = prefs.getBoolean(KEY_GLASS_EDGE, Defaults.glassEdge),
         glassMode = GlassMode.fromStored(prefs.getString(KEY_GLASS_MODE, null), Defaults.glassMode),
@@ -317,7 +314,6 @@ class LauncherSettings private constructor(context: Context) {
         customIcons = readJsonMap(KEY_ICONS) { obj, key -> obj.getLong(key) },
         dynamicColor = prefs.getBoolean(KEY_DYNAMIC_COLOR, Defaults.dynamicColor),
         island = IslandPreferences.fromStored(prefs.all),
-        panels = PanelPreferences.fromStored(prefs.all),
         onboardingDone = prefs.getBoolean(KEY_ONBOARDING_DONE, Defaults.onboardingDone),
         wallpaperDim = prefs.getFloat(KEY_WALLPAPER_DIM, Defaults.wallpaperDim),
         keepScreenOn = prefs.getBoolean(KEY_KEEP_SCREEN_ON, Defaults.keepScreenOn),
@@ -397,7 +393,6 @@ class LauncherSettings private constructor(context: Context) {
         private const val KEY_RESUME_ANIM = "resume_animation"
         private const val KEY_ANIMATION_SPEED = "animation_speed_percent"
         private const val KEY_APP_ANIMATION_STYLE = "app_animation_style"
-        private const val KEY_LOCK_AFTER_SLEEP = "show_lock_screen_after_sleep"
         private const val KEY_HIDDEN = "hidden_apps"
         private const val KEY_LABELS = "custom_labels"
         private const val KEY_ICONS = "custom_icons"

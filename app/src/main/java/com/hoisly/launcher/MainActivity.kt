@@ -10,7 +10,6 @@ import android.provider.CalendarContract
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import android.app.ActivityOptions
-import android.app.KeyguardManager
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProviderInfo
 import androidx.core.net.toUri
@@ -20,8 +19,6 @@ import android.app.WallpaperColors
 import android.app.WallpaperManager
 import android.content.Context
 import android.content.Intent
-import android.content.BroadcastReceiver
-import android.content.IntentFilter
 import android.os.Build
 import android.content.pm.LauncherApps
 import android.content.pm.ShortcutInfo
@@ -46,7 +43,6 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -73,7 +69,6 @@ import com.hoisly.launcher.ui.glass.LocalGlassStyle
 import com.hoisly.launcher.ui.home.AppTransitionPhase
 import com.hoisly.launcher.settings.OrientationLock
 import com.hoisly.launcher.ui.home.HomeScreen
-import com.hoisly.launcher.ui.lockscreen.HoislyLockScreen
 import com.hoisly.launcher.ui.home.LauncherActions
 import com.hoisly.launcher.ui.icon.BadgeSource
 import com.hoisly.launcher.ui.icon.IconLoader
@@ -91,21 +86,6 @@ import kotlin.math.roundToInt
 class MainActivity : ComponentActivity(), LauncherActions {
 
     private val vm: LauncherViewModel by viewModels()
-    private var showWakeLockScreen by mutableStateOf(false)
-    private var screenWasTurnedOff = false
-    private var screenReceiverRegistered = false
-    private val screenStateReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == Intent.ACTION_SCREEN_OFF) {
-                screenWasTurnedOff = true
-                // Mark the launcher as allowed above the swipe keyguard before the display wakes.
-                // The system keyguard remains responsible for secure PIN/pattern/biometric auth.
-                if (vm.settings.state.value.showLockScreenAfterSleep) {
-                    setShowWhenLocked(true)
-                }
-            }
-        }
-    }
     private val launcherApps: LauncherApps by lazy { getSystemService(LauncherApps::class.java) }
 
     /** Photo widget waiting for the picker result; kept across process death. */
@@ -193,12 +173,7 @@ class MainActivity : ComponentActivity(), LauncherActions {
                 LocalGlassLight provides glassLight,
                 LocalAccent provides AccentColors.resolve(settings.dynamicColor, iconLoader.wallpaperColor),
             ) {
-                androidx.compose.foundation.layout.Box {
-                    HomeScreen(vm, actions = this@MainActivity)
-                    if (showWakeLockScreen && settings.showLockScreenAfterSleep) {
-                        HoislyLockScreen(onDismiss = { dismissHoislyLockScreen() }, onCamera = { openCameraFromLockScreen() })
-                    }
-                }
+                HomeScreen(vm, actions = this@MainActivity)
             }
         }
         WallpaperManager.getInstance(this)
@@ -244,17 +219,6 @@ class MainActivity : ComponentActivity(), LauncherActions {
         // Cheap when nothing changed; also picks up a freshly granted file access permission.
         vm.refreshWallpaper()
         vm.refreshWidgets()
-        if (screenWasTurnedOff) {
-            screenWasTurnedOff = false
-            if (vm.settings.state.value.showLockScreenAfterSleep) {
-                // Show Hoisly above the swipe-only keyguard as soon as the launcher resumes.
-                setShowWhenLocked(true)
-                showWakeLockScreen = true
-            } else {
-                showWakeLockScreen = false
-                setShowWhenLocked(false)
-            }
-        }
         if (homeIntents.resume()) vm.returnToHome.tryEmit(Unit)
         var closing = false
         var returning = false
@@ -272,58 +236,14 @@ class MainActivity : ComponentActivity(), LauncherActions {
         if (returning && !closing) vm.returnedHome.tryEmit(Unit)
     }
 
-    /** The secure camera opens above the keyguard; devices without one get the normal camera. */
-    private fun openCameraFromLockScreen() {
-        val secure = Intent(android.provider.MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA_SECURE).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        runCatching { startActivity(secure) }.onFailure {
-            runCatching {
-                startActivity(Intent(android.provider.MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-            }
-        }
-    }
-
-    /**
-     * Dismiss the decorative Hoisly surface, then ask Android to dismiss its own keyguard.
-     * On swipe-only devices this completes without credentials; secure keyguards still require
-     * the system's normal PIN, pattern, password, or biometric flow.
-     */
-    private fun dismissHoislyLockScreen() {
-        val keyguardManager = getSystemService(KeyguardManager::class.java)
-        keyguardManager.requestDismissKeyguard(this, object : KeyguardManager.KeyguardDismissCallback() {
-            override fun onDismissSucceeded() {
-                showWakeLockScreen = false
-                setShowWhenLocked(false)
-            }
-
-            override fun onDismissCancelled() {
-                showWakeLockScreen = false
-                setShowWhenLocked(false)
-            }
-
-            override fun onDismissError() {
-                showWakeLockScreen = false
-                setShowWhenLocked(false)
-            }
-        })
-    }
-
     override fun onStart() {
         super.onStart()
-        if (!screenReceiverRegistered) {
-            val filter = IntentFilter(Intent.ACTION_SCREEN_OFF)
-            ContextCompat.registerReceiver(this, screenStateReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
-            screenReceiverRegistered = true
-        }
         // Widgets of other apps only update while their host listens.
         vm.appWidgets.startListening()
     }
 
     override fun onStop() {
         super.onStop()
-        if (screenReceiverRegistered) {
-            runCatching { unregisterReceiver(screenStateReceiver) }
-            screenReceiverRegistered = false
-        }
         vm.appWidgets.stopListening()
         leftHome = true
         homeIntents.stop()

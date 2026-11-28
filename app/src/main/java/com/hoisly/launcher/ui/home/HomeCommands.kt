@@ -6,8 +6,6 @@ import com.hoisly.launcher.LauncherViewModel
 import com.hoisly.launcher.SearchMode
 import com.hoisly.launcher.settings.AppTarget
 import com.hoisly.launcher.settings.resolveHomeTarget
-import com.hoisly.launcher.panels.Panel
-import com.hoisly.launcher.panels.PanelController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -17,13 +15,11 @@ internal fun homeDispatcher(
     drag: DragController,
     pager: PagerState,
     scope: CoroutineScope,
-    panels: PanelController,
 ): HomeCommandDispatcher {
     fun pages(): HomePages = HomePages(vm.state.value.pages.size, vm.settings.state.value.homeBehavior.showToday, vm.settings.state.value.appLibrary)
     return HomeCommandDispatcher(object : HomeCommands {
         override fun search() = vm.openSearch(SearchMode.Spotlight)
         override fun settings() = actions.openSettings()
-        override fun notificationCenter() = panels.open(Panel.Notifications)
         override fun library() { scope.launch { pager.animateScrollToPage(pages().libraryPosition) } }
         override fun mainPage() { scope.launch { pager.animateScrollToPage(pages().main(vm.settings.state.value.homeBehavior.mainPage)) } }
         override fun launch(target: AppTarget) {
@@ -31,7 +27,6 @@ internal fun homeDispatcher(
             resolveHomeTarget(target, snapshot.apps, snapshot.unavailableUsers) { it.key }?.let { actions.launch(it, Rect.Zero) }
         }
         override fun closeTop(): Boolean = when {
-            panels.isOpen -> { panels.close(); true }
             vm.menu.value != null -> { vm.closeMenu(); true }
             vm.removeRequest.value != null -> { vm.removeRequest.value = null; true }
             vm.stacks.editing.value != null -> { vm.stacks.closeEditor(); true }

@@ -64,8 +64,6 @@ data class SettingsState(
     val animationSpeedPercent: Int = 30,
     /** App launch/return animation preset: HOISLY, IOS27, AURA, SHUTTER, ORBIT, ANTICIPATE, SCAN or MIST. */
     val appAnimationStyle: String = "HOISLY",
-    /** Show Hoisly's decorative launcher lock screen when returning after the display was off. */
-    val showLockScreenAfterSleep: Boolean = true,
 
     /** Opacity of the white tint laid over glass surfaces, see [MAX_GLASS_TINT]. */
     val glassTint: Float = DEFAULT_GLASS_TINT,
@@ -155,9 +153,6 @@ data class SettingsState(
 
     /** Optional music/charging window; access is checked separately at runtime. */
     val island: IslandPreferences = IslandPreferences(),
-
-    /** Control Center, Notification Center and Lock Screen. */
-    val panels: PanelPreferences = PanelPreferences(),
 
     /** The first-run setup was finished with "Get Started" (or the install predates it, see [isOnboardingNeeded]). */
     val onboardingDone: Boolean = false,

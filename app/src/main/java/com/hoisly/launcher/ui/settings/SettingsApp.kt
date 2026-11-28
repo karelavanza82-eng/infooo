@@ -35,8 +35,8 @@ enum class SettingsRoute {
     Main, HomeBehavior, General, Grid, Transition, Animations, Glass, Icons, HomeScreen, ContextMenu,
     HiddenApps, AppIcons, AppNames, License, About, Weather, FinishSetup, Language,
     HomeIcons, DockIcons, FolderIcons, Folders,
-    AppLibrary, LibraryPinned, LibraryCategories, LibraryCategory, Island, Panels,
-    LockScreen, Backup, StatusBar, HideStatusBar, Lab,
+    AppLibrary, LibraryPinned, LibraryCategories, LibraryCategory, Island,
+    Backup, StatusBar, HideStatusBar, Lab,
 }
 
 /** Size settings page of each icon area. */
@@ -103,8 +103,6 @@ fun SettingsApp(vm: SettingsViewModel, actions: SettingsActions, initialRoute: S
             SettingsRoute.About -> AboutScreen(back)
             SettingsRoute.Weather -> WeatherSettingsScreen(back)
             SettingsRoute.Island -> IslandSettingsScreen(vm, actions, back)
-            SettingsRoute.Panels -> PanelsSettingsScreen(vm, actions, back)
-            SettingsRoute.LockScreen -> LockScreenSettingsScreen(vm, back)
             SettingsRoute.Backup -> BackupSettingsScreen(vm, back)
             SettingsRoute.StatusBar -> StatusBarSettingsScreen(back, onOpenHideStatusBar = { navigate(SettingsRoute.HideStatusBar) })
             SettingsRoute.HideStatusBar -> HideStatusBarSettingsScreen(back)

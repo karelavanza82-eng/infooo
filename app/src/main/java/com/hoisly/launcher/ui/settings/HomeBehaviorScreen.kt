@@ -60,7 +60,7 @@ fun HomeBehaviorScreen(vm: SettingsViewModel, onBack: () -> Unit) {
     }
     val selected = binding
     if (selected != null) {
-        val options = listOf(HomeAction.None, HomeAction.Search, HomeAction.AppLibrary, HomeAction.Settings, HomeAction.NotificationCenter) +
+        val options = listOf(HomeAction.None, HomeAction.Search, HomeAction.AppLibrary, HomeAction.Settings) +
             if (selected == HomeBinding.RepeatHome) listOf(HomeAction.MainPage) else emptyList()
         SettingsPage(title = stringResource(selected.title), onBack = back) {
             item {
@@ -124,19 +124,6 @@ fun HomeBehaviorScreen(vm: SettingsViewModel, onBack: () -> Unit) {
                 }
             }
         }
-        item { SectionHeader(stringResource(R.string.lock_screen_title)) }
-        item {
-            SettingsCard {
-                SwitchRow(
-                    stringResource(R.string.home_lock_on_wake),
-                    settings.showLockScreenAfterSleep,
-                    onCheckedChange = { enabled ->
-                        vm.settings.update { it.copy(showLockScreenAfterSleep = enabled) }
-                    },
-                    description = stringResource(R.string.home_lock_on_wake_footer),
-                )
-            }
-        }
         item { SectionHeader(stringResource(R.string.home_section_pages)) }
         item {
             SettingsCard {
@@ -177,7 +164,6 @@ private fun actionTitle(action: HomeAction, apps: List<AppInfo>, unavailable: Se
     HomeAction.Search -> stringResource(R.string.search)
     HomeAction.AppLibrary -> if (library) stringResource(R.string.library_title) else stringResource(R.string.gesture_library_unavailable)
     HomeAction.Settings -> stringResource(R.string.settings_title)
-    HomeAction.NotificationCenter -> stringResource(R.string.notification_center_title)
     HomeAction.MainPage -> stringResource(R.string.home_main_page)
     is HomeAction.OpenApp -> {
         val app = apps.firstOrNull { it.key == action.target.key }
