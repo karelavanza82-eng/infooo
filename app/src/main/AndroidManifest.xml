@@ -36,6 +36,10 @@
     <uses-permission android:name="android.permission.READ_CALENDAR" />
     <!-- Status Bar: optional, grantable only over adb. Lets the custom status bar hide SystemUI's own clock/signal/battery slots; never used otherwise. -->
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" tools:ignore="ProtectedPermissions" />
+    <!-- Control Center: Wi-Fi network name in the status icons and tile (Android requires location for SSID). -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- Control Center: volume slider and mute toggle. -->
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <application android:allowBackup="false" android:dataExtractionRules="@xml/data_extraction_rules" android:icon="@mipmap/ic_launcher" android:label="@string/app_name" android:localeConfig="@xml/locales_config" android:supportsRtl="true" android:theme="@style/Theme.Hoisly" tools:targetApi="33" android:name="com.akira.island.IslandApp" android:usesCleartextTraffic="false">
         <activity android:name=".MainActivity" android:clearTaskOnLaunch="true" android:configChanges="orientation|screenSize|screenLayout|keyboard|keyboardHidden|navigation|uiMode|density|smallestScreenSize" android:excludeFromRecents="true" android:exported="true" android:launchMode="singleTask" android:resizeableActivity="false" android:resumeWhilePausing="true" android:screenOrientation="portrait" android:stateNotNeeded="true" android:taskAffinity="" android:windowSoftInputMode="adjustResize" tools:ignore="DiscouragedApi,LockedOrientationActivity,NonResizeableActivity">
             <intent-filter>
@@ -91,6 +95,23 @@
         </service>
         <!-- The launcher badge counter and notification center use this listener. -->
         <service android:name="com.hoisly.launcher.island.IslandListenerService" android:exported="true" android:label="@string/app_name" android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+        <!-- Control Center (ex "OnePlus Control"): setup screen, tile editor and notification reply sheet. -->
+        <activity android:name="com.hoisly.launcher.controlcenter.ControlCenterSetupActivity" android:exported="false" android:theme="@android:style/Theme.DeviceDefault.NoActionBar" android:excludeFromRecents="true" android:taskAffinity="" android:launchMode="singleTop" android:label="@string/cc_title" />
+        <activity android:name="com.hoisly.launcher.controlcenter.TileEditActivity" android:exported="false" android:theme="@android:style/Theme.DeviceDefault.NoActionBar" android:excludeFromRecents="true" android:taskAffinity="" android:label="@string/cc_title" />
+        <activity android:name="com.hoisly.launcher.controlcenter.ReplyActivity" android:exported="false" android:excludeFromRecents="true" android:taskAffinity="" android:theme="@android:style/Theme.Translucent.NoTitleBar" android:windowSoftInputMode="adjustResize|stateAlwaysVisible" />
+        <!-- Control Center: catches the status-bar pull-down and draws the shade as an accessibility overlay. -->
+        <service android:name="com.hoisly.launcher.controlcenter.ShadeService" android:exported="true" android:label="@string/cc_title" android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data android:name="android.accessibilityservice" android:resource="@xml/cc_accessibility_service" />
+        </service>
+        <!-- Control Center: notification list and media players shown in the shade. -->
+        <service android:name="com.hoisly.launcher.controlcenter.NotifListener" android:exported="true" android:label="@string/cc_title" android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>

@@ -8,3 +8,6 @@
 # Release only: remove Kotlin Intrinsics null checks, including parameter checks.
 # Invalid nulls from Java/platform code may fail later instead of at the boundary.
 -processkotlinnullchecks remove
+
+# Control Center: Shell.run calls Shizuku.newProcess by reflection.
+-keep class rikka.shizuku.Shizuku { *; }

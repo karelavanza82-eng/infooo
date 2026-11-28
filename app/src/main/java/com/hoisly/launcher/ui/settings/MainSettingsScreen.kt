@@ -40,6 +40,7 @@ import androidx.compose.material.icons.rounded.Science
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.SignalCellularAlt
 import androidx.compose.material.icons.rounded.Translate
+import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.ViewCarousel
 import androidx.compose.material.icons.rounded.ViewModule
 import androidx.compose.material.icons.rounded.VisibilityOff
@@ -116,6 +117,20 @@ fun MainSettingsScreen(vm: SettingsViewModel, actions: SettingsActions, navigate
                     index = 2,
                     modifier = Modifier.fillMaxWidth(),
                     onClick = { context.startActivity(Intent().setClassName(context, "com.akira.island.ui.MainActivity")) },
+                )
+            }
+        }
+        item {
+            Box(Modifier.padding(bottom = 12.dp)) {
+                BentoTile(
+                    icon = Icons.Rounded.Tune,
+                    title = pick(indo, "Pusat Kontrol", "Control Center"),
+                    subtitle = pick(indo, "Geser turun dari status bar: kontrol, media & notifikasi", "Swipe down from the status bar: controls, media & notifications"),
+                    color = T.Cyan,
+                    kind = TileKind.Wide,
+                    index = 2,
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { context.startActivity(Intent().setClassName(context, "com.hoisly.launcher.controlcenter.ControlCenterSetupActivity")) },
                 )
             }
         }
