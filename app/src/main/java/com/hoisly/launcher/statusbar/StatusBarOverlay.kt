@@ -33,11 +33,16 @@ class StatusBarOverlay(
     private var prefs = StatusBarPreferences()
     private var blackIcons: Boolean? = null
     private var barHeight = 0
+    private var layout: WindowManager.LayoutParams? = null
     private var jobs = emptyList<Job>()
 
     private val poll = object : Runnable {
         override fun run() {
+            ensureAttached()
+            updateVisibility()
             sampleNow()
+            // ensureAttached() may have re-posted this runnable already.
+            handler.removeCallbacks(this)
             handler.postDelayed(this, POLL_MS)
         }
     }
@@ -66,6 +71,29 @@ class StatusBarOverlay(
     fun onAccessibilityEvent() {
         if (view != null && prefs.colorMode == StatusBarColorMode.Auto) sampleNow()
         updateVisibility()
+    }
+
+    /** Rotation or display-size change: the status bar height differs, and the window may have been dropped. */
+    fun onConfigurationChanged() {
+        val v = view ?: return
+        val height = statusBarHeightPx()
+        layout?.let { lp ->
+            if (height != barHeight || lp.height != height) {
+                barHeight = height
+                lp.height = height
+                runCatching { wm.updateViewLayout(v, lp) }
+            }
+        }
+        ensureAttached()
+        updateVisibility()
+    }
+
+    /** The system can silently drop an accessibility overlay (service reconnect, display change). */
+    private fun ensureAttached() {
+        val v = view ?: return
+        if (v.isAttachedToWindow || v.windowToken != null) return
+        detach()
+        if (prefs.enabled) apply(prefs)
     }
 
     /** Called by the service when the user grants READ_PHONE_STATE, so the 5G label shows up. */
@@ -116,6 +144,7 @@ class StatusBarOverlay(
         }
         if (runCatching { wm.addView(v, lp) }.isFailure) return
         view = v
+        layout = lp
         monitor = DeviceStatusMonitor(service) { v.state = it }.also { it.start() }
         handler.postDelayed(poll, POLL_MS)
     }
@@ -126,6 +155,7 @@ class StatusBarOverlay(
         monitor = null
         view?.let { runCatching { wm.removeView(it) } }
         view = null
+        layout = null
         blackIcons = null
     }
 
@@ -134,10 +164,10 @@ class StatusBarOverlay(
         val landscape = service.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         // Landscape is always unobstructed: hide the custom overlay and, when the optional
         // secure-setting grant exists, hide the duplicated native status icons as well.
-        val show = visibleByState && !landscape
+        val show = visibleByState && !(landscape && prefs.hideInLandscape)
         val target = if (show) View.VISIBLE else View.INVISIBLE
         if (v.visibility != target) v.visibility = target
-        SystemIconHider.apply(service, hide = prefs.hideSystemIcons || landscape)
+        SystemIconHider.apply(service, hide = prefs.hideSystemIcons || (landscape && prefs.hideInLandscape))
     }
 
     private fun sampleNow() {

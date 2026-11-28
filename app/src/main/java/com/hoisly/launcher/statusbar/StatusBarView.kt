@@ -76,6 +76,7 @@ class StatusBarView(context: Context) : View(context) {
     private val planeMatrix = Matrix()
     private val planeWork = Path()
     private val boltWork = Path()
+    private val wifiPath = Path()
 
     // Compact horizontal airplane glyph, transformed from a 24×24 vector path.
     private val planePath: Path = PathParser.createPathFromPathData(
@@ -99,8 +100,8 @@ class StatusBarView(context: Context) : View(context) {
             else -> Typeface.create("sans-serif", Typeface.BOLD)
         }
         clockPaint.letterSpacing = -0.015f
-        netPaint.textSize = dp(Metrics.NET_TEXT)
-        netPaint.typeface = font(500)
+        netPaint.textSize = u(Metrics.NET_TEXT)
+        netPaint.typeface = font(600)
         invalidate()
     }
 
@@ -201,35 +202,39 @@ class StatusBarView(context: Context) : View(context) {
         canvas.restoreToCount(layer)
     }
 
+    /**
+     * One reference unit. Every right-hand icon is specified in units where the battery is 36 tall
+     * (measured from the iOS reference), so signal, Wi-Fi and battery always keep the same balance.
+     */
+    private fun u(v: Float) = dp(Metrics.ICON_H) * v / 36f
+
     private fun drawRight(canvas: Canvas, right: Float, cy: Float) {
         val st = state
         var cursor = right
+        val gap = u(Metrics.ICON_GAP)
 
-        // Compact battery: no outline. The unfilled capacity stays opaque gray;
-        // only the filled portion turns green while charging. The bolt is to its RIGHT.
+        // Battery: pill that fills from the left, gray remainder, percentage cut out of the pill.
+        // Charging turns the filled part green; the bolt sits to the RIGHT of the nub.
         if (prefs.showBattery) {
-            val bw = dp(Metrics.BATTERY_W)
-            val bh = dp(Metrics.BATTERY_H)
-            val nubW = dp(Metrics.NUB_W27)
-            val nubH = dp(Metrics.NUB_H27)
-            val nubGap = dp(Metrics.NUB_GAP27)
-            val boltW = if (st.charging) dp(Metrics.BOLT_W) else 0f
-            val boltGap = if (st.charging) dp(Metrics.GAP) else 0f
-            val boltRight = right
+            val bw = u(Metrics.BATT_W)
+            val bh = u(Metrics.BATT_H)
+            val nubW = u(Metrics.NUB_W)
+            val nubH = u(Metrics.NUB_H)
+            val nubGap = u(Metrics.NUB_GAP)
+            val boltW = if (st.charging) u(Metrics.BOLT_W) else 0f
+            val boltGap = if (st.charging) u(Metrics.BOLT_GAP) else 0f
             val bodyRight = right - boltW - boltGap - nubW - nubGap
             body.set(bodyRight - bw, cy - bh / 2f, bodyRight, cy + bh / 2f)
 
             shapePaint.style = Paint.Style.FILL
-            shapePaint.color = ColorUtils.setAlphaComponent(color, Metrics.NUB_ALPHA27)
+            shapePaint.color = ColorUtils.setAlphaComponent(color, Metrics.NUB_ALPHA)
             val nubLeft = bodyRight + nubGap
             canvas.drawRoundRect(nubLeft, cy - nubH / 2f, nubLeft + nubW, cy + nubH / 2f,
                 nubW / 2f, nubW / 2f, shapePaint)
 
             drawBatteryGlyph(canvas, body, st.batteryPercent, st.charging)
-            if (st.charging) {
-                drawBolt(canvas, boltRight - boltW, cy)
-            }
-            cursor = body.left - dp(Metrics.GAP)
+            if (st.charging) drawBolt(canvas, right - boltW, cy)
+            cursor = body.left - gap
         }
 
         // --- Orange activity dot ---
@@ -237,99 +242,109 @@ class StatusBarView(context: Context) : View(context) {
             val dotR = dp(Metrics.DOT_R)
             dotPaint.color = Color.parseColor("#FF9500")
             canvas.drawCircle(cursor - dotR, cy, dotR, dotPaint)
-            cursor -= dotR * 2 + dp(Metrics.GAP)
+            cursor -= dotR * 2 + gap
         }
 
-        // --- Compact Wi-Fi ---
+        // --- Wi-Fi, or the 4G/5G label in the same slot when there is no Wi-Fi ---
         val showWifi = prefs.showWifi && st.wifiConnected
         if (showWifi) {
-            val w = dp(13f)
-            drawWifiGlyph(canvas, cursor - w, cy, w, st.wifiLevel)
-            cursor -= w + dp(Metrics.GAP)
+            val w = u(Metrics.WIFI_W)
+            drawWifiGlyph(canvas, cursor - w, cy, st.wifiLevel)
+            cursor -= w + gap
         } else if (prefs.showNetworkLabel && st.cellularData && !st.airplane && st.networkLabel.isNotEmpty()) {
             netPaint.color = color
+            netPaint.textSize = u(Metrics.NET_TEXT)
             netPaint.getTextBounds("5", 0, 1, bounds)
             val tw = netPaint.measureText(st.networkLabel)
             canvas.drawText(st.networkLabel, cursor - tw, cy + bounds.height() / 2f, netPaint)
-            cursor -= tw + dp(Metrics.GAP)
+            cursor -= tw + gap
         }
 
-        // --- Airplane mode ---
+        // --- Airplane mode, or cellular bars ---
         if (st.airplane) {
-            val size = dp(15.5f)
+            val size = u(Metrics.PLANE)
             drawAirplaneGlyph(canvas, cursor - size, cy, size)
         } else if (prefs.showSignal) {
-            val barW = dp(Metrics.BAR_W)
-            val gap = dp(Metrics.BAR_GAP)
-            drawSignalGlyph(canvas, cursor - (4 * barW + 3 * gap), cy, barW, gap, st.signalLevel)
+            val barW = u(Metrics.BAR_W)
+            val barGap = u(Metrics.BAR_GAP)
+            drawSignalGlyph(canvas, cursor - (4 * barW + 3 * barGap), cy, barW, barGap, st.signalLevel)
         }
     }
 
     private fun drawSignalGlyph(canvas: Canvas, left: Float, cy: Float, barW: Float, gap: Float, level: Int) {
-        val minH = dp(Metrics.BAR_MIN_H)
-        val maxH = dp(Metrics.BAR_MAX_H)
-        val width = barW
-        val spacing = gap
-        val bottom = cy + maxH / 2f
+        // Heights step evenly from 12 to 32 units; the bars share one baseline, centred on the row.
+        val bottom = cy + u(Metrics.BAR_HEIGHTS.last()) / 2f
+        val radius = minOf(u(Metrics.BAR_RADIUS), barW / 2f)
+        shapePaint.style = Paint.Style.FILL
         for (i in 0 until 4) {
-            val h = minH + (maxH - minH) * i / 3f
-            val x = left + i * (width + spacing)
-            shapePaint.style = Paint.Style.FILL
+            val h = u(Metrics.BAR_HEIGHTS[i])
+            val x = left + i * (barW + gap)
             shapePaint.color = if (i < level) color else ColorUtils.setAlphaComponent(color, Metrics.INACTIVE_ALPHA)
-            val radius = width / 2f
-            canvas.drawRoundRect(x, bottom - h, x + width, bottom, radius, radius, shapePaint)
+            canvas.drawRoundRect(x, bottom - h, x + barW, bottom, radius, radius, shapePaint)
         }
     }
 
-    private fun drawWifiGlyph(canvas: Canvas, left: Float, cy: Float, width: Float, level: Int) {
-        val outer = width / 1.3f
-        val cx = left + width / 2f
-        val base = cy + outer * 0.48f
-        val ring = outer * 0.115f
-        val gap = outer * 0.07f
+    /** Fan with a filled wedge and two thick round-capped arcs, all concentric on the bottom apex. */
+    private fun drawWifiGlyph(canvas: Canvas, left: Float, cy: Float, level: Int) {
+        val cx = left + u(Metrics.WIFI_W) / 2f
+        val apexY = cy + u(Metrics.WIFI_H) / 2f
+        val stroke = u(Metrics.WIFI_STROKE)
+        val gap = u(Metrics.WIFI_GAP)
+        val wedgeR = u(Metrics.WIFI_WEDGE)
         val dim = ColorUtils.setAlphaComponent(color, Metrics.INACTIVE_ALPHA)
-        val sweep = 92f
-        val start = (270f - sweep / 2f)
-        val innerR = (outer - 2 * ring - 2 * gap).coerceAtLeast(1f)
-        shapePaint.style = Paint.Style.FILL
+        val start = 270f - Metrics.WIFI_HALF_ANGLE
+        val sweep = Metrics.WIFI_HALF_ANGLE * 2f
+
+        // Wedge: slightly inset and stroked with a round join so the tip is softly rounded.
+        val soften = u(2.4f)
+        val r = wedgeR - soften / 2f
+        wifiRect.set(cx - r, apexY - r, cx + r, apexY + r)
+        wifiPath.reset()
+        wifiPath.moveTo(cx, apexY)
+        wifiPath.arcTo(wifiRect, start, sweep, false)
+        wifiPath.close()
+        shapePaint.style = Paint.Style.FILL_AND_STROKE
+        shapePaint.strokeWidth = soften
+        shapePaint.strokeJoin = Paint.Join.ROUND
         shapePaint.color = if (level >= 1) color else dim
-        wifiRect.set(cx - innerR, base - innerR, cx + innerR, base + innerR)
-        canvas.drawArc(wifiRect, start, sweep, true, shapePaint)
+        canvas.drawPath(wifiPath, shapePaint)
+
         shapePaint.style = Paint.Style.STROKE
         shapePaint.strokeCap = Paint.Cap.ROUND
-        shapePaint.strokeWidth = ring
+        shapePaint.strokeWidth = stroke
         for (i in 1..2) {
-            val mid = innerR + gap + ring * (i - 0.5f) + (i - 1) * gap
+            val mid = wedgeR + gap * i + stroke * (i - 0.5f)
             shapePaint.color = if (level >= i + 1) color else dim
-            wifiRect.set(cx - mid, base - mid, cx + mid, base + mid)
+            wifiRect.set(cx - mid, apexY - mid, cx + mid, apexY + mid)
             canvas.drawArc(wifiRect, start, sweep, false, shapePaint)
         }
         shapePaint.style = Paint.Style.FILL
         shapePaint.strokeCap = Paint.Cap.BUTT
+        shapePaint.strokeJoin = Paint.Join.MITER
+        shapePaint.strokeWidth = 0f
     }
 
     private fun drawBatteryGlyph(canvas: Canvas, rect: RectF, percent: Int, charging: Boolean) {
-        val radius = dp(2.7f)
+        val radius = u(Metrics.BATT_RADIUS)
         val layer = canvas.saveLayer(rect.left - 1f, rect.top - 1f, rect.right + 1f, rect.bottom + 1f, null)
-        val inner = RectF(rect)
         clip.reset()
-        clip.addRoundRect(inner, radius, radius, Path.Direction.CW)
+        clip.addRoundRect(rect, radius, radius, Path.Direction.CW)
         canvas.save()
         canvas.clipPath(clip)
 
-        // Empty capacity is always opaque gray. No outline or border is drawn.
+        // Empty capacity is opaque gray; no outline is drawn.
         shapePaint.style = Paint.Style.FILL
-        shapePaint.color = Color.rgb(132, 136, 144)
-        canvas.drawRoundRect(inner, radius, radius, shapePaint)
+        shapePaint.color = Metrics.EMPTY_GRAY
+        canvas.drawRect(rect, shapePaint)
 
         val fill = percent.coerceIn(0, 100) / 100f
-        shapePaint.color = if (charging) Color.rgb(42, 205, 91) else color
-        canvas.drawRect(inner.left, inner.top, inner.left + inner.width() * fill, inner.bottom, shapePaint)
+        shapePaint.color = if (charging) Metrics.CHARGING_GREEN else color
+        canvas.drawRect(rect.left, rect.top, rect.left + rect.width() * fill, rect.bottom, shapePaint)
         canvas.restore()
 
-        // Percentage remains a true transparent cut-out.
+        // Percentage is a true transparent cut-out of the pill.
         val text = percent.coerceIn(0, 100).toString()
-        batteryCutoutPaint.textSize = dp(if (text.length >= 3) 7.8f else 8.8f)
+        batteryCutoutPaint.textSize = u(if (text.length >= 3) Metrics.BATT_TEXT_3 else Metrics.BATT_TEXT)
         batteryCutoutPaint.getTextBounds(text, 0, text.length, bounds)
         canvas.drawText(text, rect.centerX(), rect.centerY() + bounds.height() / 2f, batteryCutoutPaint)
         canvas.restoreToCount(layer)
@@ -348,17 +363,18 @@ class StatusBarView(context: Context) : View(context) {
     }
 
     private fun drawBolt(canvas: Canvas, left: Float, cy: Float) {
-        val h = dp(Metrics.BOLT_H)
-        val u = dp(Metrics.BOLT_W) / 5f
+        val w = u(Metrics.BOLT_W)
+        val h = u(Metrics.BOLT_H)
         val top = cy - h / 2f
         boltWork.reset()
-        boltWork.moveTo(left + 5f * u, top)
+        boltWork.moveTo(left + w * 0.62f, top)
         boltWork.lineTo(left, top + h * 0.58f)
-        boltWork.lineTo(left + 3.6f * u, top + h * 0.58f)
-        boltWork.lineTo(left + 2.4f * u, top + h)
-        boltWork.lineTo(left + 8f * u, top + h * 0.40f)
-        boltWork.lineTo(left + 4.4f * u, top + h * 0.40f)
+        boltWork.lineTo(left + w * 0.45f, top + h * 0.58f)
+        boltWork.lineTo(left + w * 0.30f, top + h)
+        boltWork.lineTo(left + w, top + h * 0.40f)
+        boltWork.lineTo(left + w * 0.55f, top + h * 0.40f)
         boltWork.close()
+        shapePaint.style = Paint.Style.FILL
         shapePaint.color = color
         canvas.drawPath(boltWork, shapePaint)
     }
@@ -373,34 +389,56 @@ class StatusBarView(context: Context) : View(context) {
         return ResourcesCompat.getFont(context, res) ?: Typeface.DEFAULT
     }
 
+    /**
+     * Proportions measured from the iOS reference. Units are "battery height = 36"; [ICON_H] is the
+     * battery height in dp. Signal (32), Wi-Fi (34) and battery (36) are therefore the same height.
+     */
     private object Metrics {
         const val FALLBACK_HEIGHT = 28f
         const val CLOCK_TEXT = 16f
         const val BELL_BOX = 15f
         const val BELL_GAP = 3.5f
-        const val GAP = 6.5f
 
-        // signal bars (unchanged)
-        const val BAR_W = 3.3f
-        const val BAR_GAP = 1.8f
-        const val BAR_MAX_H = 11.5f
-        const val BAR_MIN_H = 3.5f
-        const val INACTIVE_ALPHA = 90
+        const val ICON_H = 12.5f
+        const val ICON_GAP = 15.5f
+        const val INACTIVE_ALPHA = 62
 
-        const val NET_TEXT = 15.5f
+        // cellular bars: 8 wide, 5 apart, heights 12/18/25/32
+        const val BAR_W = 8f
+        const val BAR_GAP = 5f
+        const val BAR_RADIUS = 3.2f
+        val BAR_HEIGHTS = floatArrayOf(12f, 18f, 25f, 32f)
 
-        // Compact Wi-Fi dimensions
-        // Compact battery dimensions
-        const val BATTERY_W = 20f
-        const val BATTERY_H = 9.5f
-        const val NUB_W27 = 1.2f
-        const val NUB_H27 = 3.2f
-        const val NUB_GAP27 = 0.45f
-        const val NUB_ALPHA27 = 125
+        // 4G/5G label shares the Wi-Fi slot; cap height stays below the signal height
+        const val NET_TEXT = 33f
 
-        // bolt
-        const val BOLT_W = 5f
-        const val BOLT_H = 9f
+        // Wi-Fi fan
+        const val WIFI_W = 46f
+        const val WIFI_H = 34f
+        const val WIFI_STROKE = 7f
+        const val WIFI_GAP = 4.5f
+        const val WIFI_WEDGE = 11f
+        const val WIFI_HALF_ANGLE = 40f
+
+        // battery
+        const val BATT_W = 62f
+        const val BATT_H = 36f
+        const val BATT_RADIUS = 10f
+        const val BATT_TEXT = 29f
+        const val BATT_TEXT_3 = 22f
+        const val NUB_W = 3.4f
+        const val NUB_H = 8f
+        const val NUB_GAP = 4f
+        const val NUB_ALPHA = 125
+        val EMPTY_GRAY = Color.rgb(132, 136, 144)
+        val CHARGING_GREEN = Color.rgb(48, 209, 88)
+
+        // bolt (charging)
+        const val BOLT_W = 9f
+        const val BOLT_GAP = 5f
+        const val BOLT_H = 22f
+
+        const val PLANE = 40f
 
         // orange activity dot
         const val DOT_R = 2.5f

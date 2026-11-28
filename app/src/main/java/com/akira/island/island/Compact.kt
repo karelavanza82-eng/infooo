@@ -253,13 +253,13 @@ private fun CompactContentBody(act: Act, s: IslandSettings, wideWidth: Dp) {
         is Act.ChronoA -> {
             val recording = act.c.isRecording
             val now = rememberWallNow(1_000, active = !recording && act.c.pausedMs == null)
-            val tint = if (recording) Color(0xFFC84A32) else Tints.Orange
+            val tint = if (recording) RecordingOrange else Tints.Orange
             CompactRow(h, gap, side * 1.4f,
                 left = {
                     if (recording) {
-                        // Recording indicator is a small brick-red LED on the LEFT.
-                        // No elapsed seconds are shown for recording activities.
-                        GlowDot(Color(0xFFC84A32), h * 0.18f, !s.reduceEffects && act.c.pausedMs == null)
+                        // Recording indicator: a deep reddish-orange dot on the LEFT, like the iOS recording
+                        // indicator. No elapsed seconds are shown for recording activities.
+                        GlowDot(RecordingOrange, h * 0.24f, !s.reduceEffects && act.c.pausedMs == null)
                     } else if (act.c.pausedMs != null) {
                         Icon(Ios.pause, null, tint = tint, modifier = Modifier.size(icon))
                     } else {
@@ -337,6 +337,9 @@ private fun CompactContentBody(act: Act, s: IslandSettings, wideWidth: Dp) {
 private fun TimeText(text: String, color: Color, size: Int = 16, weight: FontWeight = FontWeight.SemiBold.island) {
     Text(text, color = color, fontSize = size.sp, style = Digits.copy(fontWeight = weight), maxLines = 1, softWrap = false)
 }
+
+/** Deep reddish orange of the recording dot. */
+private val RecordingOrange = Color(0xFFE8590C)
 
 /** Мягко светящаяся точка — признак того, что фонарик горит. Свечение только перерисовывается. */
 @Composable

@@ -124,9 +124,14 @@ class DeviceStatusMonitor(
         val percent = if (level >= 0 && scale > 0) (level * 100f / scale).roundToInt().coerceIn(0, 100)
         else state.batteryPercent
         val status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
+        // Some ROMs report wireless/slow charging as UNKNOWN or DISCHARGING for a moment while a power
+        // source is attached, so the plugged state counts too (unless the battery is deliberately held).
+        val plugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) != 0
         state = state.copy(
             batteryPercent = percent,
-            charging = status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL,
+            charging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
+                status == BatteryManager.BATTERY_STATUS_FULL ||
+                plugged && status != BatteryManager.BATTERY_STATUS_NOT_CHARGING,
         )
     }
 
