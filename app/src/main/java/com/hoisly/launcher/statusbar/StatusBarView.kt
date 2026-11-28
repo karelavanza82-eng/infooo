@@ -22,9 +22,8 @@ import androidx.core.graphics.PathParser
 import com.hoisly.launcher.R
 
 /**
- * iOS 27-style status bar: clock, muted bell, signal bars, WiFi (iOS 27 wider fan),
- * airplane (horizontal), and battery (iOS 27 large-nub pill with half-fill).
- * Optional orange dot indicator for active island activity.
+ * Custom status bar with one consistent compact icon family, live system indicators,
+ * a borderless battery glyph, and optional activity marker.
  */
 class StatusBarView(context: Context) : View(context) {
 
@@ -58,11 +57,6 @@ class StatusBarView(context: Context) : View(context) {
         style = Paint.Style.FILL
         xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_OUT)
     }
-    private val batteryTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        textAlign = Paint.Align.CENTER
-        color = Color.BLACK
-        typeface = Typeface.create("sans-serif", Typeface.BOLD)
-    }
     // DST_OUT makes the percentage a real cut-out: wallpaper/status-bar content shows through it.
     private val batteryCutoutPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         textAlign = Paint.Align.CENTER
@@ -83,8 +77,7 @@ class StatusBarView(context: Context) : View(context) {
     private val planeWork = Path()
     private val boltWork = Path()
 
-    // iOS 27 airplane path: bold, slightly more tilted than iOS 16, wider wingspan
-    // Source coordinates in a 24×24 grid, rotated 45° for status bar use
+    // Compact horizontal airplane glyph, transformed from a 24×24 vector path.
     private val planePath: Path = PathParser.createPathFromPathData(
         "M21,16v-2l-8,-5V3.5c0,-0.83 -0.67,-1.5 -1.5,-1.5S10,2.67 10,3.5V9l-8,5v2l8,-2.5V19l-2,1.5V22l3.5,-1 3.5,1v-1.5L13,19v-5.5l8,2.5z",
     ) ?: Path()
@@ -99,17 +92,15 @@ class StatusBarView(context: Context) : View(context) {
     fun applyPrefs(value: StatusBarPreferences) {
         prefs = value
         clockPaint.textSize = dp(Metrics.CLOCK_TEXT)
-        clockPaint.typeface = when (value.clockTheme) {
-            0 -> Typeface.create("sans-serif", Typeface.NORMAL)
-            1 -> Typeface.create("sans-serif-medium", Typeface.NORMAL)
-            2 -> Typeface.create("sans-serif", Typeface.BOLD)
-            3 -> Typeface.create("sans-serif-condensed", Typeface.BOLD)
-            else -> Typeface.create("sans-serif", Typeface.NORMAL)
+        clockPaint.typeface = when (value.clockWeight) {
+            400 -> Typeface.create("sans-serif", Typeface.NORMAL)
+            500 -> Typeface.create("sans-serif-medium", Typeface.NORMAL)
+            600 -> Typeface.create("sans-serif", Typeface.BOLD)
+            else -> Typeface.create("sans-serif", Typeface.BOLD)
         }
-        clockPaint.letterSpacing = when (value.clockTheme) { 3 -> -0.035f; 4 -> 0.005f; else -> -0.015f }
+        clockPaint.letterSpacing = -0.015f
         netPaint.textSize = dp(Metrics.NET_TEXT)
         netPaint.typeface = font(500)
-        batteryTextPaint.typeface = Typeface.create("sans-serif", Typeface.BOLD)
         invalidate()
     }
 
@@ -157,21 +148,22 @@ class StatusBarView(context: Context) : View(context) {
 
     private fun drawLeft(canvas: Canvas, x: Float, cy: Float) {
         clockPaint.color = color
-        if (prefs.clockTheme == 4) clockPaint.textSize = dp(Metrics.CLOCK_TEXT * 0.94f)
-        else clockPaint.textSize = dp(Metrics.CLOCK_TEXT)
+        clockPaint.textSize = dp(Metrics.CLOCK_TEXT)
         clockPaint.getTextBounds("0", 0, 1, bounds)
 
-        // DND is shown immediately to the left of the clock, like the iOS crescent indicator.
-        var clockX = x
-        if (state.doNotDisturb) {
-            val moonSize = dp(14f)
-            drawDoNotDisturbMoon(canvas, x, cy - moonSize / 2f, moonSize)
-            clockX += moonSize + dp(4f)
-        }
+        // Clock stays at the leading edge. DND crescent sits immediately AFTER the clock,
+        // matching the requested iOS placement. DND replaces the silent-bell glyph.
+        val clockX = x
         canvas.drawText(state.time, clockX, cy + bounds.height() / 2f, clockPaint)
+        val afterClock = clockX + clockPaint.measureText(state.time) + dp(4f)
+        if (state.doNotDisturb) {
+            val moonSize = dp(12.5f)
+            drawDoNotDisturbMoon(canvas, afterClock, cy - moonSize / 2f, moonSize)
+            return
+        }
         if (!prefs.showSilent || !state.silent) return
         val box = dp(Metrics.BELL_BOX)
-        val left = clockX + clockPaint.measureText(state.time) + dp(Metrics.BELL_GAP) - box * (4f / 24f)
+        val left = afterClock + dp(Metrics.BELL_GAP) - box * (4f / 24f)
         drawMutedBell(canvas, left, cy - box / 2f, box)
     }
 
@@ -213,31 +205,31 @@ class StatusBarView(context: Context) : View(context) {
         val st = state
         var cursor = right
 
-        // --- iOS 27 battery ---
+        // Compact battery: no outline. The unfilled capacity stays opaque gray;
+        // only the filled portion turns green while charging. The bolt is to its RIGHT.
         if (prefs.showBattery) {
             val bw = dp(Metrics.BATTERY_W)
             val bh = dp(Metrics.BATTERY_H)
-            // iOS 27: large round nub on the right end, same height as body
             val nubW = dp(Metrics.NUB_W27)
             val nubH = dp(Metrics.NUB_H27)
             val nubGap = dp(Metrics.NUB_GAP27)
-            val bodyRight = right - nubW - nubGap
+            val boltW = if (st.charging) dp(Metrics.BOLT_W) else 0f
+            val boltGap = if (st.charging) dp(Metrics.GAP) else 0f
+            val boltRight = right
+            val bodyRight = right - boltW - boltGap - nubW - nubGap
             body.set(bodyRight - bw, cy - bh / 2f, bodyRight, cy + bh / 2f)
 
-            // iOS 27: nub is a tall rounded rect, same colour as body outline
+            shapePaint.style = Paint.Style.FILL
             shapePaint.color = ColorUtils.setAlphaComponent(color, Metrics.NUB_ALPHA27)
             val nubLeft = bodyRight + nubGap
             canvas.drawRoundRect(nubLeft, cy - nubH / 2f, nubLeft + nubW, cy + nubH / 2f,
                 nubW / 2f, nubW / 2f, shapePaint)
 
-            drawBatteryTheme(canvas, body, st.batteryPercent, prefs.batteryTheme)
-            cursor = body.left - dp(Metrics.GAP)
-
+            drawBatteryGlyph(canvas, body, st.batteryPercent, st.charging)
             if (st.charging) {
-                val boltW = dp(Metrics.BOLT_W)
-                drawBolt(canvas, cursor - boltW, cy)
-                cursor -= boltW + dp(Metrics.GAP)
+                drawBolt(canvas, boltRight - boltW, cy)
             }
+            cursor = body.left - dp(Metrics.GAP)
         }
 
         // --- Orange activity dot ---
@@ -248,11 +240,11 @@ class StatusBarView(context: Context) : View(context) {
             cursor -= dotR * 2 + dp(Metrics.GAP)
         }
 
-        // --- iOS 27 WiFi (wider fan, bolder arcs) ---
+        // --- Compact Wi-Fi ---
         val showWifi = prefs.showWifi && st.wifiConnected
         if (showWifi) {
-            val w = dp(if (prefs.wifiTheme == 3) 15.5f else if (prefs.wifiTheme == 4) 16.5f else Metrics.WIFI_W27)
-            drawWifiTheme(canvas, cursor - w, cy, w, st.wifiLevel, prefs.wifiTheme)
+            val w = dp(13f)
+            drawWifiGlyph(canvas, cursor - w, cy, w, st.wifiLevel)
             cursor -= w + dp(Metrics.GAP)
         } else if (prefs.showNetworkLabel && st.cellularData && !st.airplane && st.networkLabel.isNotEmpty()) {
             netPaint.color = color
@@ -262,41 +254,41 @@ class StatusBarView(context: Context) : View(context) {
             cursor -= tw + dp(Metrics.GAP)
         }
 
-        // --- iOS 27 Airplane (bold, same as iOS Settings style) ---
+        // --- Airplane mode ---
         if (st.airplane) {
-            val size = dp(Metrics.PLANE27 * when (prefs.airplaneTheme) { 0 -> 0.90f; 1 -> 0.96f; 3 -> 1.06f; 4 -> 0.84f; else -> 1f })
-            drawAirplane27(canvas, cursor - size, cy, size)
+            val size = dp(15.5f)
+            drawAirplaneGlyph(canvas, cursor - size, cy, size)
         } else if (prefs.showSignal) {
             val barW = dp(Metrics.BAR_W)
             val gap = dp(Metrics.BAR_GAP)
-            drawSignalTheme(canvas, cursor - (4 * barW + 3 * gap), cy, barW, gap, st.signalLevel, prefs.signalTheme)
+            drawSignalGlyph(canvas, cursor - (4 * barW + 3 * gap), cy, barW, gap, st.signalLevel)
         }
     }
 
-    private fun drawSignalTheme(canvas: Canvas, left: Float, cy: Float, barW: Float, gap: Float, level: Int, theme: Int) {
-        val minH = if (theme == 3) dp(2.8f) else dp(Metrics.BAR_MIN_H)
-        val maxH = if (theme == 1) dp(10f) else if (theme == 4) dp(12.5f) else dp(Metrics.BAR_MAX_H)
-        val width = if (theme == 4) barW * 1.18f else barW
-        val spacing = if (theme == 3) gap * 0.72f else gap
+    private fun drawSignalGlyph(canvas: Canvas, left: Float, cy: Float, barW: Float, gap: Float, level: Int) {
+        val minH = dp(Metrics.BAR_MIN_H)
+        val maxH = dp(Metrics.BAR_MAX_H)
+        val width = barW
+        val spacing = gap
         val bottom = cy + maxH / 2f
         for (i in 0 until 4) {
             val h = minH + (maxH - minH) * i / 3f
             val x = left + i * (width + spacing)
             shapePaint.style = Paint.Style.FILL
             shapePaint.color = if (i < level) color else ColorUtils.setAlphaComponent(color, Metrics.INACTIVE_ALPHA)
-            val radius = if (theme == 1) dp(0.55f) else width / 2f
+            val radius = width / 2f
             canvas.drawRoundRect(x, bottom - h, x + width, bottom, radius, radius, shapePaint)
         }
     }
 
-    private fun drawWifiTheme(canvas: Canvas, left: Float, cy: Float, width: Float, level: Int, theme: Int) {
-        val outer = width / if (theme == 1) 1.42f else if (theme == 4) 1.48f else 1.3f
+    private fun drawWifiGlyph(canvas: Canvas, left: Float, cy: Float, width: Float, level: Int) {
+        val outer = width / 1.3f
         val cx = left + width / 2f
-        val base = cy + outer * (if (theme == 3) 0.53f else 0.48f)
-        val ring = outer * when (theme) { 0 -> 0.22f; 3 -> 0.19f; 4 -> 0.24f; else -> 0.26f }
-        val gap = outer * if (theme == 1) 0.09f else 0.07f
+        val base = cy + outer * 0.48f
+        val ring = outer * 0.115f
+        val gap = outer * 0.07f
         val dim = ColorUtils.setAlphaComponent(color, Metrics.INACTIVE_ALPHA)
-        val sweep = when (theme) { 0 -> 90f; 1 -> 94f; 3 -> 86f; 4 -> 98f; else -> 100f }
+        val sweep = 92f
         val start = (270f - sweep / 2f)
         val innerR = (outer - 2 * ring - 2 * gap).coerceAtLeast(1f)
         shapePaint.style = Paint.Style.FILL
@@ -304,7 +296,7 @@ class StatusBarView(context: Context) : View(context) {
         wifiRect.set(cx - innerR, base - innerR, cx + innerR, base + innerR)
         canvas.drawArc(wifiRect, start, sweep, true, shapePaint)
         shapePaint.style = Paint.Style.STROKE
-        shapePaint.strokeCap = if (theme == 1) Paint.Cap.BUTT else Paint.Cap.ROUND
+        shapePaint.strokeCap = Paint.Cap.ROUND
         shapePaint.strokeWidth = ring
         for (i in 1..2) {
             val mid = innerR + gap + ring * (i - 0.5f) + (i - 1) * gap
@@ -316,97 +308,34 @@ class StatusBarView(context: Context) : View(context) {
         shapePaint.strokeCap = Paint.Cap.BUTT
     }
 
-    private fun drawBatteryTheme(canvas: Canvas, rect: RectF, percent: Int, theme: Int) {
-        val radius = dp(when (theme) { 0 -> 3f; 1 -> 2.8f; 3 -> 5.5f; 4 -> 3.8f; else -> Metrics.BATTERY_RADIUS27 })
-        val stroke = dp(if (theme == 1) 1.15f else if (theme == 4) 1.8f else Metrics.BATTERY_STROKE27)
-        // Keep all battery layers isolated so DST_OUT only cuts the digits from this icon.
+    private fun drawBatteryGlyph(canvas: Canvas, rect: RectF, percent: Int, charging: Boolean) {
+        val radius = dp(2.7f)
         val layer = canvas.saveLayer(rect.left - 1f, rect.top - 1f, rect.right + 1f, rect.bottom + 1f, null)
-        shapePaint.style = Paint.Style.STROKE
-        shapePaint.strokeWidth = stroke
-        shapePaint.color = ColorUtils.setAlphaComponent(color, if (theme == 4) 220 else 190)
-        canvas.drawRoundRect(rect, radius, radius, shapePaint)
-
-        shapePaint.style = Paint.Style.FILL
-        val inset = stroke / 2f + dp(0.45f)
-        val inner = RectF(rect.left + inset, rect.top + inset, rect.right - inset, rect.bottom - inset)
-        val innerRadius = (radius - inset).coerceAtLeast(1f)
+        val inner = RectF(rect)
         clip.reset()
-        clip.addRoundRect(inner, innerRadius, innerRadius, Path.Direction.CW)
+        clip.addRoundRect(inner, radius, radius, Path.Direction.CW)
         canvas.save()
         canvas.clipPath(clip)
 
-        // Unfilled battery capacity is always an opaque neutral gray, never transparent.
+        // Empty capacity is always opaque gray. No outline or border is drawn.
+        shapePaint.style = Paint.Style.FILL
         shapePaint.color = Color.rgb(132, 136, 144)
-        canvas.drawRoundRect(inner, innerRadius, innerRadius, shapePaint)
+        canvas.drawRoundRect(inner, radius, radius, shapePaint)
 
-        // The charged portion follows the selected status-bar icon color (black or white).
         val fill = percent.coerceIn(0, 100) / 100f
-        shapePaint.color = color
+        shapePaint.color = if (charging) Color.rgb(42, 205, 91) else color
         canvas.drawRect(inner.left, inner.top, inner.left + inner.width() * fill, inner.bottom, shapePaint)
         canvas.restore()
 
-        // Cut the percentage out of both the filled and gray portions so the background
-        // behind the status bar is visible through the numerals, like the iPhone reference.
+        // Percentage remains a true transparent cut-out.
         val text = percent.coerceIn(0, 100).toString()
-        batteryCutoutPaint.textSize = dp(if (text.length >= 3) 8.2f else if (theme == 3) 10.2f else Metrics.BATTERY_TEXT)
+        batteryCutoutPaint.textSize = dp(if (text.length >= 3) 7.8f else 8.8f)
         batteryCutoutPaint.getTextBounds(text, 0, text.length, bounds)
         canvas.drawText(text, rect.centerX(), rect.centerY() + bounds.height() / 2f, batteryCutoutPaint)
         canvas.restoreToCount(layer)
     }
 
-    private fun drawSignal(canvas: Canvas, left: Float, cy: Float, barW: Float, gap: Float, level: Int) {
-        val minH = dp(Metrics.BAR_MIN_H)
-        val maxH = dp(Metrics.BAR_MAX_H)
-        val bottom = cy + maxH / 2f
-        for (i in 0 until 4) {
-            val h = minH + (maxH - minH) * i / 3f
-            val x = left + i * (barW + gap)
-            shapePaint.color = if (i < level) color else ColorUtils.setAlphaComponent(color, Metrics.INACTIVE_ALPHA)
-            canvas.drawRoundRect(x, bottom - h, x + barW, bottom, barW / 2f, barW / 2f, shapePaint)
-        }
-    }
-
-    /**
-     * iOS 27 WiFi icon: wider sweep angle (100°), thicker arcs, more pronounced wedge.
-     * Fan opens wider to match the new rounded look in iOS 27 status bar.
-     */
-    private fun drawWifi27(canvas: Canvas, left: Float, cy: Float, width: Float, level: Int) {
-        val outer = width / 1.3f          // slightly larger effective radius
-        val cx = left + width / 2f
-        val base = cy + outer * 0.48f
-        val ring = outer * 0.26f          // thicker rings
-        val gap = outer * 0.07f
-        val dim = ColorUtils.setAlphaComponent(color, Metrics.INACTIVE_ALPHA)
-        val sweep = 100f                  // iOS 27: wider 100° sweep vs old 90°
-        val startAngle = 220f             // start shifted for wider fan
-
-        // innermost wedge (filled arc)
-        val r1 = outer - 2 * ring - 2 * gap
-        shapePaint.style = Paint.Style.FILL
-        shapePaint.color = if (level >= 1) color else dim
-        wifiRect.set(cx - r1, base - r1, cx + r1, base + r1)
-        canvas.drawArc(wifiRect, startAngle, sweep, true, shapePaint)
-
-        // two outer rings
-        shapePaint.style = Paint.Style.STROKE
-        shapePaint.strokeCap = Paint.Cap.ROUND
-        shapePaint.strokeWidth = ring
-        for (i in 1..2) {
-            val mid = r1 + gap + ring * (i - 0.5f) + (i - 1) * gap
-            shapePaint.color = if (level >= i + 1) color else dim
-            wifiRect.set(cx - mid, base - mid, cx + mid, base + mid)
-            canvas.drawArc(wifiRect, startAngle, sweep, false, shapePaint)
-        }
-        shapePaint.style = Paint.Style.FILL
-        shapePaint.strokeCap = Paint.Cap.BUTT
-    }
-
-    /**
-     * iOS 27 airplane: drawn directly as a bold vector matching the Settings icon style.
-     * The source path points upward; it is rotated horizontally to match the supplied reference
-     * which is larger than before, with a bolder look.
-     */
-    private fun drawAirplane27(canvas: Canvas, left: Float, cy: Float, size: Float) {
+    private fun drawAirplaneGlyph(canvas: Canvas, left: Float, cy: Float, size: Float) {
         shapePaint.color = color
         planeMatrix.reset()
         // Point right, toward the battery at the far-right edge of the status bar.
@@ -420,7 +349,7 @@ class StatusBarView(context: Context) : View(context) {
 
     private fun drawBolt(canvas: Canvas, left: Float, cy: Float) {
         val h = dp(Metrics.BOLT_H)
-        val u = dp(Metrics.BOLT_W) / 8f
+        val u = dp(Metrics.BOLT_W) / 5f
         val top = cy - h / 2f
         boltWork.reset()
         boltWork.moveTo(left + 5f * u, top)
@@ -432,41 +361,6 @@ class StatusBarView(context: Context) : View(context) {
         boltWork.close()
         shapePaint.color = color
         canvas.drawPath(boltWork, shapePaint)
-    }
-
-    /**
-     * iOS 27 battery: left ~half is solid fill (the "charged" look), right half transparent.
-     * The outline stroke is thinner; the nub is proportionally larger and more rounded.
-     * Percentage is punched through the fill just like before.
-     */
-    private fun drawBattery27(canvas: Canvas, rect: RectF, percent: Int) {
-        val radius = dp(Metrics.BATTERY_RADIUS27)
-        val layer = canvas.saveLayer(rect.left - 1f, rect.top - 1f, rect.right + 1f, rect.bottom + 1f, null)
-
-        // outline / track
-        shapePaint.style = Paint.Style.STROKE
-        shapePaint.strokeWidth = dp(Metrics.BATTERY_STROKE27)
-        shapePaint.color = ColorUtils.setAlphaComponent(color, Metrics.TRACK_ALPHA27)
-        canvas.drawRoundRect(rect, radius, radius, shapePaint)
-
-        // fill
-        shapePaint.style = Paint.Style.FILL
-        clip.reset()
-        val inset = dp(Metrics.BATTERY_STROKE27) / 2f + dp(0.5f)
-        val inner = RectF(rect.left + inset, rect.top + inset, rect.right - inset, rect.bottom - inset)
-        clip.addRoundRect(inner, (radius - inset).coerceAtLeast(1f), (radius - inset).coerceAtLeast(1f), Path.Direction.CW)
-        canvas.save()
-        canvas.clipPath(clip)
-        shapePaint.color = color
-        canvas.drawRect(inner.left, inner.top, inner.left + inner.width() * percent.coerceIn(0, 100) / 100f, inner.bottom, shapePaint)
-        canvas.restore()
-
-        // percentage text punched out
-        val text = percent.toString()
-        batteryTextPaint.textSize = dp(if (text.length >= 3) Metrics.BATTERY_TEXT_3 else Metrics.BATTERY_TEXT)
-        batteryTextPaint.getTextBounds(text, 0, text.length, bounds)
-        canvas.drawText(text, rect.centerX(), rect.centerY() + bounds.height() / 2f, batteryTextPaint)
-        canvas.restoreToCount(layer)
     }
 
     private fun font(weight: Int): Typeface {
@@ -495,30 +389,18 @@ class StatusBarView(context: Context) : View(context) {
 
         const val NET_TEXT = 15.5f
 
-        // iOS 27 WiFi — wider, bolder
-        const val WIFI_W27 = 19f
-
-        // iOS 27 Airplane — larger, bolder
-        const val PLANE27 = 18f
-
-        // iOS 27 Battery — pill with thick outline, larger nub
-        const val BATTERY_W = 27f
-        const val BATTERY_H = 13f
-        const val BATTERY_RADIUS27 = 4.5f
-        const val BATTERY_STROKE27 = 1.5f
-        const val TRACK_ALPHA27 = 100
-        const val NUB_W27 = 3f
-        const val NUB_H27 = 6f
-        const val NUB_GAP27 = 1f
-        const val NUB_ALPHA27 = 110
+        // Compact Wi-Fi dimensions
+        // Compact battery dimensions
+        const val BATTERY_W = 20f
+        const val BATTERY_H = 9.5f
+        const val NUB_W27 = 1.2f
+        const val NUB_H27 = 3.2f
+        const val NUB_GAP27 = 0.45f
+        const val NUB_ALPHA27 = 125
 
         // bolt
-        const val BOLT_W = 6f
-        const val BOLT_H = 11f
-
-        // battery text
-        const val BATTERY_TEXT = 12.5f
-        const val BATTERY_TEXT_3 = 10f
+        const val BOLT_W = 5f
+        const val BOLT_H = 9f
 
         // orange activity dot
         const val DOT_R = 2.5f

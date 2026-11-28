@@ -28,7 +28,7 @@ data class StatusBarPreferences(
     val verticalOffset: Float = 0f,
     /** 400 regular, 500 medium, 600 semibold, 700 bold. */
     val clockWeight: Int = DEFAULT_CLOCK_WEIGHT,
-    /** Independently selectable iPhone-inspired glyph families (0..4). */
+    /** Legacy theme values are retained only to read older preferences; the UI now uses one fixed icon family. */
     val batteryTheme: Int = 2,
     val wifiTheme: Int = 2,
     val signalTheme: Int = 2,

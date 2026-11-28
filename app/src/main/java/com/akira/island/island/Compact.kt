@@ -251,21 +251,26 @@ private fun CompactContentBody(act: Act, s: IslandSettings, wideWidth: Dp) {
         }
 
         is Act.ChronoA -> {
-            val now = rememberWallNow(1_000, active = act.c.pausedMs == null)
-            // Запись экрана — красная, как на iPhone; таймеры и секундомеры Часов — оранжевые
             val recording = act.c.isRecording
-            // Recording uses the small iOS-style brick-red status LED at the left edge.
-            // Keep the existing elapsed-time/action model unchanged.
+            val now = rememberWallNow(1_000, active = !recording && act.c.pausedMs == null)
             val tint = if (recording) Color(0xFFC84A32) else Tints.Orange
             CompactRow(h, gap, side * 1.4f,
                 left = {
-                    when {
-                        recording -> GlowDot(tint, h * 0.16f, !s.reduceEffects)
-                        act.c.pausedMs != null -> Icon(Ios.pause, null, tint = tint, modifier = Modifier.size(icon))
-                        else -> AppIcon(act.c.icon, h * 0.56f, Ios.timer, tint)
+                    if (recording) {
+                        // Recording indicator is a small brick-red LED on the LEFT.
+                        // No elapsed seconds are shown for recording activities.
+                        GlowDot(Color(0xFFC84A32), h * 0.18f, !s.reduceEffects && act.c.pausedMs == null)
+                    } else if (act.c.pausedMs != null) {
+                        Icon(Ios.pause, null, tint = tint, modifier = Modifier.size(icon))
+                    } else {
+                        AppIcon(act.c.icon, h * 0.56f, Ios.timer, tint)
                     }
                 },
-                right = { TimeText(formatDuration(act.c.elapsed(now)), tint, 18, FontWeight.Bold.island) },
+                right = {
+                    if (!recording) {
+                        TimeText(formatDuration(act.c.elapsed(now)), tint, 18, FontWeight.Bold.island)
+                    }
+                },
             )
         }
 
