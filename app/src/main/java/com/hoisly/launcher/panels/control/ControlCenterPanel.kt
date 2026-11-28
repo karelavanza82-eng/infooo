@@ -217,13 +217,13 @@ private fun MiniToggle(icon: ImageVector, label: String, active: Boolean, color:
 private fun VerticalFader(icon: ImageVector, label: String, value: Float, modifier: Modifier, enabled: Boolean, onChange: (Float) -> Unit) {
     BoxWithConstraints(modifier.fillMaxHeight().clip(RoundedCornerShape(34.dp))
         .glass(RoundedCornerShape(34.dp), tint = Color.White.copy(alpha = .18f), stroke = GlassStroke, profile = GlassProfile.Panel)
-        .pointerInput(enabled, maxHeight) {
+        .pointerInput(enabled) {
             if (enabled) {
                 fun update(y: Float) = onChange((1f - (y / size.height)).coerceIn(0f, 1f))
                 detectTapGestures { update(it.y) }
             }
         }
-        .pointerInput(enabled, maxHeight) {
+        .pointerInput(enabled) {
             if (enabled) detectDragGestures { change, _ -> change.consume(); onChange((1f - change.position.y / size.height).coerceIn(0f, 1f)) }
         }, contentAlignment = Alignment.BottomCenter) {
         Box(Modifier.fillMaxWidth().fillMaxHeight(value.coerceIn(0f, 1f)).clip(RoundedCornerShape(34.dp)).background(Color.White.copy(alpha = .92f)))
