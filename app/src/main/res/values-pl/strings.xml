@@ -1,0 +1,593 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="search">Szukaj</string>
+    <string name="glass_prompt_title">Włącz efekt szkła</string>
+    <string name="glass_prompt_body">Aby rozmyć tapetę pod dokiem, launcher potrzebuje dostępu do wszystkich plików. Tylko w ten sposób Android udostępnia obraz tapety.</string>
+    <string name="menu_remove_app">Usuń aplikację</string>
+    <string name="menu_app_info">Informacje o aplikacji</string>
+    <string name="menu_add_to_dock">Dodaj do doku</string>
+    <string name="menu_remove_from_dock">Usuń z doku</string>
+    <string name="menu_dock_full">Dok jest pełny</string>
+    <string name="menu_hide_app">Ukryj aplikację</string>
+    <string name="action_back">Wstecz</string>
+    <string name="action_done">Gotowe</string>
+    <string name="action_reset">Resetuj</string>
+    <string name="action_cancel">Anuluj</string>
+    <string name="action_save">Zapisz</string>
+    <string name="settings_title">Ustawienia</string>
+    <string name="default_home_select">Wybierz domyślny ekran główny</string>
+    <string name="default_home_active">Hoisly jest Twoim ekranem głównym</string>
+    <string name="row_general">Ogólne</string>
+    <string name="row_language">Język</string>
+    <string name="row_grid">Siatka ekranu</string>
+    <string name="row_transition">Efekt przejścia</string>
+    <string name="row_animations">Animacje aplikacji</string>
+    <string name="row_hidden_apps">Ukryte aplikacje</string>
+    <string name="row_change_icon">Zmień ikonę aplikacji</string>
+    <string name="row_change_name">Zmień nazwę aplikacji</string>
+    <string name="row_dynamic_color">Kolory dynamiczne</string>
+    <string name="row_version">Wersja</string>
+    <string name="row_license">Licencja</string>
+    <string name="general_blur">Efekt rozmycia</string>
+    <string name="general_custom_text_size">Rozmiar tekstu</string>
+    <string name="general_wallpaper_access">Zezwól na dostęp do tapety</string>
+    <string name="general_wallpaper_access_body">Rozmycie wymaga odczytu tapety. Android pozwala na to tylko przy dostępie do wszystkich plików; Hoisly nigdy nie odczytuje niczego innego.</string>
+    <string name="transition_section">Strony ekranu głównego</string>
+    <string name="effect_default">Domyślny</string>
+    <string name="effect_rotation">Obrót</string>
+    <string name="effect_flip">Odwrócenie</string>
+    <string name="effect_zoom_in">Przybliżenie</string>
+    <string name="effect_alpha">Przenikanie</string>
+    <string name="animations_resume">Animacja powrotu</string>
+    <string name="animations_resume_description">Ikony powiększają się do swojego rozmiaru po powrocie na ekran główny.</string>
+    <string name="animations_open_close">Animacja otwierania i zamykania aplikacji</string>
+    <string name="animations_open_close_description">Aplikacje rozwijają się z ikony podczas otwierania.</string>
+    <string name="hidden_apps_description">Ukryte aplikacje znikają z ekranu głównego, ale pozostają zainstalowane.</string>
+    <string name="change_icon_description">Dotknij aplikacji, aby wybrać obraz z galerii jako jej ikonę.</string>
+    <string name="change_name_description">Dotknij aplikacji, aby zmienić nazwę pod jej ikoną.</string>
+    <string name="icon_import_failed">Nie udało się odczytać obrazu</string>
+    <string name="rename_title">Zmień nazwę aplikacji</string>
+    <string name="rename_original">Oryginalna nazwa: %1$s</string>
+    <string name="license_summary">Hoisly Launcher jest wolnym oprogramowaniem: możesz je rozpowszechniać i/lub modyfikować na warunkach Powszechnej Licencji Publicznej GNU w wersji 3 lub (według własnego wyboru) dowolnej późniejszej. Jest udostępniane BEZ JAKIEJKOLWIEK GWARANCJI.</string>
+    <string name="license_open_website">Otwórz gnu.org</string>
+    <string name="folder_default_name">Folder</string>
+    <string name="menu_edit_home">Edytuj ekran główny</string>
+    <string name="menu_rename_folder">Zmień nazwę</string>
+    <string name="edit_edit">Edytuj</string>
+    <string name="edit_done">Gotowe</string>
+    <string name="edit_customize">Dostosuj</string>
+    <string name="edit_wallpapers">Tapety</string>
+    <string name="remove_dialog_title">Usunąć „%1$s”?</string>
+    <string name="remove_dialog_message">Aplikacja pozostanie zainstalowana, zniknie tylko z ekranu głównego.</string>
+    <string name="remove_dialog_remove_from_home">Usuń z ekranu głównego</string>
+    <string name="remove_dialog_uninstall">Odinstaluj aplikację</string>
+
+
+
+
+    <string name="import_no_launchers">Nie znaleziono zgodnych launcherów.</string>
+
+
+    <string name="import_pages">Strony</string>
+    <string name="import_folders">Foldery</string>
+    <string name="import_apps_on_home">Aplikacje na ekranie głównym</string>
+    <string name="import_remove_others">Usuń inne aplikacje z ekranu głównego</string>
+
+
+    <string name="import_confirm_title">Importować z %1$s?</string>
+    <string name="import_confirm_message">Obecny układ ekranu głównego zostanie zastąpiony.</string>
+
+    <plurals name="import_remove_others_count">
+        <item quantity="one">%d aplikacja, której nie ma na jego ekranie głównym</item>
+        <item quantity="few">%d aplikacje, których nie ma na jego ekranie głównym</item>
+        <item quantity="many">%d aplikacji, których nie ma na jego ekranie głównym</item>
+        <item quantity="other">%d aplikacji, których nie ma na jego ekranie głównym</item>
+    </plurals>
+    <string name="menu_add_to_home">Dodaj do ekranu głównego</string>
+    <string name="library_title">Biblioteka aplikacji</string>
+    <string name="library_suggestions">Propozycje</string>
+    <string name="library_recently_added">Ostatnio dodane</string>
+    <string name="library_other">Inne</string>
+    <string name="search_suggestions">Propozycje</string>
+    <string name="search_show_more">Pokaż więcej</string>
+    <string name="search_show_less">Pokaż mniej</string>
+    <string name="search_hint">Szukaj</string>
+    <string name="search_web">Szukaj „%1$s” w internecie</string>
+    <string name="row_glass">Szkło i rozmycie</string>
+    <string name="row_icons">Ikony</string>
+    <string name="row_home_screen">Ekran główny i dok</string>
+    <string name="row_context_menu">Menu kontekstowe</string>
+    <string name="glass_section_panels">Dok, pigułki i menu</string>
+    <string name="glass_tint">Jasność szkła</string>
+    <string name="glass_edge">Podświetlenie krawędzi</string>
+    <string name="glass_style">Styl szkła</string>
+    <string name="glass_style_frosted">Matowe</string>
+    <string name="glass_style_liquid">Płynne</string>
+    <string name="glass_refraction">Załamanie światła</string>
+    <string name="glass_tilt_light">Podświetlenie podąża za pochyleniem</string>
+    <string name="glass_section_background">Tło</string>
+    <string name="glass_home_blur">Rozmycie za folderami i menu</string>
+    <string name="glass_home_blur_radius">Siła rozmycia</string>
+    <string name="icons_size">Rozmiar ikon</string>
+    <string name="icons_corner">Zaokrąglenie rogów</string>
+    <string name="icons_labels">Nazwy aplikacji</string>
+    <string name="icons_edge">Podświetlenie krawędzi</string>
+    <string name="icons_footer" formatted="false">0% to kwadrat, 100% to koło. Rozmiar podpisów znajdziesz w sekcji Ogólne.</string>
+    <string name="icons_section_appearance">Wygląd</string>
+    <string name="icons_appearance_default">Domyślny</string>
+    <string name="icons_appearance_dark">Ciemny</string>
+    <string name="icons_appearance_tinted">Barwiony</string>
+    <string name="icons_appearance_auto">Automatyczny</string>
+    <string name="icons_tint_custom">Zmieniaj styl własnych ikon</string>
+    <string name="icons_section_tint">Kolor barwienia</string>
+    <string name="icons_tint_wallpaper">Z tapety</string>
+    <string name="icons_tint_saturation">Nasycenie</string>
+    <string name="home_section_dock">Dok</string>
+    <string name="home_show_dock">Pokaż dok</string>
+    <string name="home_dock_background">Tło doku</string>
+    <string name="home_dock_apps">Aplikacje w doku</string>
+    <string name="home_section_pages">Strony</string>
+    <string name="home_page_pill">Pigułka wyszukiwania i kropki stron</string>
+    <string name="home_app_library">Biblioteka aplikacji</string>
+    <string name="menu_dim">Przyciemnienie tła</string>
+    <string name="menu_section_items">Elementy</string>
+    <string name="menu_shortcuts">Skróty aplikacji</string>
+    <string name="menu_dock_toggle">Dodaj do / Usuń z doku</string>
+    <string name="menu_rename_folder_setting">Zmień nazwę folderu</string>
+    <string name="edit_add_widget">Dodaj widżet</string>
+    <string name="widget_add">Dodaj widżet</string>
+    <string name="widget_gallery_search">Szukaj widżetów</string>
+    <string name="widget_remove">Usuń widżet</string>
+    <string name="stack_edit">Edytuj stos</string>
+    <string name="stack_remove">Usuń stos</string>
+    <string name="stack_smart">Inteligentny stos</string>
+    <string name="stack_smart_description">Widżety ułożone w jednym miejscu. Przesuń w górę lub w dół, aby zobaczyć następny.</string>
+    <string name="stack_take_out">Przenieś na ekran główny</string>
+    <string name="stack_remove_widget">Usuń ze stosu</string>
+    <string name="stack_reorder">Zmień kolejność</string>
+    <string name="widget_choose_photo">Wybierz zdjęcie</string>
+    <string name="widget_clock">Zegar</string>
+    <string name="widget_calendar">Kalendarz</string>
+    <string name="widget_weather">Pogoda</string>
+    <string name="widget_photo">Zdjęcie</string>
+    <string name="widget_battery">Bateria</string>
+    <string name="widget_suggestions">Propozycje aplikacji</string>
+    <string name="widget_clock_description">Sprawdź aktualny czas u siebie i na świecie.</string>
+    <string name="widget_calendar_description">Sprawdź dzień miesiąca i nadchodzące wydarzenia.</string>
+    <string name="widget_weather_description">Sprawdź aktualną pogodę i prognozę dla wybranego miejsca.</string>
+    <string name="widget_photo_description">Umieść ulubione zdjęcie na ekranie głównym.</string>
+    <string name="widget_battery_description">Sprawdź poziom baterii telefonu.</string>
+    <string name="widget_suggestions_description">Otrzymuj propozycje aplikacji na podstawie sposobu korzystania z telefonu.</string>
+    <string name="widget_variant_clock">Zegar</string>
+    <string name="widget_variant_world_clock">Zegar światowy</string>
+    <string name="widget_variant_month">Miesiąc</string>
+    <string name="widget_variant_up_next">Nadchodzące</string>
+    <string name="widget_variant_weather_snapshot">Pogoda w skrócie</string>
+    <string name="widget_variant_hourly">Prognoza godzinowa</string>
+    <string name="widget_variant_full_forecast">Pełna prognoza</string>
+    <string name="widget_variant_photo_small">Małe zdjęcie</string>
+    <string name="widget_variant_photo_medium">Średnie zdjęcie</string>
+    <string name="widget_variant_photo_large">Duże zdjęcie</string>
+    <string name="widget_variant_status">Stan</string>
+    <string name="widget_variant_app_suggestion">Propozycja aplikacji</string>
+    <string name="city_now">Teraz</string>
+    <string name="city_paris">Paryż</string>
+    <string name="city_new_york">Nowy Jork</string>
+    <string name="city_london">Londyn</string>
+    <string name="clock_today">Dzisiaj</string>
+    <string name="clock_tomorrow">Jutro</string>
+    <string name="clock_yesterday">Wczoraj</string>
+    <string name="clock_offset_hours">%1$s GODZ.</string>
+    <string name="calendar_no_permission">Dotknij, aby wyświetlić wydarzenia.</string>
+    <string name="calendar_no_events">Brak dalszych wydarzeń</string>
+    <string name="calendar_all_day">Cały dzień</string>
+    <string name="weather_high_low">Maks:%1$s Min:%2$s</string>
+    <string name="weather_set_location">Dotknij, aby wybrać lokalizację</string>
+    <string name="weather_loading">Wczytywanie pogody…</string>
+    <string name="weather_clear">Bezchmurnie</string>
+    <string name="weather_mainly_clear">Przeważnie bezchmurnie</string>
+    <string name="weather_partly_cloudy">Częściowe zachmurzenie</string>
+    <string name="weather_cloudy">Pochmurno</string>
+    <string name="weather_fog">Mgła</string>
+    <string name="weather_drizzle">Mżawka</string>
+    <string name="weather_rain">Deszcz</string>
+    <string name="weather_freezing_rain">Marznący deszcz</string>
+    <string name="weather_snow">Śnieg</string>
+    <string name="weather_showers">Przelotne opady</string>
+    <string name="weather_snow_showers">Przelotne opady śniegu</string>
+    <string name="weather_thunderstorm">Burza</string>
+    <string name="weather_location">Lokalizacja</string>
+    <string name="weather_current_location">Bieżąca lokalizacja</string>
+    <string name="weather_search_city">Szukaj miasta</string>
+    <string name="weather_search_hint">Nazwa miasta</string>
+    <string name="onboarding_hello_description">Witaj</string>
+    <string name="onboarding_logo_description">Logo Hoisly Launcher</string>
+    <string name="onboarding_welcome_title">Witaj w %1$s</string>
+    <string name="onboarding_continue">Dalej</string>
+    <string name="onboarding_not_now">Nie teraz</string>
+    <string name="onboarding_progress">Krok %1$d z %2$d</string>
+    <string name="onboarding_language_title">Wybierz język</string>
+    <string name="onboarding_home_title">Ustaw Hoisly jako ekran główny</string>
+    <string name="onboarding_home_body">Przycisk i gest ekranu głównego będą prowadzić tutaj.</string>
+    <string name="onboarding_home_action">Ustaw jako domyślny</string>
+    <string name="onboarding_wallpaper_title">Zezwól na dostęp do tapety</string>
+    <string name="onboarding_wallpaper_body">Android nazywa to dostępem do wszystkich plików. Hoisly odczytuje tylko tapetę, aby rozmyć ją pod szkłem.</string>
+    <string name="onboarding_wallpaper_action">Zezwól na dostęp</string>
+    <string name="onboarding_import_title">Importuj ekran główny</string>
+    <string name="onboarding_import_body">Przenieś strony, foldery i dok z poprzedniego launchera.</string>
+    <string name="onboarding_appearance_title">Wybierz wygląd ikon</string>
+    <string name="onboarding_appearance_body">Zmienia każdą ikonę na ekranie głównym.</string>
+    <string name="onboarding_get_started">Rozpocznij</string>
+    <string name="finish_setup_title">Dokończ konfigurację</string>
+
+    <!-- Settings: screen grid, icon sizes by area, layout lock -->
+    <string name="grid_columns">Kolumny</string>
+    <string name="grid_rows">Wiersze</string>
+    <string name="grid_section_margins">Marginesy</string>
+    <string name="grid_margin_side">Boki</string>
+    <string name="grid_margin_top">Góra</string>
+    <string name="grid_margin_bottom">Dół</string>
+    <string name="grid_alignment">Położenie w pionie</string>
+    <string name="grid_align_top">Góra</string>
+    <string name="grid_align_center">Środek</string>
+    <string name="grid_align_bottom">Dół</string>
+    <string name="grid_apply">Zastosuj</string>
+    <string name="grid_too_small">Widżet na ekranie głównym nie mieści się w tej siatce.</string>
+    <string name="icons_section_areas">Rozmiary według obszaru</string>
+    <string name="area_home">Ekran główny</string>
+    <string name="area_dock">Dok</string>
+    <string name="area_folders">Foldery</string>
+    <string name="area_custom">Własne</string>
+    <string name="area_custom_icon_size">Własny rozmiar ikon</string>
+    <string name="area_custom_label_size">Własny rozmiar nazw</string>
+    <string name="area_label_size">Rozmiar nazw</string>
+    <string name="area_labels_default">Domyślnie</string>
+    <string name="area_labels_show">Pokaż</string>
+    <string name="area_labels_hide">Ukryj</string>
+    <string name="home_section_layout">Układ</string>
+    <string name="layout_lock">Zablokuj układ ekranu głównego</string>
+
+    <!-- App Library customization -->
+    <string name="library_pinned">Przypięte</string>
+    <string name="library_all_apps">Wszystkie aplikacje</string>
+    <string name="library_view_switch">Widok: %1$s</string>
+    <string name="library_view_categories">Kategorie</string>
+    <string name="library_view_grid">Siatka</string>
+    <string name="library_view_list">Lista</string>
+    <string name="library_choose_category">Kategoria</string>
+    <string name="library_category_automatic">Automatycznie</string>
+    <string name="menu_library_pin">Przypnij w bibliotece</string>
+    <string name="menu_library_unpin">Odepnij</string>
+    <string name="menu_library_category">Kategoria…</string>
+    <string name="menu_library_category_setting">Kategoria w bibliotece</string>
+    <string name="library_section_view">Widok</string>
+    <string name="library_section_smart">Inteligentne grupy</string>
+    <string name="library_section_new_apps">Nowe aplikacje</string>
+    <string name="library_new_home">Ekran główny i biblioteka</string>
+    <string name="library_new_library_only">Tylko biblioteka</string>
+    <string name="library_page_off">Strona biblioteki jest wyłączona w ustawieniach ekranu głównego. Jej aplikacje pozostają w wyszukiwaniu.</string>
+    <string name="library_new_category">Nowa kategoria</string>
+    <string name="library_section_order">Kolejność</string>
+    <string name="library_move_up">Przenieś w górę</string>
+    <string name="library_move_down">Przenieś w dół</string>
+    <string name="library_reorder">Zmień kolejność</string>
+    <string name="library_category_name">Nazwa</string>
+    <string name="library_name_empty">Wpisz nazwę.</string>
+    <string name="library_name_duplicate">Kategoria o tej nazwie już istnieje.</string>
+    <string name="library_name_limit">Nie można dodać więcej kategorii.</string>
+    <string name="library_in_category">W tej kategorii</string>
+    <string name="library_other_apps">Inne aplikacje</string>
+    <string name="library_delete_category">Usuń kategorię</string>
+    <string name="library_delete_confirm">Stuknij ponownie, aby usunąć</string>
+    <string name="library_delete_footer">Jej aplikacje wrócą do kategorii automatycznych.</string>
+    <string name="library_add_apps">Dodaj aplikacje</string>
+    <plurals name="library_app_count">
+        <item quantity="one">%d aplikacja</item>
+        <item quantity="few">%d aplikacje</item>
+        <item quantity="many">%d aplikacji</item>
+        <item quantity="other">%d aplikacji</item>
+    </plurals>
+
+    <string name="gestures_home">Gestures and Home</string>
+    <string name="gesture_assignments">Gestures</string>
+    <string name="gesture_home_behavior">Returning to Home</string>
+    <string name="gesture_swipe_up">Swipe up</string>
+    <string name="gesture_swipe_down">Swipe down</string>
+    <string name="gesture_double_tap">Double tap on empty space</string>
+    <string name="gesture_repeat_home">Press Home again</string>
+    <string name="gesture_none">No action</string>
+    <string name="gesture_open_app">Open app</string>
+    <string name="home_main_page">Main home page</string>
+    <string name="home_return_stay">Keep the current page</string>
+    <string name="home_return_main">Return to the main page</string>
+    <string name="home_page_number">Page %1$d</string>
+    <string name="home_show_today">Show Today</string>
+    <string name="home_haptics">Haptic feedback</string>
+    <string name="gesture_library_unavailable">App Library (disabled)</string>
+    <string name="gesture_app_unavailable">%1$s · profile %2$s (unavailable)</string>
+    <string name="gesture_app_name">%1$s · profile %2$s</string>
+    <string name="gesture_profile">Profile %1$s</string>
+    <string name="island_title">Island</string>
+    <string name="island_enable">Włącz Island</string>
+    <string name="island_window_access">Usługa ułatwień dostępu Island</string>
+    <string name="island_music_access">Dostęp do powiadomień dla muzyki i minutników</string>
+    <string name="island_charge_setting">Pokazuj podłączenie ładowarki</string>
+    <string name="island_allow">Zezwól</string>
+    <string name="island_allowed">Dozwolony</string>
+    <string name="island_off">Wyłączony</string>
+    <string name="island_need_window">Włącz usługę ułatwień dostępu Island</string>
+    <string name="island_need_music">Zezwól na dostęp do muzyki</string>
+    <string name="island_need_connection">Połącz dostęp do muzyki, aby używać Island</string>
+    <string name="island_ready">Gotowy</string>
+    <string name="island_connect">Połącz dostęp do muzyki</string>
+    <string name="island_expand">Pokaż sterowanie muzyką</string>
+    <string name="island_collapse">Zwiń</string>
+    <string name="island_open_player">Otwórz odtwarzacz</string>
+    <string name="island_music">Muzyka</string>
+    <string name="island_playing">Odtwarzanie aktywne</string>
+    <string name="island_paused">Wstrzymano</string>
+    <string name="island_play">Odtwórz</string>
+    <string name="island_pause">Wstrzymaj</string>
+    <string name="island_previous">Poprzedni utwór</string>
+    <string name="island_next">Następny utwór</string>
+    <string name="island_seek">Pozycja odtwarzania</string>
+    <string name="island_charging">Ładowanie</string>
+    <string name="island_percent">%1$d%%</string>
+    <string name="island_player_unavailable">Odtwarzacz jest niedostępny</string>
+    <string name="island_timer">Minutnik</string>
+    <string name="island_stopwatch">Stoper</string>
+    <string name="island_alarm">Alarm</string>
+    <string name="island_open_app">Otwórz aplikację</string>
+    <string name="island_action_unavailable">Akcja jest niedostępna</string>
+    <string name="island_window_description">Pokazuje Island wokół aparatu.</string>
+    <string name="island_restricted">Zezwól na ustawienia z ograniczonym dostępem</string>
+    <string name="island_restricted_footer">Jeśli Android blokuje usługę Island: Informacje o aplikacji → ⋮ → Zezwól na ustawienia z ograniczonym dostępem.</string>
+    <string name="island_section_behavior">Zachowanie</string>
+    <string name="island_always_on">Zawsze pokazuj</string>
+    <string name="island_timers_setting">Minutniki i alarmy</string>
+    <string name="island_collapse_delay">Zwiń po</string>
+    <string name="island_seconds">%1$d s</string>
+    <string name="island_section_look">Wygląd</string>
+    <string name="island_blur_setting">Rozmycie</string>
+    <string name="island_artwork_tint">Kolor okładki</string>
+    <string name="island_pill_width">Szerokość kapsuły</string>
+    <string name="island_side_margin">Boczne marginesy karty</string>
+    <string name="island_top_offset">Przesunięcie w pionie</string>
+    <string name="island_blur_footer">Rozmycie działa tam, gdzie pozwala Android: nie w oszczędzaniu baterii ani przy wyłączonym rozmyciu okien.</string>
+    <string name="island_access_unavailable">Ten ekran dostępu jest niedostępny</string>
+    <!-- Settings: folders -->
+    <string name="folders_panel">Panel folderu</string>
+    <string name="folders_width">Szerokość</string>
+    <string name="folders_height">Wysokość</string>
+    <string name="folders_dim">Przyciemnienie tła</string>
+    <string name="folders_custom_glass">Własne szkło folderów</string>
+    <string name="folders_content">Zawartość</string>
+    <string name="folders_show_title">Pokaż nazwę folderu</string>
+    <string name="folders_title_size">Rozmiar nazwy folderu</string>
+    <string name="folders_page_indicator">Wskaźnik stron</string>
+    <string name="folders_app_icons">Ikony i podpisy aplikacji</string>
+    <string name="badges_section">Plakietki powiadomień</string>
+    <string name="badges_off">Wył.</string>
+    <string name="badges_number">Liczba</string>
+    <string name="badges_dot">Kropka</string>
+    <string name="badges_access">Dostęp do powiadomień</string>
+    <string name="badges_connect">Połącz ponownie</string>
+    <plurals name="icon_badge_description">
+        <item quantity="one">%1$s, %2$d powiadomienie</item>
+        <item quantity="few">%1$s, %2$d powiadomienia</item>
+        <item quantity="many">%1$s, %2$d powiadomień</item>
+        <item quantity="other">%1$s, %2$d powiadomienia</item>
+    </plurals>
+
+    <!-- English fallback entries; localize these strings when translations are available. -->
+    <string name="control_center_title">Control Center</string>
+        
+    <string name="notification_center_title">Notification Center</string>
+        
+    <string name="lock_screen_title">Lock Screen</string>
+        
+    <string name="lock_screen_unlock">Unlock</string>
+        
+    <string name="control_wifi">Wi-Fi</string>
+        
+    <string name="control_bluetooth">Bluetooth</string>
+        
+    <string name="control_airplane">Airplane Mode</string>
+        
+    <string name="control_flashlight">Flashlight</string>
+        
+    <string name="control_rotation_lock">Rotation Lock</string>
+        
+    <string name="control_focus">Focus</string>
+        
+    <string name="control_brightness">Brightness</string>
+        
+    <string name="control_volume">Volume</string>
+        
+    <string name="control_calculator">Calculator</string>
+        
+    <string name="control_timer">Timer</string>
+        
+    <string name="control_camera">Camera</string>
+        
+    <string name="control_settings">Settings</string>
+        
+    <string name="control_on">On</string>
+        
+    <string name="control_off">Off</string>
+        
+    <string name="control_need_write_settings">Allow Hoisly to modify system settings, then try again</string>
+        
+    <string name="control_need_focus_access">Allow Do Not Disturb access for Hoisly, then try again</string>
+        
+    <string name="control_unavailable">Not available on this device</string>
+        
+    <string name="control_flashlight_unavailable">This device has no flashlight</string>
+        
+    <string name="control_media_idle">Not Playing</string>
+        
+    <string name="control_media_allow">Allow notification access to control music</string>
+        
+    <string name="control_play">Play</string>
+        
+    <string name="control_pause">Pause</string>
+        
+    <string name="control_next">Next</string>
+        
+    <string name="control_previous">Previous</string>
+        
+    <string name="notification_clear_all">Clear All</string>
+        
+    <string name="notification_allow_access">Allow Notification Access</string>
+        
+    <string name="notification_empty">No Notifications</string>
+        
+    <string name="notification_show_less">Show Less</string>
+        
+    <string name="notification_hidden_content">Notification</string>
+        
+    <string name="panels_title">Control &amp; Notifications</string>
+        
+    <string name="panels_hide_content">Hide Content</string>
+        
+    <string name="panels_notification_access">Notification Access</string>
+        
+    <string name="panels_control_footer">Drag down from the top-right corner, just under the status bar.</string>
+        
+    <string name="panels_notifications_footer">Drag down from the top-left. Titles and text are read into memory only to draw the cards; nothing is stored or sent.</string>
+        
+    <plurals name="notification_more">
+            <item quantity="one">%d more notification</item>
+            <item quantity="few">%d more notifications</item>
+            <item quantity="many">%d more notifications</item>
+            <item quantity="other">%d more notifications</item>
+        </plurals>
+    
+    <string name="home_lock_on_wake">Show Lock Screen after sleep</string>
+    <string name="home_lock_on_wake_footer">When the display was off, the launcher shows its own Lock Screen first. Swiping it away makes the icons pop in. It adds no security: the system lock screen is separate.</string>
+    <string name="home_wallpaper_parallax">Moving wallpaper</string>
+    <string name="home_wallpaper_parallax_footer">The wallpaper moves when you tilt the phone and settles in after unlock. It needs All files access to read the wallpaper and does not work with live wallpapers.</string>
+    <string name="control_mobile_data">Mobile Data</string>
+    <string name="control_hotspot">Hotspot</string>
+    <string name="control_dark_mode">Dark Mode</string>
+    <string name="lock_screen_swipe_hint">Swipe up to unlock</string>
+    <string name="widget_music">Music</string>
+    <string name="widget_music_description">See what is playing and play or pause it from your Home Screen.</string>
+    <string name="widget_variant_music">Now Playing</string>
+    <string name="widget_music_idle">Not Playing</string>
+    <string name="widget_music_allow">Allow notification access</string>
+    <string name="control_airdrop">AirDrop</string>
+    <string name="control_airdrop_contacts">Contacts Only</string>
+    <string name="control_silent">Silent Mode</string>
+    <string name="control_low_power">Low Power Mode</string>
+    <string name="control_screen_record">Screen Recording</string>
+    <string name="control_alarm">Alarm</string>
+    <string name="control_translate">Translate</string>
+    <string name="control_shazam">Music Recognition</string>
+    <string name="control_sound_recognition">Sound Recording</string>
+    <string name="control_accessibility">Accessibility</string>
+    <string name="control_add">Add Controls</string>
+    <string name="control_lock">Lock</string>
+    <string name="control_focus_label">Focus</string>
+    <string name="control_wifi_not_connected">Not Connected</string>
+    <string name="lock_device_fallback">Phone</string>
+    <string name="lock_title">Lock Screen</string>
+    <string name="lock_enable">Show Hoisly Lock Screen</string>
+    <string name="lock_clock_weight">Clock Weight</string>
+    <string name="lock_weight_thin">Thin</string>
+    <string name="lock_weight_light">Light</string>
+    <string name="lock_weight_regular">Regular</string>
+    <string name="lock_weight_bold">Bold</string>
+    <string name="lock_clock_size">Clock Size</string>
+    <string name="lock_clock_centered">Center Clock</string>
+    <string name="lock_show_battery">Battery</string>
+    <string name="lock_show_notifications">Notifications</string>
+    <string name="lock_use_wallpaper">Wallpaper</string>
+    <string name="lock_wallpaper_blur">Wallpaper Blur</string>
+    <string name="lock_footer">A decorative screen above Android\'s own lock screen. PIN, pattern and fingerprint stay with Android. Wallpaper needs wallpaper access; notification cards need the Notification Center.</string>
+    <string name="lock_swipe_hint">Swipe up to continue</string>
+    <string name="lock_flashlight">Flashlight</string>
+    <string name="lock_camera">Camera</string>
+    <string name="backup_title">Backup and Restore</string>
+    <string name="backup_export">Back Up Settings and Layout</string>
+    <string name="backup_restore">Restore from Backup</string>
+    <string name="backup_footer">Saves your settings and home screen layout into one file you choose. Custom icons and widget photos are not included.</string>
+    <string name="backup_done">Backup saved</string>
+    <string name="backup_failed">Backup failed</string>
+    <string name="backup_restored">Restored. Restarting Hoisly</string>
+    <string name="backup_invalid">This is not a valid Hoisly backup</string>
+    <string name="backup_confirm_title">Restore backup?</string>
+    <string name="backup_confirm_body">Your current settings and home screen layout will be replaced, and Hoisly will restart.</string>
+    <string name="backup_restore_action">Restore</string>
+    <string name="tile_label">Island</string>
+    <string name="a11y_label">Dynamic Island</string>
+    <string name="a11y_desc">Shows a Dynamic Island–style capsule over the camera: music, timers, download progress, the flashlight and system events. The service sees which app is open to hide the player and show payments. The screen is read only in navigation apps (2GIS, Yandex Navigator, Maps and others), the Clock app and payment apps while they are open: in navigation apps — the distance to the next turn, the street, the arrival time and the arrow direction; in Clock — the timer and stopwatch time; in payment apps (Mir Pay, T-Pay, Google Wallet and others) — the phone payment screen and the amount, to show “Hold near reader” and then “Paid”. What is read stays on the phone. Song title, artist, album and duration are sent to lyrics providers. Optional weather sends your selected city and coordinates to Open-Meteo. Optional shade detection examines only the system notification panel; contacts and step counts stay on the phone. For the optional scroll-to-top gesture, the service checks scrollable elements in the foreground app without reading their text.</string>
+        <string name="app_name" translatable="false">Hiosly</string>
+        <string name="row_about">About Hiosly</string>
+        <string name="about_developer">Developer</string>
+        <string name="about_project_location">Project created in</string>
+        <string name="about_project_location_value">Sragen, Central Java, Indonesia</string>
+        <string name="about_description">A personal Android launcher project.</string>
+        <string name="about_version">Version 2.2.1</string>
+        <string name="widget_worldclock">World Clock</string>
+        <string name="widget_worldclock_description">See the local time and date.</string>
+        <string name="widget_variant_worldclock">World Clock</string>
+        <string name="widget_reminders">Reminders</string>
+        <string name="widget_reminders_description">A reminder widget placeholder; connect a reminders provider.</string>
+        <string name="widget_variant_reminders">Reminders</string>
+        <string name="widget_batterypro">Battery Pro</string>
+        <string name="widget_batterypro_description">View the phone battery level.</string>
+        <string name="widget_variant_batterypro">Battery Pro</string>
+        <string name="widget_screentime">Screen Time</string>
+        <string name="widget_screentime_description">Requires Android usage access.</string>
+        <string name="widget_variant_screentime">Screen Time</string>
+        <string name="widget_weatherforecast">Weather Forecast</string>
+        <string name="widget_weatherforecast_description">Choose a weather location to view forecast data.</string>
+        <string name="widget_variant_weatherforecast">Weather Forecast</string>
+        <string name="widget_albumart">Album Art</string>
+        <string name="widget_albumart_description">Shows a message when no media session is active.</string>
+        <string name="widget_variant_albumart">Album Art</string>
+        <string name="widget_activityrings">Activity Rings</string>
+        <string name="widget_activityrings_description">Requires a supported activity data source.</string>
+        <string name="widget_variant_activityrings">Activity Rings</string>
+        <string name="widget_stepcounter">Step Counter</string>
+        <string name="widget_stepcounter_description">Shows step data when a sensor source is connected.</string>
+        <string name="widget_variant_stepcounter">Step Counter</string>
+        <string name="widget_countdown">Countdown</string>
+        <string name="widget_countdown_description">Choose a target date to configure a countdown.</string>
+        <string name="widget_variant_countdown">Countdown</string>
+        <string name="widget_quicknotes">Quick Notes</string>
+        <string name="widget_quicknotes_description">Connect a notes provider to show saved notes.</string>
+        <string name="widget_variant_quicknotes">Quick Notes</string>
+        <string name="widget_calculator">Calculator</string>
+        <string name="widget_calculator_description">Open your installed calculator app.</string>
+        <string name="widget_variant_calculator">Calculator</string>
+        <string name="widget_chargingstatus">Charging Status</string>
+        <string name="widget_chargingstatus_description">View current battery information.</string>
+        <string name="widget_variant_chargingstatus">Charging Status</string>
+        <string name="widget_dailyquote">Daily Quote</string>
+        <string name="widget_dailyquote_description">A short daily reminder.</string>
+        <string name="widget_variant_dailyquote">Daily Quote</string>
+    <string name="edit_manage_widgets">Zarządzaj widżetami</string>
+    <string name="manage_widget_remove">Usuń widżet</string>
+    <string name="manage_widgets_description">Usuwaj tutaj widżety, nawet gdy strona ekranu głównego jest pusta.</string>
+    <string name="manage_widgets_empty">Na ekranie głównym nie ma obecnie żadnych widżetów.</string>
+
+    <string name="bold_clock_appearance">Appearance</string>
+    <string name="bold_clock_customize">Customize Bold Clock</string>
+    <string name="bold_clock_font">Font</string>
+    <string name="bold_clock_font_bold_italic">Bold Italic</string>
+    <string name="bold_clock_font_heavy_sans">Heavy Sans</string>
+    <string name="bold_clock_font_heavy_serif">Heavy Serif</string>
+    <string name="bold_clock_font_rounded_heavy">Rounded Heavy</string>
+    <string name="bold_clock_font_tech_mono">Tech Mono</string>
+    <string name="bold_clock_preview_hint">Preview · pinch with two fingers to resize</string>
+    <string name="bold_clock_size">Size: %1$d%%</string>
+    <string name="bold_clock_style_dark">Dark</string>
+    <string name="bold_clock_style_light">Light</string>
+    <string name="bold_clock_style_liquid">Liquid Glass</string>
+    <string name="edit_remove_empty_pages">Remove Empty Pages</string>
+    <string name="widget_bold_clock">Bold Clock</string>
+    <string name="widget_bold_clock_description">A bold digital clock. Pinch to resize and choose a heavy number style.</string>
+    <string name="widget_variant_bold_clock">Bold Digital</string>
+</resources>
