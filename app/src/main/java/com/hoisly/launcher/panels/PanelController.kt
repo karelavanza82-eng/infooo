@@ -89,13 +89,13 @@ class PanelController(scope: CoroutineScope) {
         val open = when {
             velocity > FLING -> true
             velocity < -FLING -> false
-            else -> shown.value > 0.5f
+            else -> shown.value > 0.18f
         }
         if (open) shown.animateTo(1f, velocity) else shown.animateTo(0f, velocity) { panel = null }
     }
 
     private companion object {
         /** Screen heights per second that count as a flick. */
-        const val FLING = 1.5f
+        const val FLING = 0.65f
     }
 }
