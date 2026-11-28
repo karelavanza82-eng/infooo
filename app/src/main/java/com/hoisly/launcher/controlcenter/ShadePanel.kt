@@ -105,7 +105,6 @@ fun ShadePanel(controller: ShadeController, tiles: TileRepository, host: ShadeSe
     val states by tiles.state.collectAsState()
     val placed by tiles.placed.collectAsState()
     val tileSizes by TileLayoutStore.sizes(ctx).collectAsState()
-    val layoutPrefs by LayoutPreferencesStore.prefs(ctx).collectAsState()
     val media by MediaRepo.items.collectAsState()
     ControlCenterPreferences.init(ctx)
     val ccPrefs by ControlCenterPreferences.state.collectAsState()
@@ -145,7 +144,6 @@ fun ShadePanel(controller: ShadeController, tiles: TileRepository, host: ShadeSe
             LocalGlassSource provides glassSource,
             LocalGlassStyle provides GlassStyle(mode = GlassMode.Liquid),
             LocalTileSizes provides tileSizes,
-            LocalLayoutPrefs provides layoutPrefs,
         ) {
             val pxPerU = with(LocalDensity.current) { 1.u.toPx() }
             val scrimAlpha = (if (blurEnabled) 0.62f else 0.96f) * ccPrefs.backgroundOpacity
@@ -301,30 +299,6 @@ private fun ControlCenterSettingsPage(value: ControlCenterPreferences, context: 
 
 // region pages
 
-/**
- * Applies per-slot size + position from [LocalLayoutPrefs] on top of the default absolute
- * placement produced by [Modifier.at].  Width and height are scaled from the slot's centre so
- * neighbouring elements are not pushed around; dx/dy shift the whole scaled box.
- *
- * @param id    slot id ("media", "brightness", …)
- * @param x     default left edge in reference dp
- * @param y     default top edge in reference dp
- * @param w     default width in reference dp
- * @param h     default height in reference dp
- */
-@Composable
-private fun slotModifier(id: String, x: Float, y: Float, w: Float, h: Float): Modifier {
-    val prefs = LocalLayoutPrefs.current[id] ?: SlotPrefs()
-    val sw = prefs.scaleW
-    val sh = prefs.scaleH
-    // Scale about the slot's centre: new x/y so the centre stays the same.
-    val newW = w * sw
-    val newH = h * sh
-    val newX = x + (w - newW) / 2f + prefs.dx
-    val newY = y + (h - newH) / 2f + prefs.dy
-    return Modifier.at(newX, newY, newW, newH)
-}
-
 @Composable
 private fun MainPage(states: Map<String, TileUi>, placed: PlacedTiles, media: List<MediaItem>, tiles: TileRepository, host: ShadeService) {
     if (LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
@@ -335,39 +309,25 @@ private fun MainPage(states: Map<String, TileUi>, placed: PlacedTiles, media: Li
         // Status indicators (carrier, signal and battery) belong to the dedicated status-bar
         // overlay, never inside Control Center. This avoids duplicated Indosat/battery labels.
 
-        // Music card — slot "media": default 291×139, anchored at (34, 47).
-        val mediaMod = slotModifier("media", LEFT, 47f, CONTENT_W, 139f)
+        // Music card (swipe sideways when more than one player is active).
         if (media.size > 1) {
             val pager = rememberPagerState { media.size }
             HorizontalPager(
-                state = pager, modifier = mediaMod, pageSpacing = 10.u,
+                state = pager, modifier = Modifier.at(LEFT, 47f, CONTENT_W, 139f), pageSpacing = 10.u,
                 key = { media[it].token.hashCode() },
             ) { i -> IosMediaCard(media[i], host, Modifier.fillMaxSize()) }
         } else {
-            IosMediaCard(media.firstOrNull(), host, mediaMod)
+            IosMediaCard(media.firstOrNull(), host, Modifier.at(LEFT, 47f, CONTENT_W, 139f))
         }
 
-        // Connectivity block — slot "connectivity": default 138×138.
-        ConnectivityBlock(states, tiles, host, slotModifier("connectivity", LEFT, 200f, 138f, 138f))
+        ConnectivityBlock(states, tiles, host, Modifier.at(LEFT, 200f, 138f, 138f))
+        Sliders(brightnessModifier = Modifier.at(187f, 200f, 62f, 138f), volumeModifier = Modifier.at(263f, 200f, 62f, 138f))
 
-        // Sliders — slots "brightness" (default 62×138) and "volume" (default 62×138).
-        Sliders(
-            brightnessModifier = slotModifier("brightness", 187f, 200f, 62f, 138f),
-            volumeModifier = slotModifier("volume", 263f, 200f, 62f, 138f),
-        )
-
-        // Wide pills — slots "pill0" and "pill1": default 138×62 each.
         placed.highlight.getOrNull(0)?.let { t ->
-            states[t.id]?.let { s ->
-                WidePill(s, { tiles.click(t, host) }, { t.longClick(host) },
-                    slotModifier("pill0", LEFT, 353f, 138f, 62f))
-            }
+            states[t.id]?.let { s -> WidePill(s, { tiles.click(t, host) }, { t.longClick(host) }, Modifier.at(LEFT, 353f, 138f, 62f)) }
         }
         placed.highlight.getOrNull(1)?.let { t ->
-            states[t.id]?.let { s ->
-                WidePill(s, { tiles.click(t, host) }, { t.longClick(host) },
-                    slotModifier("pill1", 187f, 353f, 138f, 62f))
-            }
+            states[t.id]?.let { s -> WidePill(s, { tiles.click(t, host) }, { t.longClick(host) }, Modifier.at(187f, 353f, 138f, 62f)) }
         }
 
         TileRow(placed.grid.take(4), states, tiles, host, 430f)
@@ -448,7 +408,7 @@ private fun ConnectivityBlock(states: Map<String, TileUi>, tiles: TileRepository
     fun click(id: String) { tiles.byId(id)?.let { tiles.click(it, host) } }
     fun long(id: String) { tiles.byId(id)?.longClick(host) }
 
-    Box(modifier.glass(RoundedCornerShape(36.u), G.fill)) {
+    Box(modifier.glass(RoundedCornerShape(36.u), G.fill, com.hoisly.launcher.ui.glass.GlassProfile.Panel)) {
         ConnectivityButton(
             states["airplane"], G.orange, 48.u, 25.u, { click("airplane") }, { long("airplane") },
             Modifier.offset(14.u, 14.u), icon = Icons.Rounded.AirplanemodeActive, iconRotate = 45f,
@@ -559,7 +519,7 @@ private fun rememberTick(): Long {
     return now
 }
 
-/** Brightness (sun, yellow) and media volume (speaker, blue): white fills rising from the bottom of frosted pills. */
+/** Brightness (sun, yellow) and media volume (speaker, blue): semi-transparent fills on liquid-glass pills. */
 @Composable
 private fun Sliders(brightnessModifier: Modifier, volumeModifier: Modifier) {
     val ctx = LocalContext.current
@@ -573,7 +533,8 @@ private fun Sliders(brightnessModifier: Modifier, volumeModifier: Modifier) {
         vol = MediaVolume.read(ctx); muted = MediaVolume.isMuted(ctx)
     }
     val pill = RoundedCornerShape(50)
-    val track = Color(0x47FFFFFF)
+    // trackColor is no longer passed: the Canvas no longer draws a solid background, so the
+    // liquid-glass surface shows through the full pill. Only the fill overlay is drawn.
 
     VerticalSlider(
         value = bright,
@@ -581,8 +542,8 @@ private fun Sliders(brightnessModifier: Modifier, volumeModifier: Modifier) {
         icon = Icons.Rounded.WbSunny,
         iconTint = G.yellow,
         onIconClick = { auto = !auto; Brightness.setAuto(ctx, auto) },
-        modifier = brightnessModifier.glass(pill, G.fill),
-        trackColor = track, fillColor = G.white, idleTint = Color.White.copy(alpha = 0.75f),
+        modifier = brightnessModifier.glass(pill, G.fill, com.hoisly.launcher.ui.glass.GlassProfile.Button),
+        fillColor = Color.White.copy(alpha = 0.55f), idleTint = Color.White.copy(alpha = 0.75f),
         heightU = 138f, iconDp = 28f,
     )
     VerticalSlider(
@@ -592,8 +553,8 @@ private fun Sliders(brightnessModifier: Modifier, volumeModifier: Modifier) {
         iconTint = G.cyan,
         onIconClick = { MediaVolume.toggleMute(ctx); muted = MediaVolume.isMuted(ctx) },
         steps = MediaVolume.steps(ctx),
-        modifier = volumeModifier.glass(pill, G.fill),
-        trackColor = track, fillColor = G.white, idleTint = Color.White.copy(alpha = 0.75f),
+        modifier = volumeModifier.glass(pill, G.fill, com.hoisly.launcher.ui.glass.GlassProfile.Button),
+        fillColor = Color.White.copy(alpha = 0.55f), idleTint = Color.White.copy(alpha = 0.75f),
         heightU = 138f, iconDp = 30f,
     )
 }

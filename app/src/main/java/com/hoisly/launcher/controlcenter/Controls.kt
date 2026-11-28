@@ -238,16 +238,17 @@ fun VerticalSlider(
                 }
             },
     ) {
-        val track = if (trackColor != Color.Unspecified) trackColor else P.sliderTrack
+        // Note: the outer modifier already applies .glass(pill, ...) so the liquid-glass surface
+        // is already drawn.  The Canvas must NOT repaint the whole track background (that would
+        // cover the glass).  We only overlay the filled portion at the bottom of the pill.
         val fill = if (fillColor != Color.Unspecified) fillColor else P.active
         Canvas(Modifier.fillMaxSize()) {
             val r = size.width / 2f
-            drawRoundRect(track, cornerRadius = CornerRadius(r))
             val fillH = size.height * animated
             if (fillH > 0f) {
-                // Fill is clipped to the pill: draw the pill and cut it at the fill height.
+                // Draw only the filled (bottom) portion of the pill, leaving the top glass visible.
                 clipRect(0f, size.height - fillH, size.width, size.height) {
-                    drawRoundRect(fill, cornerRadius = CornerRadius(r))
+                    drawRoundRect(fill.copy(alpha = fill.alpha * 0.72f), cornerRadius = CornerRadius(r))
                 }
             }
         }
