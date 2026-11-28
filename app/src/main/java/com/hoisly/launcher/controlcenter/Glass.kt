@@ -1,6 +1,7 @@
 package com.hoisly.launcher.controlcenter
 
 import com.hoisly.launcher.ui.glass.glass as hoislyGlass
+import androidx.compose.runtime.CompositionLocalProvider
 
 import android.app.NotificationManager
 import android.media.session.PlaybackState
@@ -102,12 +103,11 @@ object G {
  * Control Center surfaces deliberately use the same Hoisly glass renderer as the launcher,
  * rather than maintaining a second, visually divergent glass implementation.
  */
-fun Modifier.glass(shape: Shape, fill: Color = G.fill): Modifier =
-    this.hoislyGlass(
-        shape = shape,
-        tint = fill,
-        profile = com.hoisly.launcher.ui.glass.GlassProfile.Panel,
-    )
+fun Modifier.glass(
+    shape: Shape,
+    fill: Color = G.fill,
+    profile: com.hoisly.launcher.ui.glass.GlassProfile = com.hoisly.launcher.ui.glass.GlassProfile.Panel,
+): Modifier = this.hoislyGlass(shape = shape, tint = fill, profile = profile)
 
 /** The shared Hoisly renderer already draws its optical edge; do not add a second rim. */
 fun Modifier.rim(shape: Shape): Modifier = this
@@ -137,7 +137,7 @@ fun GlassButton(
     Box(
         modifier
             .graphicsLayer { scaleX = scale; scaleY = scale }
-            .glass(shape, bg)
+            .glass(shape, bg, com.hoisly.launcher.ui.glass.GlassProfile.Button)
             .combinedClickable(source, indication = null, onClick = onClick, onLongClick = onLongClick),
         contentAlignment = Alignment.Center,
         content = content,
@@ -148,17 +148,19 @@ fun GlassButton(
 @Composable
 fun GlassCircleTile(tile: TileUi, size: Dp, onClick: () -> Unit, onLongClick: () -> Unit) {
     val on = tile.active && !tile.stateless
+    val factor = LocalTileSizes.current[tile.id] ?: 1f
+    val actualSize = size * factor
     val tint = when {
         !on -> Color.White
         tile.id == "rotlock" -> G.red
         else -> G.ink
     }
-    GlassButton(Modifier.size(size), CircleShape, if (on) G.white else G.fill, onClick, onLongClick) {
+    GlassButton(Modifier.size(actualSize), CircleShape, if (on) G.white else G.fill, onClick, onLongClick) {
         val bmp = tile.bitmap
         if (bmp != null) {
-            Image(bmp, null, modifier = Modifier.size(34.u).clip(CircleShape))
+            Image(bmp, null, modifier = Modifier.size(actualSize * 0.55f).clip(CircleShape))
         } else {
-            Icon(tile.icon, null, tint = tint, modifier = Modifier.size(30.u))
+            Icon(tile.icon, null, tint = tint, modifier = Modifier.size(actualSize * 0.48f))
         }
     }
 }
@@ -313,7 +315,7 @@ fun IosMediaCard(item: MediaItem?, host: ShadeService, modifier: Modifier) {
     Box(modifier.glass(shape, G.fill)) {
         Row(Modifier.fillMaxSize().padding(12.u)) {
             Box(
-                Modifier.size(114.u).clip(RoundedCornerShape(15.u)).background(Color(0x33FFFFFF)),
+                Modifier.size(114.u).glass(RoundedCornerShape(15.u), G.fillDeep, com.hoisly.launcher.ui.glass.GlassProfile.Tile),
                 contentAlignment = Alignment.Center,
             ) {
                 val art = item?.art
@@ -335,8 +337,7 @@ fun IosMediaCard(item: MediaItem?, host: ShadeService, modifier: Modifier) {
                     Box(
                         Modifier
                             .size(37.u)
-                            .clip(CircleShape)
-                            .background(Color(0x33FFFFFF))
+                            .glass(CircleShape, G.fillDeep, com.hoisly.launcher.ui.glass.GlassProfile.SmallButton)
                             .combinedClickable(enabled = enabled, onClick = { item?.let { host.openOutputSwitcher(it.pkg, it.token) } }),
                         contentAlignment = Alignment.Center,
                     ) {
@@ -365,7 +366,7 @@ fun IosMediaCard(item: MediaItem?, host: ShadeService, modifier: Modifier) {
 @Composable
 private fun TransportButton(icon: ImageVector, box: Dp, iconSize: Dp, enabled: Boolean, onClick: () -> Unit) {
     Box(
-        Modifier.size(box).clip(CircleShape).combinedClickable(enabled = enabled, onClick = onClick),
+        Modifier.size(box).glass(CircleShape, G.fillDeep, com.hoisly.launcher.ui.glass.GlassProfile.Button).combinedClickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         Icon(icon, null, tint = Color.White.copy(alpha = if (enabled) 1f else 0.35f), modifier = Modifier.size(iconSize))

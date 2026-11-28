@@ -163,7 +163,7 @@ fun NotificationCard(
                     },
                 )
                 .clip(RoundedCornerShape(20.u))
-                .background(P.card)
+                .glass(RoundedCornerShape(20.u), Color(0x4DFFFFFF), com.hoisly.launcher.ui.glass.GlassProfile.Panel)
                 .clickable {
                     when {
                         offsetX.value != 0f -> { onMenuOpenChange(false); scope.launch { offsetX.animateTo(0f, spring) } }

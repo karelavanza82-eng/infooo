@@ -5,6 +5,7 @@ import android.provider.Settings
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.awaitVerticalTouchSlopOrCancellation
@@ -58,6 +59,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -75,6 +77,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.Date
 import com.hoisly.launcher.ui.glass.GlassMode
 import com.hoisly.launcher.ui.glass.GlassSource
@@ -101,11 +104,13 @@ fun ShadePanel(controller: ShadeController, tiles: TileRepository, host: ShadeSe
     val palette = remember(config.uiMode, config.hashCode()) { ShadePalette.from(ctx) }
     val states by tiles.state.collectAsState()
     val placed by tiles.placed.collectAsState()
+    val tileSizes by TileLayoutStore.sizes(ctx).collectAsState()
     val media by MediaRepo.items.collectAsState()
     ControlCenterPreferences.init(ctx)
     val ccPrefs by ControlCenterPreferences.state.collectAsState()
     var page by remember { mutableIntStateOf(0) }
     val sidePager = rememberPagerState(initialPage = 1, pageCount = { 2 })
+    val shadeScope = rememberCoroutineScope()
     val closed by remember(controller) { derivedStateOf { controller.expansion.value == 0f } }
     LaunchedEffect(closed) {
         if (closed) {
@@ -124,12 +129,21 @@ fun ShadePanel(controller: ShadeController, tiles: TileRepository, host: ShadeSe
     }
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
-        val unit = maxWidth.value / 360f
+        val landscape = config.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+        // The original 360dp reference is based on portrait width. In landscape, using maxWidth
+        // makes every fixed control several times too large; scale from the short screen edge.
+        val unit = if (landscape) {
+            minOf(maxWidth.value / 568f, maxHeight.value / 360f)
+        } else {
+            maxWidth.value / 360f
+        }
+        val panelMaxStage = if (landscape) 2f else 1f
         CompositionLocalProvider(
             LocalUnit provides unit,
             LocalPalette provides palette,
             LocalGlassSource provides glassSource,
             LocalGlassStyle provides GlassStyle(mode = GlassMode.Liquid),
+            LocalTileSizes provides tileSizes,
         ) {
             val pxPerU = with(LocalDensity.current) { 1.u.toPx() }
             val scrimAlpha = (if (blurEnabled) 0.62f else 0.96f) * ccPrefs.backgroundOpacity
@@ -143,31 +157,37 @@ fun ShadePanel(controller: ShadeController, tiles: TileRepository, host: ShadeSe
             ) { side ->
                 if (side == 0) {
                     Box(Modifier.fillMaxSize().background(Color(0xFF0B0B0C).copy(alpha = scrimAlpha))) {
-                        NotificationPage(host, Modifier.fillMaxSize())
+                        NotificationPage(host, onClose = { shadeScope.launch { sidePager.animateScrollToPage(1) } }, modifier = Modifier.fillMaxSize())
                     }
                 } else {
                     Box(Modifier.fillMaxSize()) {
                         Box(
                             Modifier
                                 .fillMaxSize()
-                                .graphicsLayer { alpha = frac(controller.expansion.value.coerceIn(0f, 1f), 0f, 0.4f) * scrimAlpha }
+                                .graphicsLayer {
+                                    val expansion = controller.expansion.value.coerceIn(0f, 2f)
+                                    val scrimProgress = if (landscape) frac(expansion, 1.0f, 1.45f) else frac(expansion, 0f, 0.4f)
+                                    alpha = scrimProgress * scrimAlpha
+                                }
                                 .background(Color(0xFF0B0B0C))
-                                .panelDrag(controller)
+                                .panelDrag(controller, panelMaxStage)
                                 .tapToClose(controller),
                         )
 
                         Box(
                             Modifier
                                 .fillMaxSize()
-                                .panelDrag(controller)
+                                .panelDrag(controller, panelMaxStage)
                                 .tapToClose(controller)
                                 .graphicsLayer {
-                                    val o = controller.expansion.value.coerceIn(0f, 1f)
-                                    alpha = frac(o, 0.05f, 0.6f)
-                                    translationY = -(1f - o) * 48f * pxPerU + ccPrefs.offsetY * pxPerU
+                                    val o = controller.expansion.value.coerceIn(0f, 2f)
+                                    val landscapeStage = config.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+                                    val progress = if (landscapeStage) frac(o, 1f, 2f) else frac(o, 0f, 1f)
+                                    alpha = if (landscapeStage) progress else frac(progress, 0.05f, 0.6f)
+                                    translationY = -(1f - progress) * 48f * pxPerU + ccPrefs.offsetY * pxPerU
                                     translationX = ccPrefs.offsetX * pxPerU
-                                    scaleX = (0.94f + 0.06f * o) * ccPrefs.scale
-                                    scaleY = (0.94f + 0.06f * o) * ccPrefs.scale
+                                    scaleX = (0.94f + 0.06f * progress) * ccPrefs.scale
+                                    scaleY = (0.94f + 0.06f * progress) * ccPrefs.scale
                                     transformOrigin = TransformOrigin(0.5f, 0f)
                                 },
                         ) {
@@ -190,12 +210,18 @@ fun ShadePanel(controller: ShadeController, tiles: TileRepository, host: ShadeSe
 
 /** Notification side of the shade, matching the iOS rightward-swipe interaction. */
 @Composable
-private fun NotificationPage(host: ShadeService, modifier: Modifier = Modifier) {
+private fun NotificationPage(host: ShadeService, onClose: () -> Unit, modifier: Modifier = Modifier) {
     val notifications by NotifListener.items.collectAsState()
     var openMenuKey by remember { mutableStateOf<String?>(null) }
     Column(modifier.padding(start = 18.u, end = 18.u, top = 36.u, bottom = 24.u)) {
         Row(
-            Modifier.fillMaxWidth().padding(bottom = 14.u),
+            Modifier.fillMaxWidth().padding(bottom = 14.u).pointerInput(Unit) {
+                var total = 0f
+                detectVerticalDragGestures(onVerticalDrag = { change, drag ->
+                    total += drag
+                    if (total < -64.dp.toPx()) { change.consume(); onClose(); total = 0f }
+                }, onDragEnd = { total = 0f }, onDragCancel = { total = 0f })
+            },
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text("Notifications", color = Color.White, fontSize = 24.us, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
@@ -275,12 +301,13 @@ private fun ControlCenterSettingsPage(value: ControlCenterPreferences, context: 
 
 @Composable
 private fun MainPage(states: Map<String, TileUi>, placed: PlacedTiles, media: List<MediaItem>, tiles: TileRepository, host: ShadeService) {
+    if (LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
+        LandscapeMainPage(states, placed, media, tiles, host)
+        return
+    }
     Box(Modifier.fillMaxSize()) {
-        // In landscape the dedicated Hoisly status-bar overlay is the only status row;
-        // drawing this compact in-panel copy as well would duplicate the indicators.
-        if (LocalConfiguration.current.orientation != android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
-            IosStatusRow(Modifier.at(LEFT, 10f, CONTENT_W, 24f))
-        }
+        // Status indicators (carrier, signal and battery) belong to the dedicated status-bar
+        // overlay, never inside Control Center. This avoids duplicated Indosat/battery labels.
 
         // Music card (swipe sideways when more than one player is active).
         if (media.size > 1) {
@@ -305,6 +332,61 @@ private fun MainPage(states: Map<String, TileUi>, placed: PlacedTiles, media: Li
 
         TileRow(placed.grid.take(4), states, tiles, host, 430f)
         TileRow(placed.grid.drop(4).take(4), states, tiles, host, 506f)
+    }
+}
+
+@Composable
+private fun LandscapeMainPage(
+    states: Map<String, TileUi>,
+    placed: PlacedTiles,
+    media: List<MediaItem>,
+    tiles: TileRepository,
+    host: ShadeService,
+) {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Box(Modifier.width(568.u).height(360.u)) {
+            // The player gets a fixed, compact column; controls use the remaining horizontal space.
+            IosMediaCard(media.firstOrNull(), host, Modifier.at(0f, 100f, 230f, 150f))
+            ConnectivityBlock(states, tiles, host, Modifier.at(242f, 12f, 138f, 138f))
+            Sliders(
+                brightnessModifier = Modifier.at(390f, 12f, 62f, 138f),
+                volumeModifier = Modifier.at(466f, 12f, 62f, 138f),
+            )
+            placed.highlight.getOrNull(0)?.let { tile ->
+                states[tile.id]?.let { ui ->
+                    WidePill(ui, { tiles.click(tile, host) }, { tile.longClick(host) }, Modifier.at(242f, 165f, 138f, 58f))
+                }
+            }
+            placed.highlight.getOrNull(1)?.let { tile ->
+                states[tile.id]?.let { ui ->
+                    WidePill(ui, { tiles.click(tile, host) }, { tile.longClick(host) }, Modifier.at(390f, 165f, 138f, 58f))
+                }
+            }
+            LandscapeTileRow(placed.grid.take(4), states, tiles, host, 238f)
+            LandscapeTileRow(placed.grid.drop(4).take(4), states, tiles, host, 302f)
+        }
+    }
+}
+
+@Composable
+private fun LandscapeTileRow(
+    row: List<Tile>,
+    states: Map<String, TileUi>,
+    tiles: TileRepository,
+    host: ShadeService,
+    y: Float,
+) {
+    Row(
+        Modifier.offset(242.u, y.u).width(286.u).height(54.u),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        row.forEach { tile ->
+            val ui = states[tile.id]
+            if (ui != null) {
+                GlassCircleTile(ui, 50.u, onClick = { tiles.click(tile, host) }, onLongClick = { tile.longClick(host) })
+            }
+        }
     }
 }
 
@@ -490,24 +572,27 @@ private fun Modifier.tapToClose(controller: ShadeController) = pointerInput(cont
 }
 
 /** Vertical drags on empty space: pull down opens, push up closes. Single stage. */
-private fun Modifier.panelDrag(controller: ShadeController) = pointerInput(controller) {
+private fun Modifier.panelDrag(controller: ShadeController, maxStage: Float) = pointerInput(controller, maxStage) {
     awaitEachGesture {
         val down = awaitFirstDown(requireUnconsumed = false)
         val tracker = VelocityTracker()
         tracker.addPosition(down.uptimeMillis, down.position)
+        // A pull that starts while closed is capped at stage one. Only a fresh gesture
+        // beginning from the status-bar-only stage can expand to the Control Center.
+        val allowedStage = if (maxStage > 1f && controller.expansion.value >= 0.99f) 2f else 1f
         var started = false
         val slopChange = awaitVerticalTouchSlopOrCancellation(down.id) { change, over ->
             change.consume()
-            controller.dragBy(over, maxStage = 1f)
+            controller.dragBy(over, maxStage = allowedStage)
             started = true
         }
         if (slopChange != null || started) {
             verticalDrag(slopChange?.id ?: down.id) { change ->
                 tracker.addPosition(change.uptimeMillis, change.position)
-                controller.dragBy(change.position.y - change.previousPosition.y, maxStage = 1f)
+                controller.dragBy(change.position.y - change.previousPosition.y, maxStage = allowedStage)
                 change.consume()
             }
-            controller.settle(tracker.calculateVelocity().y, maxStage = 1f)
+            controller.settle(tracker.calculateVelocity().y, maxStage = allowedStage)
         }
     }
 }

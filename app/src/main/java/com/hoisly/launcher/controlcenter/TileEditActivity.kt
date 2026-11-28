@@ -41,6 +41,7 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Remove
 import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -95,6 +96,7 @@ class TileEditActivity : ComponentActivity() {
     private fun Editor() {
         val ctx = LocalContext.current
         val layout by TileLayoutStore.layout(ctx).collectAsState()
+        val tileSizes by TileLayoutStore.sizes(ctx).collectAsState()
         val tiles = remember { HashMap<String, Tile?>() }
         fun ui(id: String): TileUi? = (tiles.getOrPut(id) { TileCatalog.create(id, ctx) })?.let {
             try { it.read(ctx) } catch (_: Exception) { null }
@@ -152,8 +154,20 @@ class TileEditActivity : ComponentActivity() {
                 onBadge = { id -> TileLayoutStore.save(ctx, layout.copy(grid = layout.grid - id)) },
             )
 
+            Section("Tile size", "Atur ukuran setiap tombol secara individual. Perubahan langsung disimpan.")
+            layout.grid.forEach { id ->
+                Column(Modifier.fillMaxWidth().padding(vertical = 5.dp)) {
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Text(ui(id)?.label ?: id, color = P.text, fontSize = 13.sp, modifier = Modifier.weight(1f))
+                        Text("${((tileSizes[id] ?: 1f) * 100).toInt()}%", color = P.textSecondary, fontSize = 12.sp)
+                    }
+                    val factor = tileSizes[id] ?: 1f
+                    Slider(value = factor, onValueChange = { TileLayoutStore.saveSize(ctx, id, it) }, valueRange = 0.75f..1.35f)
+                }
+            }
+
             Section("Add tiles", "Tap a tile to add it. Tiles marked S switch directly only with Shizuku.")
-            val unused = layout.unused()
+            val unused = layout.unused(ctx)
             StaticGrid(unused, ::ui, needsShizuku = { tiles[it]?.needsShizuku == true }) { id ->
                 TileLayoutStore.save(ctx, layout.copy(grid = layout.grid + id))
             }

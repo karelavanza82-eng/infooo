@@ -1,13 +1,18 @@
 package com.hoisly.launcher.controlcenter
 
 import android.content.Context
+import android.os.Build
+import android.content.pm.PackageManager
+import androidx.compose.runtime.staticCompositionLocalOf
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+
+val LocalTileSizes = staticCompositionLocalOf<Map<String, Float>> { emptyMap() }
 
 /** Which tiles are in the shade: two wide tiles on top, then the round tiles in order. */
 data class TileLayout(val highlight: List<String>, val grid: List<String>) {
     /** Tiles not placed anywhere, for the editor's "available" list. */
-    fun unused(): List<String> = TileCatalog.builtIn.filter { it !in highlight && it !in grid }
+    fun unused(ctx: Context? = null): List<String> = TileCatalog.builtIn.filter { it !in highlight && it !in grid && (ctx == null || TileCatalog.isSupported(it, ctx)) }
 }
 
 /** Every tile the shade knows, by id. App shortcuts ("app:<package>") are created on demand. */
@@ -21,6 +26,21 @@ object TileCatalog {
         "mic_access", "caffeine", "extradim", "invert", "wallet", "alarm", "timer", "calculator", "camera",
         "screenrecord", "rotlock", "silent", "qr", "mirror", "shazam",
     )
+
+    /** Hide controls that cannot exist on this device/API instead of offering dead shortcuts. */
+    fun isSupported(id: String, ctx: Context): Boolean {
+        val pm = ctx.packageManager
+        return when (id) {
+            "nfc" -> pm.hasSystemFeature(PackageManager.FEATURE_NFC)
+            "camera_access", "mic_access" -> Build.VERSION.SDK_INT >= 31
+            "screenrecord" -> Build.VERSION.SDK_INT >= 29
+            "wallet" -> Build.VERSION.SDK_INT >= 30
+            "quickshare" -> Build.VERSION.SDK_INT >= 29
+            "hotspot" -> pm.hasSystemFeature(PackageManager.FEATURE_WIFI)
+            "camera" -> pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)
+            else -> true
+        }
+    }
 
     fun create(id: String, ctx: Context): Tile? = when {
         id.startsWith(AppTile.PREFIX) -> AppTile(id.removePrefix(AppTile.PREFIX), ctx)
@@ -56,6 +76,20 @@ object TileLayoutStore {
     )
 
     private var flow: MutableStateFlow<TileLayout>? = null
+    private var sizeFlow: MutableStateFlow<Map<String, Float>>? = null
+
+    @Synchronized fun sizes(ctx: Context): StateFlow<Map<String, Float>> = sizeFlow ?: MutableStateFlow(loadSizes(ctx)).also { sizeFlow = it }
+
+    fun saveSize(ctx: Context, id: String, value: Float) {
+        val clean = value.coerceIn(0.75f, 1.35f)
+        val current = sizes(ctx).value.toMutableMap().apply { put(id, clean) }
+        prefs(ctx).edit().putString("tile_sizes", current.entries.joinToString(";") { "${it.key}:${it.value}" }).apply()
+        (sizes(ctx) as MutableStateFlow).value = current
+    }
+
+    private fun loadSizes(ctx: Context): Map<String, Float> = prefs(ctx).getString("tile_sizes", null)?.split(";")?.mapNotNull { entry ->
+        val parts = entry.split(":", limit = 2); if (parts.size == 2) parts[0] to (parts[1].toFloatOrNull()?.coerceIn(0.75f, 1.35f) ?: 1f) else null
+    }?.toMap() ?: emptyMap()
 
     @Synchronized
     fun layout(ctx: Context): StateFlow<TileLayout> = flow ?: MutableStateFlow(load(ctx)).also { flow = it }

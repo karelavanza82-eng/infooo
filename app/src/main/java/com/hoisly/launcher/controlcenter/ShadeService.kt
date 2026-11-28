@@ -103,7 +103,12 @@ class ShadeService : AccessibilityService(), TileHost {
         updateCatcher()
 
         scope.launch {
-            snapshotFlow { controller.expansion.value }.collect { applyBlur(it) }
+            snapshotFlow { controller.expansion.value }.collect { expansion ->
+                applyBlur(expansion)
+                val landscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+                // Keep the custom status bar visible between the first and second landscape pulls.
+                com.hoisly.launcher.statusbar.StatusBarStore.setLandscapeGestureActive(landscape && expansion > 0.01f)
+            }
         }
     }
 
@@ -203,6 +208,7 @@ class ShadeService : AccessibilityService(), TileHost {
         val slop = ViewConfiguration.get(this).scaledTouchSlop
         var downY = 0f
         var lastY = 0f
+        var startExpansion = 0f
         var dragging = false
         var twoFinger = false
         var tracker: VelocityTracker? = null
@@ -211,6 +217,7 @@ class ShadeService : AccessibilityService(), TileHost {
             when (e.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
                     downY = e.rawY; lastY = e.rawY; dragging = false; twoFinger = false
+                    startExpansion = controller.expansion.value
                     tracker?.recycle(); tracker = VelocityTracker.obtain()
                     tracker?.addMovement(e)
                     tiles.refresh()
@@ -226,9 +233,11 @@ class ShadeService : AccessibilityService(), TileHost {
                         )
                     }
                     if (dragging) {
-                        // A one-finger pull stops at the notification stage, as on OxygenOS;
-                        // two fingers go straight through to the control center.
-                        controller.dragBy(e.rawY - lastY, maxStage = 1f)
+                        // Landscape uses two deliberate stages: first reveal only the status bar,
+                        // then a second pull opens Control Center. Portrait keeps its one-stage shade.
+                        val landscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+                        val maxStage = if (landscape && startExpansion >= 0.99f) 2f else 1f
+                        controller.dragBy(e.rawY - lastY, maxStage = maxStage)
                         lastY = e.rawY
                     }
                 }
@@ -238,11 +247,12 @@ class ShadeService : AccessibilityService(), TileHost {
                     val vy = tracker?.yVelocity ?: 0f
                     tracker?.recycle(); tracker = null
                     if (dragging) {
-                        controller.settle(vy, maxStage = 1f)
+                        val landscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+                        val maxStage = if (landscape && startExpansion >= 0.99f) 2f else 1f
+                        controller.settle(vy, maxStage = maxStage)
                         dismissSystemShadeAfterGesture()
                     }
                     dragging = false
-                    com.hoisly.launcher.statusbar.StatusBarStore.setLandscapeGestureActive(false)
                 }
                 MotionEvent.ACTION_CANCEL -> {
                     // SystemUI watches top-edge swipes with a spy window and pilfers the pointer once
@@ -252,11 +262,8 @@ class ShadeService : AccessibilityService(), TileHost {
                     dragging = false
                     val landscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
                     com.hoisly.launcher.statusbar.StatusBarStore.setLandscapeGestureActive(landscape)
-                    takeOverFromSystemShade(1f)
-                    if (landscape) scope.launch {
-                        delay(700)
-                        com.hoisly.launcher.statusbar.StatusBarStore.setLandscapeGestureActive(false)
-                    }
+                    val stage = if (landscape && startExpansion >= 0.99f) 2f else 1f
+                    takeOverFromSystemShade(stage)
                 }
             }
             true
