@@ -24,6 +24,15 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.platform.AndroidUiDispatcher
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.produceState
+import com.hoisly.launcher.settings.LauncherSettings
+import com.hoisly.launcher.settings.LocalSettingsState
+import com.hoisly.launcher.ui.glass.LocalGlassSource
+import com.hoisly.launcher.ui.glass.LocalGlassStyle
+import com.hoisly.launcher.ui.glass.WallpaperBlur
+import com.hoisly.launcher.ui.glass.glassStyle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -35,9 +44,9 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /**
- * Hosts the replacement shade. A thin window over the status bar catches the pull-down
- * (accessibility overlays sit above the system status bar, so the system shade never sees it),
- * and a full-screen window draws the OxygenOS-style panel.
+ * Hosts Hoisly's replacement shade. A shallow top-edge gesture strip routes left-side pulls
+ * to notifications and right-side pulls to the full Control Center. A transparent overlay
+ * renders the panel with Hoisly's own Liquid Glass composition locals.
  *
  * On the lock screen the catcher is removed, so the system shade keeps working there and
  * notification contents stay protected.
@@ -194,19 +203,26 @@ class ShadeService : AccessibilityService(), TileHost {
     @SuppressLint("ClickableViewAccessibility")
     private fun addCatcherWindow() {
         catcher = View(this)
-        catcherParams = baseParams(statusBarHeight(), WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
-            .apply { title = "OpShadeCatcher" }
+        // A shallow top-edge strip avoids taking over the entire status-bar area and
+        // reduces collisions with OEM quick-settings gestures. Keep it responsive to density.
+        val triggerHeight = (48 * resources.displayMetrics.density).roundToInt()
+        catcherParams = baseParams(triggerHeight, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
+            .apply { title = "HoislyGestureCatcher" }
         val slop = ViewConfiguration.get(this).scaledTouchSlop
         var downY = 0f
         var lastY = 0f
         var dragging = false
         var twoFinger = false
+        var targetStage = 1f
         var tracker: VelocityTracker? = null
 
         catcher.setOnTouchListener { _, e ->
             when (e.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
                     downY = e.rawY; lastY = e.rawY; dragging = false; twoFinger = false
+                    // Split the top edge into two Hoisly gestures: left opens notifications,
+                    // right opens the full Control Center. A two-finger pull remains full.
+                    targetStage = if (e.rawX >= resources.displayMetrics.widthPixels / 2f) 2f else 1f
                     tracker?.recycle(); tracker = VelocityTracker.obtain()
                     tracker?.addMovement(e)
                     tiles.refresh()
@@ -219,9 +235,7 @@ class ShadeService : AccessibilityService(), TileHost {
                         lastY = e.rawY
                     }
                     if (dragging) {
-                        // A one-finger pull stops at the notification stage, as on OxygenOS;
-                        // two fingers go straight through to the control center.
-                        controller.dragBy(e.rawY - lastY, maxStage = 1f)
+                        controller.dragBy(e.rawY - lastY, maxStage = if (twoFinger) 2f else targetStage)
                         lastY = e.rawY
                     }
                 }
@@ -230,7 +244,7 @@ class ShadeService : AccessibilityService(), TileHost {
                     tracker?.computeCurrentVelocity(1000)
                     val vy = tracker?.yVelocity ?: 0f
                     tracker?.recycle(); tracker = null
-                    if (dragging) controller.settle(vy, maxStage = 1f)
+                    if (dragging) controller.settle(vy, maxStage = if (twoFinger) 2f else targetStage)
                     dragging = false
                 }
                 MotionEvent.ACTION_CANCEL -> {
@@ -239,7 +253,7 @@ class ShadeService : AccessibilityService(), TileHost {
                     // layered above the system one) and dismiss the system shade underneath.
                     tracker?.recycle(); tracker = null
                     dragging = false
-                    takeOverFromSystemShade(1f)
+                    takeOverFromSystemShade(if (twoFinger) 2f else targetStage)
                 }
             }
             true
@@ -263,12 +277,25 @@ class ShadeService : AccessibilityService(), TileHost {
         val compose = ComposeView(this).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindowOrReleasedFromPool)
             setContent {
-                ShadePanel(
-                    controller = controller,
-                    tiles = tiles,
-                    host = this@ShadeService,
-                    blurEnabled = blurEnabled,
-                )
+                val launcherSettings by LauncherSettings.get(this@ShadeService).state.collectAsState()
+                val glassSource by produceState<com.hoisly.launcher.ui.glass.GlassSource?>(null, launcherSettings.blurEffect) {
+                    value = if (launcherSettings.blurEffect) {
+                        val sharp = WallpaperBlur.loadPreview(this@ShadeService)
+                        WallpaperBlur.load(this@ShadeService, sharp)
+                    } else null
+                }
+                CompositionLocalProvider(
+                    LocalSettingsState provides launcherSettings,
+                    LocalGlassSource provides glassSource.takeIf { launcherSettings.blurEffect },
+                    LocalGlassStyle provides launcherSettings.glassStyle(),
+                ) {
+                    ShadePanel(
+                        controller = controller,
+                        tiles = tiles,
+                        host = this@ShadeService,
+                        blurEnabled = blurEnabled,
+                    )
+                }
             }
         }
         shadeRoot.addView(compose, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))

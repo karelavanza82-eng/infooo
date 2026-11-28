@@ -60,13 +60,21 @@ class NotifListener : NotificationListenerService() {
     private val iconCache = HashMap<String, ImageBitmap?>()
 
     override fun onListenerConnected() {
+        super.onListenerConnected()
         instance = this
+        // The system can deliver the connection callback before its active-notification
+        // snapshot is ready. Read once now and again on the next main-loop turn.
         rebuild()
+        android.os.Handler(mainLooper).post { if (instance === this) rebuild() }
     }
 
     override fun onListenerDisconnected() {
         instance = null
         _items.value = emptyList()
+        // OEMs occasionally drop listeners while the app is backgrounded. Ask SystemUI
+        // to bind us again instead of leaving the shade looking permanently empty.
+        runCatching { requestRebind(component(this)) }
+        super.onListenerDisconnected()
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification?, rankingMap: RankingMap?) = rebuild()
@@ -95,7 +103,14 @@ class NotifListener : NotificationListenerService() {
             _items.value = Demo.notifications(this)
             return
         }
-        val active = try { activeNotifications } catch (_: Exception) { null } ?: return
+        val active = try { activeNotifications } catch (t: Throwable) {
+            android.util.Log.w("HoislyNotif", "Unable to read active notifications", t)
+            null
+        } ?: run {
+            // A transient null snapshot must not leave a stale list on screen.
+            _items.value = emptyList()
+            return
+        }
         val order = currentRanking?.orderedKeys?.withIndex()?.associate { it.value to it.index } ?: emptyMap()
         val ranked = active
             .filter { it.packageName != packageName }

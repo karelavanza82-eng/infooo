@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
  * 360dp-wide screen. [LocalUnit] scales them to the current width, so proportions match on any phone.
  */
 val LocalUnit = compositionLocalOf { 1f }
+val LocalTileIconScale = compositionLocalOf { 1f }
 
 val Number.u: Dp
     @Composable @ReadOnlyComposable get() = (toFloat() * LocalUnit.current).dp

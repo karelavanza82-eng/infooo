@@ -28,7 +28,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -42,6 +45,12 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import rikka.shizuku.Shizuku
+import com.hoisly.launcher.settings.LauncherSettings
+import com.hoisly.launcher.settings.LocalSettingsState
+import com.hoisly.launcher.ui.glass.LocalGlassSource
+import com.hoisly.launcher.ui.glass.LocalGlassStyle
+import com.hoisly.launcher.ui.glass.WallpaperBlur
+import com.hoisly.launcher.ui.glass.glassStyle
 
 /** Lists what the shade needs and opens the right system screen for each missing piece. */
 class ControlCenterSetupActivity : ComponentActivity() {
@@ -54,7 +63,19 @@ class ControlCenterSetupActivity : ComponentActivity() {
         applyDemoExtra(intent)
         try { Shizuku.addRequestPermissionResultListener(shizukuListener) } catch (_: Throwable) {}
         setContent {
-            androidx.compose.runtime.CompositionLocalProvider(LocalPalette provides ShadePalette.from(this)) { Screen(tick) }
+            val settings by LauncherSettings.get(this@ControlCenterSetupActivity).state.collectAsState()
+            val glass by produceState<com.hoisly.launcher.ui.glass.GlassSource?>(null, settings.blurEffect) {
+                value = if (settings.blurEffect) {
+                        val sharp = WallpaperBlur.loadPreview(this@ControlCenterSetupActivity)
+                        WallpaperBlur.load(this@ControlCenterSetupActivity, sharp)
+                    } else null
+            }
+            CompositionLocalProvider(
+                LocalPalette provides ShadePalette.from(this@ControlCenterSetupActivity),
+                LocalSettingsState provides settings,
+                LocalGlassSource provides glass.takeIf { settings.blurEffect },
+                LocalGlassStyle provides settings.glassStyle(),
+            ) { Screen(tick) }
         }
     }
 
@@ -146,16 +167,15 @@ class ControlCenterSetupActivity : ComponentActivity() {
         Column(
             Modifier
                 .fillMaxSize()
-                .background(Color(0xFF161616))
+                .background(Color(0xFF101114))
                 .safeDrawingPadding()
                 .verticalScroll(rememberScrollState())
                 .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            Text("OnePlus Control", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Medium, fontFamily = Op.Display)
+            Text("Hoisly Control Center", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Medium, fontFamily = Op.Display)
             Text(
-                "OxygenOS-style notification shade and control center. Pull down from the status bar to open it; " +
-                    "pull again (or use two fingers) for the full control center.",
+                "Control Center dan Notification Center Hoisly. Geser dari sisi kanan atas untuk Control Center, atau sisi kiri atas untuk notifikasi.",
                 color = P.textSecondary, fontSize = 14.sp,
             )
             if (AutoSetup.nextMissing(ctx) != null) {
@@ -216,7 +236,7 @@ class ControlCenterSetupActivity : ComponentActivity() {
                 "Edit tiles", color = P.text, fontSize = 16.sp,
                 modifier = Modifier
                     .clip(RoundedCornerShape(50))
-                    .background(Color(0xFF242424))
+                    .background(Color(0x24FFFFFF))
                     .clickable { startActivity(Intent(ctx, TileEditActivity::class.java)) }
                     .padding(horizontal = 22.dp, vertical = 12.dp),
             )
@@ -237,7 +257,7 @@ class ControlCenterSetupActivity : ComponentActivity() {
             Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(20.dp))
-                .background(Color(0xFF242424))
+                .glass(RoundedCornerShape(22.dp), Color(0x28FFFFFF))
                 .then(if (!ok && onFix != null) Modifier.clickable { onFix() } else Modifier)
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -248,11 +268,11 @@ class ControlCenterSetupActivity : ComponentActivity() {
             }
             Spacer(Modifier.size(12.dp))
             Text(
-                if (ok) "On" else if (onFix != null) "Set up" else "Off",
-                color = if (ok) P.onActive else Color.Black, fontSize = 13.sp,
+                if (ok) "Aktif" else if (onFix != null) "Atur" else "Mati",
+                color = if (ok) Color.White else Color.Black, fontSize = 13.sp,
                 modifier = Modifier
                     .clip(CircleShape)
-                    .background(if (ok) P.active else Color(0xFFD9D9D9))
+                    .background(if (ok) Color(0xFF30D158) else Color(0xFFD9D9D9))
                     .padding(horizontal = 12.dp, vertical = 6.dp),
             )
         }
