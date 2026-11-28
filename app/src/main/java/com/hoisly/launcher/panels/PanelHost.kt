@@ -64,7 +64,6 @@ internal fun PanelHost(controller: PanelController, vm: LauncherViewModel) {
     // Include the actual status-bar area in the gesture target. The old inset modifier
     // moved the touch strip below the status bar, so a swipe starting at the top edge
     // could not reliably claim the gesture.
-    val topInset = WindowInsets.statusBarsIgnoringVisibility.asPaddingValues().calculateTopPadding()
     Box(Modifier.fillMaxSize().onSizeChanged {
         controller.heightPx = it.height.toFloat()
         controller.widthPx = it.width.toFloat()
@@ -75,7 +74,7 @@ internal fun PanelHost(controller: PanelController, vm: LauncherViewModel) {
                 Modifier
                     .align(Alignment.TopCenter)
                     .fillMaxWidth()
-                    .height(topInset + EdgeStripHeight)
+                    .height(64.dp)
                     .verticalPanelDrag(
                         accepts = { touch ->
                             pending.panel = panelForEdgeTouch(touch.x, controller.widthPx, prefs.controlCenter, prefs.notificationCenter)
