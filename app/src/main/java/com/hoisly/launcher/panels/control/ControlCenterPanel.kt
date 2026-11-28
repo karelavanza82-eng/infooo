@@ -51,22 +51,29 @@ fun ControlCenterPanel(onClose: () -> Unit) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val torch = rememberTorch()
+
     var tick by remember { mutableIntStateOf(0) }
     val lifecycle = LocalLifecycleOwner.current.lifecycle
+
     DisposableEffect(lifecycle) {
-        val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_RESUME) tick++ }
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) tick++
+        }
         lifecycle.addObserver(observer)
         onDispose { lifecycle.removeObserver(observer) }
     }
+
     val wifi = remember(tick) { context.wifiOn() }
     val bluetooth = remember(tick) { context.bluetoothOn() }
     val airplane = remember(tick) { context.airplaneOn() }
     val focus = remember(tick) { context.focusOn() }
     val rotationLocked = remember(tick) { context.rotationLocked() }
     val canWrite = remember(tick) { context.canWriteSystemSettings() }
+
     var brightness by remember { mutableFloatStateOf(context.brightnessFraction()) }
     var volume by remember { mutableFloatStateOf(context.volumeFraction()) }
     var nowPlaying by remember { mutableStateOf<NowPlaying?>(null) }
+
     LaunchedEffect(Unit) {
         while (true) {
             val next = readNowPlaying(context)
@@ -74,78 +81,311 @@ fun ControlCenterPanel(onClose: () -> Unit) {
             delay(900L)
         }
     }
-    val tap: () -> Unit = { haptic.performHapticFeedback(Haptics.Tick) }
-    val launch: (() -> Boolean) -> Unit = { action -> tap(); if (action()) onClose() }
+
+    val tap: () -> Unit = {
+        haptic.performHapticFeedback(Haptics.Tick)
+    }
+
+    val launch: (() -> Boolean) -> Unit = { action ->
+        tap()
+        if (action()) onClose()
+    }
 
     Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        // iOS media player: artwork on the left, metadata and transport controls on the right.
+
+        // HEADER
+        Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+            Text(
+                "Control Center",
+                color = Color.White,
+                fontSize = 25.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                "Connectivity and controls",
+                color = Color.White.copy(alpha = .58f),
+                fontSize = 13.sp
+            )
+        }
+
+        // MEDIA PLAYER
         MediaPlayerGlass(nowPlaying, Modifier.fillMaxWidth())
 
-        // Connectivity card + two tall, independently draggable faders.
-        Row(Modifier.fillMaxWidth().height(166.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        // CONNECTIVITY + VERTICAL CONTROLS
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .height(205.dp),
+            horizontalArrangement = Arrangement.spacedBy(11.dp)
+        ) {
+
+            // CONNECTIVITY MODULE
             Column(
-                Modifier.weight(1.48f).fillMaxHeight().clip(RoundedCornerShape(30.dp))
-                    .glass(RoundedCornerShape(30.dp), tint = GlassWhite, stroke = GlassStroke, profile = GlassProfile.Panel)
+                Modifier
+                    .weight(1.5f)
+                    .fillMaxHeight()
+                    .clip(RoundedCornerShape(30.dp))
+                    .glass(
+                        RoundedCornerShape(30.dp),
+                        tint = Color.White.copy(alpha = .19f),
+                        stroke = GlassStroke,
+                        profile = GlassProfile.Panel
+                    )
                     .padding(12.dp),
-                verticalArrangement = Arrangement.SpaceBetween,
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                    CircleToggle(Icons.Rounded.AirplanemodeActive, "Airplane Mode", airplane, IOSOrange) { launch { context.openAirplaneSettings() } }
-                    CircleToggle(Icons.Rounded.Podcasts, "AirDrop-style sharing", false, IOSBlue) { launch { context.openShareSheet() } }
+
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    CircleToggle(
+                        Icons.Rounded.AirplanemodeActive,
+                        "Airplane Mode",
+                        airplane,
+                        IOSOrange
+                    ) {
+                        launch { context.openAirplaneSettings() }
+                    }
+
+                    CircleToggle(
+                        Icons.Rounded.Podcasts,
+                        "Sharing",
+                        false,
+                        IOSBlue
+                    ) {
+                        launch { context.openShareSheet() }
+                    }
                 }
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    CircleToggle(Icons.Rounded.Wifi, "Wi-Fi", wifi, IOSBlue, Modifier.weight(1.15f), 62.dp) { launch { context.openWifiPanel() } }
-                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(7.dp)) {
-                        MiniToggle(Icons.Rounded.SignalCellularAlt, "Mobile Data", !airplane, IOSGreen) { launch { context.openMobileDataPanel() } }
-                        MiniToggle(Icons.Rounded.Bluetooth, "Bluetooth", bluetooth, IOSBlue) { launch { context.openBluetoothSettings() } }
+
+                Row(
+                    Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(9.dp)
+                ) {
+                    CircleToggle(
+                        Icons.Rounded.Wifi,
+                        "Wi-Fi",
+                        wifi,
+                        IOSBlue,
+                        Modifier.weight(1.15f),
+                        64.dp
+                    ) {
+                        launch { context.openWifiPanel() }
+                    }
+
+                    Column(
+                        Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        MiniToggle(
+                            Icons.Rounded.SignalCellularAlt,
+                            "Mobile Data",
+                            !airplane,
+                            IOSGreen
+                        ) {
+                            launch { context.openMobileDataPanel() }
+                        }
+
+                        MiniToggle(
+                            Icons.Rounded.Bluetooth,
+                            "Bluetooth",
+                            bluetooth,
+                            IOSBlue
+                        ) {
+                            launch { context.openBluetoothSettings() }
+                        }
                     }
                 }
             }
-            VerticalFader(Icons.Rounded.WbSunny, "Brightness", brightness, Modifier.weight(.62f), enabled = canWrite) {
-                brightness = it; context.setBrightnessFraction(it)
+
+            // BRIGHTNESS
+            VerticalFader(
+                Icons.Rounded.WbSunny,
+                "Brightness",
+                brightness,
+                Modifier.weight(.62f),
+                enabled = canWrite
+            ) {
+                brightness = it
+                context.setBrightnessFraction(it)
             }
-            VerticalFader(Icons.Rounded.VolumeUp, "Volume", volume, Modifier.weight(.62f), enabled = true) {
-                volume = it; context.setVolumeFraction(it)
+
+            // VOLUME
+            VerticalFader(
+                Icons.Rounded.VolumeUp,
+                "Volume",
+                volume,
+                Modifier.weight(.62f),
+                enabled = true
+            ) {
+                volume = it
+                context.setVolumeFraction(it)
             }
         }
 
-        Row(Modifier.fillMaxWidth().height(76.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            WideToggle(Icons.Rounded.BatterySaver, "Low Power Mode", "${if (context.isPowerSaveMode()) "On" else "Off"}", context.isPowerSaveMode(), IOSGreen, Modifier.weight(1f)) {
+        // FOCUS + POWER
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .height(82.dp),
+            horizontalArrangement = Arrangement.spacedBy(11.dp)
+        ) {
+            WideToggle(
+                Icons.Rounded.BatterySaver,
+                "Low Power",
+                if (context.isPowerSaveMode()) "On" else "Off",
+                context.isPowerSaveMode(),
+                IOSGreen,
+                Modifier.weight(1f)
+            ) {
                 launch { context.openBatterySaverSettings() }
             }
-            WideToggle(Icons.Rounded.DarkMode, "Do Not Disturb", if (focus) "On" else "Off", focus, IOSPurple, Modifier.weight(1f)) {
-                tap(); context.toggleFocus(); tick++
+
+            WideToggle(
+                Icons.Rounded.DarkMode,
+                "Focus",
+                if (focus) "On" else "Off",
+                focus,
+                IOSPurple,
+                Modifier.weight(1f)
+            ) {
+                tap()
+                context.toggleFocus()
+                tick++
             }
         }
 
-        // Four-column iOS shortcut grid. Controls that Android restricts open the supported system UI.
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Shortcut(Icons.Rounded.FlashlightOn, "Flashlight", torch.on, Modifier.weight(1f)) {
-                    tap(); if (!torch.toggle()) android.widget.Toast.makeText(context, "Flashlight unavailable", android.widget.Toast.LENGTH_SHORT).show()
+        // QUICK CONTROLS
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+
+            Text(
+                "Quick Controls",
+                color = Color.White.copy(alpha = .9f),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Shortcut(
+                    Icons.Rounded.FlashlightOn,
+                    "Flashlight",
+                    torch.on,
+                    Modifier.weight(1f)
+                ) {
+                    tap()
+                    if (!torch.toggle()) {
+                        context.showUnavailable("Flashlight unavailable")
+                    }
                 }
-                Shortcut(Icons.Rounded.FiberManualRecord, "Screen Record", false, Modifier.weight(1f)) { context.showUnavailable("Screen recording needs a MediaProjection consent flow; it is not wired into Hoisly yet.") }
-                Shortcut(Icons.Rounded.ScreenLockRotation, "Rotation Lock", rotationLocked, Modifier.weight(1f)) { tap(); context.toggleRotationLock(); tick++ }
-                Shortcut(Icons.Rounded.Notifications, "Notifications", false, Modifier.weight(1f)) { launch { context.openNotificationSettings() } }
+
+                Shortcut(
+                    Icons.Rounded.FiberManualRecord,
+                    "Screen Record",
+                    false,
+                    Modifier.weight(1f)
+                ) {
+                    context.showUnavailable(
+                        "Screen recording needs a MediaProjection consent flow; it is not wired into Hoisly yet."
+                    )
+                }
+
+                Shortcut(
+                    Icons.Rounded.ScreenLockRotation,
+                    "Rotation",
+                    rotationLocked,
+                    Modifier.weight(1f)
+                ) {
+                    tap()
+                    context.toggleRotationLock()
+                    tick++
+                }
+
+                Shortcut(
+                    Icons.Rounded.Notifications,
+                    "Notifications",
+                    false,
+                    Modifier.weight(1f)
+                ) {
+                    launch { context.openNotificationSettings() }
+                }
             }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Shortcut(Icons.Rounded.QrCodeScanner, "QR Scanner", false, Modifier.weight(1f)) { context.showUnavailable("QR scanning is not implemented in this Hoisly build.") }
-                Shortcut(Icons.Rounded.Calculate, "Calculator", false, Modifier.weight(1f)) { launch { context.openCalculator() } }
-                Shortcut(Icons.Rounded.Cast, "Screen Mirroring", false, Modifier.weight(1f)) { launch { context.openCastSettings() } }
-                Shortcut(Icons.Rounded.GraphicEq, "Music Recognition", false, Modifier.weight(1f)) { context.showUnavailable("Music recognition needs a dedicated recognition provider.") }
+
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Shortcut(
+                    Icons.Rounded.QrCodeScanner,
+                    "QR Scanner",
+                    false,
+                    Modifier.weight(1f)
+                ) {
+                    context.showUnavailable(
+                        "QR scanning is not implemented in this Hoisly build."
+                    )
+                }
+
+                Shortcut(
+                    Icons.Rounded.Calculate,
+                    "Calculator",
+                    false,
+                    Modifier.weight(1f)
+                ) {
+                    launch { context.openCalculator() }
+                }
+
+                Shortcut(
+                    Icons.Rounded.Cast,
+                    "Mirroring",
+                    false,
+                    Modifier.weight(1f)
+                ) {
+                    launch { context.openCastSettings() }
+                }
+
+                Shortcut(
+                    Icons.Rounded.GraphicEq,
+                    "Recognition",
+                    false,
+                    Modifier.weight(1f)
+                ) {
+                    context.showUnavailable(
+                        "Music recognition needs a dedicated recognition provider."
+                    )
+                }
             }
         }
+
+        // SYSTEM ACCESS
         if (!canWrite) {
-            Text("Allow Hoisly to modify system settings to control brightness and rotation.",
-                color = Color.White.copy(alpha = .82f), fontSize = 12.sp,
-                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp))
-                    .glass(RoundedCornerShape(18.dp), tint = GlassWhite, stroke = GlassStroke)
-                    .clickable { context.requestWriteSettings() }.padding(14.dp))
+            Text(
+                "Allow Hoisly to modify system settings to control brightness and rotation.",
+                color = Color.White.copy(alpha = .82f),
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(20.dp))
+                    .glass(
+                        RoundedCornerShape(20.dp),
+                        tint = GlassWhite,
+                        stroke = GlassStroke
+                    )
+                    .clickable { context.requestWriteSettings() }
+                    .padding(14.dp)
+            )
         }
-        Spacer(Modifier.height(8.dp))
+
+        Spacer(Modifier.height(12.dp))
     }
 }
 
