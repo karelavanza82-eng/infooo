@@ -36,7 +36,7 @@ enum class SettingsRoute {
     HiddenApps, AppIcons, AppNames, License, About, Weather, FinishSetup, Language,
     HomeIcons, DockIcons, FolderIcons, Folders,
     AppLibrary, LibraryPinned, LibraryCategories, LibraryCategory, Island,
-    Backup, StatusBar, HideStatusBar, Lab,
+    Backup, StatusBar, HideStatusBar, Lab, LockScreen,
 }
 
 /** Size settings page of each icon area. */
@@ -116,6 +116,7 @@ fun SettingsApp(vm: SettingsViewModel, actions: SettingsActions, initialRoute: S
             )
             SettingsRoute.LibraryCategory -> CategoryEditorScreen(vm, editingCategory, onCreated = { editingCategory = it }, onBack = back)
             SettingsRoute.Lab -> UiLabScreen(vm, back)
+            SettingsRoute.LockScreen -> LockScreenSettingsScreen(back)
         }
     }
     }

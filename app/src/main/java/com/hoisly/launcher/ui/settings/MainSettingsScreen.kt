@@ -35,6 +35,7 @@ import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material.icons.rounded.Gavel
 import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Science
 import androidx.compose.material.icons.rounded.Settings
@@ -171,6 +172,19 @@ fun MainSettingsScreen(vm: SettingsViewModel, actions: SettingsActions, navigate
                 )
                 BentoTile(Icons.Rounded.WbSunny, stringResource(R.string.widget_weather), T.Cyan, { navigate(SettingsRoute.Weather) }, Modifier.weight(1f), index = 8)
             }
+        }
+
+        item {
+            BentoTile(
+                Icons.Rounded.Lock,
+                "Lock Screen",
+                T.Blue,
+                { navigate(SettingsRoute.LockScreen) },
+                Modifier.fillMaxWidth(),
+                index = 8,
+                subtitle = pick(indo, "Pratinjau iOS 26 • keamanan Android tetap aktif", "iOS 26 preview • Android security stays active"),
+                kind = TileKind.Wide,
+            )
         }
 
         // ── Appearance carousel ──────────────────────────────

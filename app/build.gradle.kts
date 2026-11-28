@@ -17,17 +17,23 @@ android {
         versionName = "2.2.1"
     }
 
-    // CI signs releases with the project keystore passed through the environment.
+    // CI signs release builds with secrets supplied through the environment.
+    // Debug builds must remain buildable locally without a release keystore.
     val releaseKeystore = providers.environmentVariable("HOISLY_KEYSTORE_FILE").orNull
-        ?: error("HOISLY_KEYSTORE_FILE is required to build a signed release APK")
+    val releaseStorePassword = providers.environmentVariable("HOISLY_KEYSTORE_PASSWORD").orNull
+    val releaseKeyAlias = providers.environmentVariable("HOISLY_KEY_ALIAS").orNull
+    val releaseKeyPassword = providers.environmentVariable("HOISLY_KEY_PASSWORD").orNull
+    val hasReleaseSigning = listOf(releaseKeystore, releaseStorePassword, releaseKeyAlias, releaseKeyPassword).all { !it.isNullOrBlank() }
 
     signingConfigs {
-        create("release") {
-            storeFile = file(releaseKeystore)
-            storeType = "PKCS12"
-            storePassword = providers.environmentVariable("HOISLY_KEYSTORE_PASSWORD").get()
-            keyAlias = providers.environmentVariable("HOISLY_KEY_ALIAS").get()
-            keyPassword = providers.environmentVariable("HOISLY_KEY_PASSWORD").get()
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = file(requireNotNull(releaseKeystore))
+                storeType = "PKCS12"
+                storePassword = requireNotNull(releaseStorePassword)
+                keyAlias = requireNotNull(releaseKeyAlias)
+                keyPassword = requireNotNull(releaseKeyPassword)
+            }
         }
     }
 
@@ -48,7 +54,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("release")
+            if (hasReleaseSigning) signingConfig = signingConfigs.getByName("release")
         }
     }
 
